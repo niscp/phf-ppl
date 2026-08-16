@@ -36,6 +36,16 @@ const legacyPhotos = [
   { src: "/legacy-18.jpg", alt: "PHF Cobras squad portrait with trophies", caption: "Cobras: together to the final ball.", className: "legacy-wide" },
   { src: "/legacy-19.jpg", alt: "Individual PHF award presentation on the cricket field", caption: "A performance recognised.", className: "legacy-tall" },
   { src: "/legacy-20.jpg", alt: "PHF player receiving a trophy and award", caption: "Every player leaves a mark.", className: "legacy-tall" },
+  { src: "/legacy-21.jpg", alt: "Prestige Pirates and PHF Cobras players at an individual award presentation", caption: "Respect at the presentation line.", className: "legacy-square" },
+  { src: "/legacy-22.jpg", alt: "Misters Blasters and Gangsters players sharing an individual award", caption: "A standout performance, recognised.", className: "legacy-tall" },
+  { src: "/legacy-23.jpg", alt: "PHF individual award presentation between two cricketers", caption: "Honouring the difference-makers.", className: "legacy-tall" },
+  { src: "/legacy-24.jpg", alt: "PHF Dabang squad lined up on the cricket ground", caption: "Dabang ready for the contest.", className: "legacy-wide" },
+  { src: "/legacy-25.jpg", alt: "PHF presentation ceremony beside the cricket nets", caption: "The hands behind a memorable season.", className: "legacy-tall" },
+  { src: "/legacy-26.jpg", alt: "PHF Cobras receiving a team trophy", caption: "Cobras collect their team honours.", className: "legacy-wide" },
+  { src: "/legacy-27.jpg", alt: "PHF Spartans lifting a championship trophy", caption: "Spartans lift it together.", className: "legacy-tall" },
+  { src: "/legacy-28.jpg", alt: "PHF Spartans celebrating with their trophy and prizes", caption: "Champions, smiles and a season to remember.", className: "legacy-tall" },
+  { src: "/legacy-29.jpg", alt: "PHF Cobras team portrait at the cricket ground", caption: "Cobras united beyond the boundary.", className: "legacy-wide" },
+  { src: "/legacy-30.jpg", alt: "PHF season trophies displayed beside the cricket field", caption: "The prizes every squad plays for.", className: "legacy-square" },
 ];
 
 const format = [
@@ -251,7 +261,7 @@ export default function Home() {
         <div className="legacy-heading">
           <p className="eyebrow">The league in pictures</p>
           <h2>Played together.<br/><span>Remembered forever.</span></h2>
-          <p>Twenty real moments. Teams, trophies, individual honours and friendships—the legacy Season 5 steps into.</p>
+          <p>Thirty real moments. Teams, trophies, individual honours and friendships—the legacy Season 5 steps into.</p>
         </div>
         <div className="legacy-wall">
           {legacyPhotos.map((photo, index) => (
