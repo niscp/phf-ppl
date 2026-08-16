@@ -1,17 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 
-const fixtures = [
-  { time: "09:00", home: "Defending Champions", away: "New Challengers", tag: "Opening match" },
-  { time: "13:00", home: "Home XI", away: "Visitors XI", tag: "League match" },
-  { time: "17:00", home: "City Strikers", away: "Boundary Kings", tag: "Evening match" },
-];
+const matchDays = ["21", "22", "28", "29"];
 
 const format = [
   { value: "8", label: "Teams" },
   { value: "15", label: "Overs" },
-  { value: "4", label: "Weekends" },
+  { value: "4", label: "Match days" },
   { value: "1", label: "Champion" },
 ];
 
@@ -45,16 +41,6 @@ const archive = [
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
-  function createRegistrationEmail(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const team = String(data.get("team") || "");
-    const captain = String(data.get("captain") || "");
-    const phone = String(data.get("phone") || "");
-    const body = `Hi PHF Premier League team,\n\nI would like to register interest for Season 5.\n\nTeam: ${team}\nCaptain: ${captain}\nPhone: ${phone}\n\nPlease share the next steps.`;
-    window.location.href = `mailto:?subject=${encodeURIComponent("PHF Premier League Season 5 registration")}&body=${encodeURIComponent(body)}`;
-  }
-
   return (
     <main>
       <header className="site-header">
@@ -77,11 +63,11 @@ export default function Home() {
       <section className="hero" id="top">
         <div className="pitch-lines" aria-hidden="true"><span /><span /><span /></div>
         <div className="hero-copy">
-          <p className="eyebrow"><span>PHF Premier League</span> Registrations opening</p>
+          <p className="eyebrow"><span>PHF Premier League</span> 21 · 22 · 28 · 29 November</p>
           <h1><span>Season</span><strong>V</strong></h1>
           <p className="hero-lede">Five seasons in. The rivalry is real. Gather your squad and step into the biggest chapter of PHF cricket yet.</p>
           <div className="hero-actions">
-            <a className="button primary" href="#register">Enter Season 5 <span>↗</span></a>
+            <a className="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSfscoEpVUW_JKyYhTsL6wF00Ffk4X1wVTw4UW3ACflvXeicOA/viewform" target="_blank" rel="noreferrer">Register by 30 Aug <span>↗</span></a>
             <a className="text-link" href="#fixtures">See opening day <span>↓</span></a>
           </div>
         </div>
@@ -92,7 +78,7 @@ export default function Home() {
             <strong>05</strong>
             <div className="score-meta"><span>Teams<br/><b>08</b></span><span>Overs<br/><b>15</b></span></div>
           </div>
-          <div className="scoreboard-bottom"><span>Play bold.</span><span>Make history.</span></div>
+          <div className="scoreboard-bottom"><span>21—29 November</span><span>SRRC Cricket Ground</span></div>
         </div>
         <div className="scroll-note">Scroll for the season brief</div>
       </section>
@@ -105,30 +91,27 @@ export default function Home() {
         <div className="section-heading">
           <p className="eyebrow dark">The competition</p>
           <h2>Built for big<br/>cricket energy.</h2>
-          <p>A fast, focused tournament where every over matters. Final dates, venue, and playing conditions will be confirmed with registered captains.</p>
+          <p>A fast, focused tournament where every over matters. Season 5 lands at SRRC Cricket Ground across four match days in November.</p>
         </div>
         <div className="format-grid">
           {format.map((item) => <div className="format-card" key={item.label}><strong>{item.value}</strong><span>{item.label}</span></div>)}
         </div>
-        <p className="data-note">Proposed Season 5 format — subject to final team entries.</p>
+        <p className="data-note">Season 5 team and over format remains subject to final entries and official playing conditions.</p>
       </section>
 
       <section className="fixtures-section" id="fixtures">
         <div className="section-bar">
-          <div><p className="eyebrow">Match centre</p><h2>Opening day</h2></div>
-          <p>Fixture preview<br/><span>Date & venue to be announced</span></p>
+          <div><p className="eyebrow">Season calendar</p><h2>Match days</h2></div>
+          <p>SRRC Cricket Ground<br/><span>Four days · November</span></p>
         </div>
-        <div className="fixture-list">
-          {fixtures.map((match, index) => (
-            <article className="fixture" key={match.time}>
-              <div className="fixture-no">0{index + 1}</div>
-              <time>{match.time}<small>IST</small></time>
-              <div className="teams"><span>{match.home}</span><b>vs</b><span>{match.away}</span></div>
-              <span className="match-tag">{match.tag}</span>
+        <div className="match-days">
+          {matchDays.map((day, index) => (
+            <article className="match-day" key={day}>
+              <span>Day {index + 1}</span><strong>{day}</strong><b>November</b>
             </article>
           ))}
         </div>
-        <p className="data-note light">Preview names only — official teams and fixtures will replace these after registration.</p>
+        <div className="venue-row"><span>Match venue</span><b>SRRC Cricket Ground</b><a href="https://share.google/clJmAmYZH5Kvxpb4x" target="_blank" rel="noreferrer">Open location map ↗</a></div>
       </section>
 
       <section className="archive-section" id="archive">
@@ -167,18 +150,18 @@ export default function Home() {
         <div className="register-intro">
           <p className="eyebrow">Team entry</p>
           <h2>Ready your XI.</h2>
-          <p>Start your Season 5 entry now. This creates a pre-filled email you can send to your PHF league organiser.</p>
+          <p>Start your official Season 5 entry now. Registrations close on 30 August.</p>
           <div className="entry-list"><span>01</span> Nominate your captain</div>
           <div className="entry-list"><span>02</span> Confirm your team name</div>
           <div className="entry-list"><span>03</span> Submit the player list when requested</div>
         </div>
-        <form className="register-form" onSubmit={createRegistrationEmail}>
-          <label>Team name<input name="team" required placeholder="e.g. PHF Strikers" /></label>
-          <label>Captain&apos;s name<input name="captain" required placeholder="Full name" /></label>
-          <label>Contact number<input name="phone" required type="tel" placeholder="Your phone number" /></label>
-          <button className="button primary" type="submit">Create registration email <span>↗</span></button>
-          <small>Your details stay on your device until you send the email.</small>
-        </form>
+        <div className="register-panel">
+          <p className="deadline-label">Registration closes</p>
+          <div className="deadline"><strong>30</strong><span>August</span></div>
+          <a className="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSfscoEpVUW_JKyYhTsL6wF00Ffk4X1wVTw4UW3ACflvXeicOA/viewform" target="_blank" rel="noreferrer">Open registration form <span>↗</span></a>
+          <a className="resource-link" href="https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk" target="_blank" rel="noreferrer"><span>Read the official</span><b>Terms &amp; conditions ↗</b></a>
+          <a className="resource-link" href="https://share.google/clJmAmYZH5Kvxpb4x" target="_blank" rel="noreferrer"><span>Find the venue</span><b>SRRC Cricket Ground ↗</b></a>
+        </div>
       </section>
 
       <footer>

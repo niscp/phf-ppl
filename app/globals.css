@@ -61,6 +61,10 @@ button,input { font:inherit; }
 .teams { display:grid; grid-template-columns:1fr 40px 1fr; align-items:center; font:400 clamp(24px,3vw,44px) var(--font-display); text-transform:uppercase; }.teams b { font:400 10px var(--font-mono); color:var(--sky); text-align:center; }.teams span:last-child { text-align:right; }
 .match-tag { font:400 9px var(--font-mono); border:1px solid #405161; padding:8px 10px; text-transform:uppercase; }
 .data-note.light { color:#718291; margin:20px 0 0; }
+.match-days { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid #405161; border-left:1px solid #405161; }
+.match-day { min-height:270px; padding:22px; border-right:1px solid #405161; border-bottom:1px solid #405161; display:flex; flex-direction:column; justify-content:space-between; }
+.match-day span,.match-day b { font:600 10px var(--font-mono); color:#7f909e; text-transform:uppercase; letter-spacing:.1em; }.match-day strong { font:400 clamp(100px,13vw,190px)/.8 var(--font-display); color:var(--gold); }
+.venue-row { display:grid; grid-template-columns:120px 1fr auto; align-items:center; gap:25px; padding:25px 0; border-bottom:1px solid #405161; }.venue-row span { font:400 9px var(--font-mono); color:#718291; text-transform:uppercase; }.venue-row b { font:400 27px var(--font-display); text-transform:uppercase; }.venue-row a { color:var(--sky); font-weight:700; font-size:12px; }
 .archive-section { padding:115px 7vw; background:var(--paper); }
 .archive-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:50px; margin-bottom:58px; }
 .archive-heading h2 { font:400 clamp(62px,8vw,118px)/.84 var(--font-display); text-transform:uppercase; margin:0; }
@@ -84,7 +88,7 @@ button,input { font:inherit; }
 .season-copy>p { font-size:17px; line-height:1.7; max-width:580px; color:#52616a; }.season-copy blockquote { border-left:5px solid var(--gold); margin:45px 0 0; padding:8px 0 8px 24px; font:400 31px/1.15 var(--font-display); text-transform:uppercase; max-width:500px; }
 .register-section { background:var(--blue); color:white; padding:110px 7vw; display:grid; grid-template-columns:1fr .9fr; gap:10vw; }
 .register-intro>p { max-width:560px; line-height:1.7; }.entry-list { border-top:1px solid rgba(255,255,255,.25); padding:18px 0; font-weight:700; }.entry-list span { font:400 10px var(--font-mono); color:var(--gold); margin-right:18px; }
-.register-form { background:white; color:var(--ink); padding:35px; align-self:start; box-shadow:16px 16px 0 var(--sky); }.register-form label { display:block; margin-bottom:23px; font:600 10px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }.register-form input { display:block; width:100%; border:0; border-bottom:2px solid #c6cfcc; padding:13px 0; outline:0; font:600 17px var(--font-body); }.register-form input:focus { border-color:var(--blue); }.register-form .button { width:100%; margin-top:8px; }.register-form small { display:block; margin-top:17px; color:#64727b; line-height:1.5; }
+.register-panel { background:white; color:var(--ink); padding:35px; align-self:start; box-shadow:16px 16px 0 var(--sky); }.deadline-label { font:600 10px var(--font-mono); text-transform:uppercase; letter-spacing:.1em; margin:0; }.deadline { display:flex; align-items:flex-end; gap:15px; border-bottom:1px solid #c9d1ce; padding:15px 0 25px; margin-bottom:25px; }.deadline strong { font:400 130px/.75 var(--font-display); color:var(--blue); }.deadline span { font:400 40px/.9 var(--font-display); text-transform:uppercase; }.register-panel .button { width:100%; }.resource-link { display:flex; flex-direction:column; gap:4px; padding:19px 0; border-bottom:1px solid #c9d1ce; }.resource-link span { font:400 9px var(--font-mono); text-transform:uppercase; color:#69777d; }.resource-link b { font-size:15px; }
 footer { min-height:150px; padding:35px 4vw; background:#03111e; color:white; display:flex; align-items:center; justify-content:space-between; font-size:12px; }.footer-brand { color:white; } footer>p { opacity:.55; } footer>a:last-child { font-weight:700; }
 @media (max-width:900px) {
   .site-header { height:70px; }.menu-button { display:flex; flex-direction:column; gap:7px; padding:10px; }.menu-button span { width:25px; height:2px; background:currentColor; }
@@ -95,6 +99,7 @@ footer { min-height:150px; padding:35px 4vw; background:#03111e; color:white; di
   .archive-section { padding:80px 6vw; }.archive-heading { align-items:flex-start; flex-direction:column; }.archive-grid { grid-template-columns:1fr; }.archive-card { min-height:480px; }.archive-number { font-size:200px; }.archive-teams { font-size:36px; }
   .format-card { min-height:180px; }.format-card strong { font-size:80px; }
   .fixture { grid-template-columns:40px 70px 1fr; padding:18px 0; }.teams { grid-template-columns:1fr; gap:4px; }.teams b { text-align:left; }.teams span:last-child { text-align:left; }.match-tag { display:none; }
+  .match-days { grid-template-columns:1fr 1fr; }.venue-row { grid-template-columns:1fr; gap:7px; }
   .season-mark { font-size:115vw; margin-bottom:40px; }.season-section { gap:0; }.register-section { gap:55px; }
 }
 @media (max-width:560px) {
@@ -102,7 +107,7 @@ footer { min-height:150px; padding:35px 4vw; background:#03111e; color:white; di
   .scoreboard-main { padding:18px; }.scoreboard-main .innings { font-size:24px; }.score-meta { flex-direction:column; gap:5px; }.scoreboard-main>strong { font-size:45vw; }
   .format-grid { grid-template-columns:1fr 1fr; }.format-card { min-height:150px; padding:20px; }.format-card strong { font-size:68px; }
   .section-bar { align-items:flex-start; flex-direction:column; gap:25px; }.section-bar>p { text-align:left; }.fixture { grid-template-columns:42px 1fr; gap:10px; }.fixture time { grid-row:1/3; }.fixture-no { display:none; }.teams { font-size:25px; }
-  .register-form { padding:25px 20px; box-shadow:9px 9px 0 var(--sky); } footer { flex-direction:column; align-items:flex-start; gap:24px; }
+  .register-panel { padding:25px 20px; box-shadow:9px 9px 0 var(--sky); } footer { flex-direction:column; align-items:flex-start; gap:24px; }
   .archive-heading h2 { font-size:58px; }.archive-teams { font-size:30px; }.archive-number { font-size:160px; }.archive-card { min-height:420px; }
 }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; }.ticker div { animation:none; }.button { transition:none; } }
