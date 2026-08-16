@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 const matchDays = ["21", "22", "28", "29"];
 
@@ -108,6 +108,12 @@ const archive = [
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [trailerPlaying, setTrailerPlaying] = useState(false);
+  const trailerRef = useRef<HTMLVideoElement>(null);
+
+  const playTrailer = () => {
+    trailerRef.current?.play();
+  };
 
   return (
     <main>
@@ -160,19 +166,16 @@ export default function Home() {
       <section className="trailer-section" id="trailer">
         <div className="trailer-copy">
           <p className="eyebrow">Official Season 5 trailer</p>
-          <h2>The next<br/><span>innings</span><br/>begins.</h2>
-          <p>Thirty-three seconds of PHF legacy, rivalry and celebration—building towards four unforgettable match days under the November sky.</p>
-          <div className="trailer-actions">
-            <a className="button primary" href="/phf-season-5-trailer.mp4" download>Download trailer <span>↓</span></a>
-            <a className="text-link" href="#register">Register for Season 5 <span>↗</span></a>
-          </div>
+          <h2>Press play.<br/><span>Feel the league.</span></h2>
+          <p>PHF legacy, rivalry and celebration—building towards four unforgettable match days under the November sky.</p>
         </div>
         <div className="trailer-frame">
           <span className="trailer-label">PHFPL / TRAILER 01</span>
-          <video controls playsInline preload="metadata" poster="/campaign-8.jpg" aria-label="PHF Premier League Season 5 trailer">
+          <video ref={trailerRef} controls playsInline preload="metadata" poster="/campaign-8.jpg" aria-label="PHF Premier League Season 5 trailer" onPlay={() => setTrailerPlaying(true)} onPause={() => setTrailerPlaying(false)} onEnded={() => setTrailerPlaying(false)}>
             <source src="/phf-season-5-trailer.mp4" type="video/mp4" />
-            Your browser does not support embedded video. Download the trailer using the adjacent link.
+            Your browser does not support embedded video.
           </video>
+          {!trailerPlaying && <button className="trailer-play" type="button" onClick={playTrailer} aria-label="Play the PHF Season 5 trailer"><span>▶</span><b>Play trailer</b></button>}
         </div>
       </section>
 
