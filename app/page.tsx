@@ -15,6 +15,19 @@ const campaignPosters = [
   { src: "/campaign-8.jpg", alt: "PHF Premier League Season 5 official tournament poster" },
 ];
 
+const legacyPhotos = [
+  { src: "/legacy-1.jpg", alt: "Warriors and Cobras teams together after a previous PHF season match", caption: "Rivals for the match. One family after it.", className: "legacy-wide" },
+  { src: "/legacy-2.jpg", alt: "Garuda team with the PHF trophy and individual awards", caption: "A squad, a trophy, a season remembered.", className: "legacy-wide" },
+  { src: "/legacy-3.jpg", alt: "PHF organisers and players behind the season trophy collection", caption: "The people behind the league.", className: "legacy-wide" },
+  { src: "/legacy-4.jpg", alt: "PHF organisers preparing the awards display", caption: "Before the cheers: making match day happen.", className: "legacy-wide" },
+  { src: "/legacy-5.jpg", alt: "Large PHF league community group at the awards ceremony", caption: "One league. One community.", className: "legacy-feature" },
+  { src: "/legacy-6.jpg", alt: "PHF trophy winners and organisers at the awards presentation", caption: "The silverware moment.", className: "legacy-square" },
+  { src: "/legacy-7.jpg", alt: "PHF players and organisers with the complete trophy collection", caption: "Every award carries a story.", className: "legacy-square" },
+  { src: "/legacy-8.jpg", alt: "Archive poster for PHF Premier League Season 4", caption: "From the archive: the Season 4 call-up.", className: "legacy-tall" },
+  { src: "/legacy-9.jpg", alt: "PHF winners and runners-up trophies on the cricket field", caption: "Winners. Runners-up. Sportsmanship.", className: "legacy-tall" },
+  { src: "/legacy-10.jpg", alt: "PHF Cobras team posing with trophies", caption: "A champion team and the rewards of the season.", className: "legacy-wide" },
+];
+
 const format = [
   { value: "3+", label: "Matches per team" },
   { value: "4", label: "Match days" },
@@ -90,6 +103,7 @@ export default function Home() {
           <a href="#format" onClick={() => setMenuOpen(false)}>Format</a>
           <a href="#fixtures" onClick={() => setMenuOpen(false)}>Fixtures</a>
           <a href="#archive" onClick={() => setMenuOpen(false)}>Archive</a>
+          <a href="#legacy" onClick={() => setMenuOpen(false)}>Gallery</a>
           <a href="#season" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a className="nav-cta" href="#register" onClick={() => setMenuOpen(false)}>Register a team</a>
         </nav>
@@ -221,6 +235,23 @@ export default function Home() {
           <p>PHF Premier League returns for its fifth edition—a tournament shaped by competitive cricket, team spirit, and the moments players talk about long after the final ball.</p>
           <blockquote>“New squads. Old rivalries. One more shot at the trophy.”</blockquote>
         </div>
+      </section>
+
+      <section className="legacy-section" id="legacy">
+        <div className="legacy-heading">
+          <p className="eyebrow">The league in pictures</p>
+          <h2>Played together.<br/><span>Remembered forever.</span></h2>
+          <p>Real teams, real trophies, real friendships. These moments from previous seasons are the legacy Season 5 steps into.</p>
+        </div>
+        <div className="legacy-wall">
+          {legacyPhotos.map((photo, index) => (
+            <figure className={`legacy-photo ${photo.className}`} key={photo.src}>
+              <a href={photo.src} target="_blank" aria-label={`Open legacy photograph ${index + 1}`}><img src={photo.src} alt={photo.alt} loading="lazy" /></a>
+              <figcaption><span>{String(index + 1).padStart(2, "0")}</span>{photo.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+        <p className="legacy-note">Previous-season archive · Historic posters may contain expired dates and contact details.</p>
       </section>
 
       <section className="register-section" id="register">
