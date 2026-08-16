@@ -61,6 +61,24 @@ button,input { font:inherit; }
 .teams { display:grid; grid-template-columns:1fr 40px 1fr; align-items:center; font:400 clamp(24px,3vw,44px) var(--font-display); text-transform:uppercase; }.teams b { font:400 10px var(--font-mono); color:var(--sky); text-align:center; }.teams span:last-child { text-align:right; }
 .match-tag { font:400 9px var(--font-mono); border:1px solid #405161; padding:8px 10px; text-transform:uppercase; }
 .data-note.light { color:#718291; margin:20px 0 0; }
+.archive-section { padding:115px 7vw; background:var(--paper); }
+.archive-heading { display:flex; justify-content:space-between; align-items:flex-end; gap:50px; margin-bottom:58px; }
+.archive-heading h2 { font:400 clamp(62px,8vw,118px)/.84 var(--font-display); text-transform:uppercase; margin:0; }
+.archive-heading>p { max-width:410px; color:#56636a; line-height:1.7; margin:0 0 8px; }
+.archive-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; background:#aab3af; border:1px solid #aab3af; }
+.archive-card { min-height:570px; padding:24px; background:var(--paper); display:flex; flex-direction:column; position:relative; overflow:hidden; transition:background .25s,color .25s; }
+.archive-card:hover { background:var(--blue); color:white; }
+.archive-top { display:flex; justify-content:space-between; font:600 9px var(--font-mono); letter-spacing:.08em; text-transform:uppercase; position:relative; z-index:2; }
+.archive-number { font:400 250px/.8 var(--font-display); color:var(--blue); letter-spacing:-.06em; margin:45px 0 18px; transition:color .25s; }
+.archive-card:hover .archive-number { color:var(--gold); }
+.archive-card>p { font:600 9px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; color:#69777d; }
+.archive-card:hover>p { color:var(--sky); }
+.archive-teams { display:grid; grid-template-columns:1fr auto 1fr; gap:9px; align-items:center; margin-top:8px; font:400 clamp(24px,2.3vw,37px)/1 var(--font-display); text-transform:uppercase; }
+.archive-teams i { font:400 9px var(--font-mono); color:var(--blue); }.archive-card:hover .archive-teams i { color:var(--gold); }
+.archive-teams strong:last-child { text-align:right; }
+.standout { margin-top:auto; border-top:1px solid #aab3af; padding-top:18px; display:flex; flex-direction:column; gap:7px; }
+.standout span { font:400 9px var(--font-mono); text-transform:uppercase; letter-spacing:.08em; }.standout b { font:400 30px var(--font-display); text-transform:uppercase; color:var(--blue); }.archive-card:hover .standout b { color:var(--gold); }
+.archive-source { font:400 9px var(--font-mono); text-transform:uppercase; color:#6a7478; letter-spacing:.05em; margin:18px 0 0; }
 .season-section { min-height:750px; padding:100px 7vw; display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:9vw; overflow:hidden; }
 .season-mark { font:400 clamp(420px,55vw,760px)/.65 var(--font-display); color:var(--blue); margin-left:-4vw; text-shadow:18px 18px 0 var(--sky),36px 36px 0 var(--gold); }
 .season-copy>p { font-size:17px; line-height:1.7; max-width:580px; color:#52616a; }.season-copy blockquote { border-left:5px solid var(--gold); margin:45px 0 0; padding:8px 0 8px 24px; font:400 31px/1.15 var(--font-display); text-transform:uppercase; max-width:500px; }
@@ -74,6 +92,7 @@ footer { min-height:150px; padding:35px 4vw; background:#03111e; color:white; di
   .hero { min-height:0; grid-template-columns:1fr; padding:130px 6vw 80px; }.hero h1 { font-size:34vw; }.scoreboard { margin-top:20px; }.scoreboard-main { min-height:280px; }.scoreboard-main>strong { font-size:47vw; }
   .pitch-lines:after { left:70%; }.scroll-note { display:none; }
   .format-section,.season-section,.register-section { grid-template-columns:1fr; padding:80px 6vw; }.data-note { grid-column:1; }.section-heading>p:last-child { margin-bottom:45px; }
+  .archive-section { padding:80px 6vw; }.archive-heading { align-items:flex-start; flex-direction:column; }.archive-grid { grid-template-columns:1fr; }.archive-card { min-height:480px; }.archive-number { font-size:200px; }.archive-teams { font-size:36px; }
   .format-card { min-height:180px; }.format-card strong { font-size:80px; }
   .fixture { grid-template-columns:40px 70px 1fr; padding:18px 0; }.teams { grid-template-columns:1fr; gap:4px; }.teams b { text-align:left; }.teams span:last-child { text-align:left; }.match-tag { display:none; }
   .season-mark { font-size:115vw; margin-bottom:40px; }.season-section { gap:0; }.register-section { gap:55px; }
@@ -84,6 +103,7 @@ footer { min-height:150px; padding:35px 4vw; background:#03111e; color:white; di
   .format-grid { grid-template-columns:1fr 1fr; }.format-card { min-height:150px; padding:20px; }.format-card strong { font-size:68px; }
   .section-bar { align-items:flex-start; flex-direction:column; gap:25px; }.section-bar>p { text-align:left; }.fixture { grid-template-columns:42px 1fr; gap:10px; }.fixture time { grid-row:1/3; }.fixture-no { display:none; }.teams { font-size:25px; }
   .register-form { padding:25px 20px; box-shadow:9px 9px 0 var(--sky); } footer { flex-direction:column; align-items:flex-start; gap:24px; }
+  .archive-heading h2 { font-size:58px; }.archive-teams { font-size:30px; }.archive-number { font-size:160px; }.archive-card { min-height:420px; }
 }
 @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; }.ticker div { animation:none; }.button { transition:none; } }
 *:focus-visible { outline:3px solid var(--gold); outline-offset:4px; }

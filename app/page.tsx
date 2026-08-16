@@ -15,6 +15,33 @@ const format = [
   { value: "1", label: "Champion" },
 ];
 
+const archive = [
+  {
+    season: "03",
+    league: "Prestige Premier League",
+    home: "PHF Dabang",
+    away: "Titans",
+    standout: "Sharad Sharma",
+    href: "https://cricheroes.in/scorecard/13396124/prestige-premier-league---season-3/phf-dabang-vs-titans",
+  },
+  {
+    season: "02",
+    league: "Prestige Cricket League (PHF)",
+    home: "PHF Spartans",
+    away: "PHF OG",
+    standout: "Naman Saxena",
+    href: "https://cricheroes.in/scorecard/8357024/prestige-cricket-league(phf)-season-2/phf-spartans-vs-phf-og",
+  },
+  {
+    season: "01",
+    league: "Prestige Cricket League (PHF)",
+    home: "PHF Strikers",
+    away: "Prestige Super Kings",
+    standout: "Nishank Singh",
+    href: "https://cricheroes.in/scorecard/4929183/prestige-cricket-league(phf)-season--1/phf-strikers-vs-prestige-super-kings",
+  },
+];
+
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -41,6 +68,7 @@ export default function Home() {
         <nav className={menuOpen ? "nav open" : "nav"} aria-label="Main navigation">
           <a href="#format" onClick={() => setMenuOpen(false)}>Format</a>
           <a href="#fixtures" onClick={() => setMenuOpen(false)}>Fixtures</a>
+          <a href="#archive" onClick={() => setMenuOpen(false)}>Archive</a>
           <a href="#season" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a className="nav-cta" href="#register" onClick={() => setMenuOpen(false)}>Register a team</a>
         </nav>
@@ -101,6 +129,28 @@ export default function Home() {
           ))}
         </div>
         <p className="data-note light">Preview names only — official teams and fixtures will replace these after registration.</p>
+      </section>
+
+      <section className="archive-section" id="archive">
+        <div className="archive-heading">
+          <div>
+            <p className="eyebrow dark">From the scorebook</p>
+            <h2>Three seasons.<br/>Three statements.</h2>
+          </div>
+          <p>Featured matches from the PHF cricket story, preserved through their original CricHeroes scorecards.</p>
+        </div>
+        <div className="archive-grid">
+          {archive.map((match) => (
+            <a className="archive-card" href={match.href} target="_blank" rel="noreferrer" key={match.season} aria-label={`Open Season ${Number(match.season)} scorecard on CricHeroes`}>
+              <div className="archive-top"><span>Season {match.season}</span><span>Open scorecard ↗</span></div>
+              <div className="archive-number">{match.season}</div>
+              <p>{match.league}</p>
+              <div className="archive-teams"><strong>{match.home}</strong><i>vs</i><strong>{match.away}</strong></div>
+              <div className="standout"><span>Standout performance</span><b>{match.standout}</b></div>
+            </a>
+          ))}
+        </div>
+        <p className="archive-source">Match references supplied from CricHeroes · Scores and results remain on the linked scorecards.</p>
       </section>
 
       <section className="season-section" id="season">
