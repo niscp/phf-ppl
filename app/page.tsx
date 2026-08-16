@@ -157,6 +157,25 @@ export default function Home() {
         <div>सीज़न पाँच <i>◆</i> Day &amp; night cricket <i>◆</i> खेल · जुनून · परिवार <i>◆</i> Bigger games <i>◆</i> Brighter nights <i>◆</i> Real cricket</div>
       </section>
 
+      <section className="trailer-section" id="trailer">
+        <div className="trailer-copy">
+          <p className="eyebrow">Official Season 5 trailer</p>
+          <h2>The next<br/><span>innings</span><br/>begins.</h2>
+          <p>Thirty-three seconds of PHF legacy, rivalry and celebration—building towards four unforgettable match days under the November sky.</p>
+          <div className="trailer-actions">
+            <a className="button primary" href="/phf-season-5-trailer.mp4" download>Download trailer <span>↓</span></a>
+            <a className="text-link" href="#register">Register for Season 5 <span>↗</span></a>
+          </div>
+        </div>
+        <div className="trailer-frame">
+          <span className="trailer-label">PHFPL / TRAILER 01</span>
+          <video controls playsInline preload="metadata" poster="/campaign-8.jpg" aria-label="PHF Premier League Season 5 trailer">
+            <source src="/phf-season-5-trailer.mp4" type="video/mp4" />
+            Your browser does not support embedded video. Download the trailer using the adjacent link.
+          </video>
+        </div>
+      </section>
+
       <section className="poster-section" aria-label="Official Season 5 poster">
         <div className="poster-copy">
           <p className="eyebrow dark">Official announcement</p>
