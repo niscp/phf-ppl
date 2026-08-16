@@ -4,6 +4,17 @@ import { useState } from "react";
 
 const matchDays = ["21", "22", "28", "29"];
 
+const campaignPosters = [
+  { src: "/campaign-1.jpg", alt: "15 days left to register for PHF Premier League Season 5" },
+  { src: "/campaign-2.jpg", alt: "Be part of the biggest fun of PHF Season 5" },
+  { src: "/campaign-3.jpg", alt: "Captain registration and cricket kit support announcement" },
+  { src: "/campaign-4.jpg", alt: "PHF Season 5 player registration reassurance poster" },
+  { src: "/campaign-5.jpg", alt: "PHF Season 5 captain and player registration poster" },
+  { src: "/campaign-6.jpg", alt: "PHF cricket brotherhood and registration campaign" },
+  { src: "/campaign-7.jpg", alt: "PHF Season 5 auction registration campaign" },
+  { src: "/campaign-8.jpg", alt: "PHF Premier League Season 5 official tournament poster" },
+];
+
 const format = [
   { value: "3+", label: "Matches per team" },
   { value: "4", label: "Match days" },
@@ -63,7 +74,7 @@ export default function Home() {
       <section className="hero" id="top">
         <div className="pitch-lines" aria-hidden="true"><span /><span /><span /></div>
         <div className="hero-copy">
-          <p className="eyebrow"><span>PHF Premier League</span> 21 · 22 · 28 · 29 November</p>
+          <p className="eyebrow"><span>PHF Premier League</span> 21 · 22 · 28 · 29 November 2026</p>
           <h1><span>Season</span><strong>V</strong></h1>
           <p className="hero-lede">Five seasons in. The rivalry is real. Gather your squad and step into the biggest chapter of PHF cricket yet.</p>
           <div className="hero-actions">
@@ -78,7 +89,7 @@ export default function Home() {
             <strong>05</strong>
             <div className="score-meta"><span>Matches<br/><b>3+</b></span><span>Night<br/><b>01</b></span></div>
           </div>
-          <div className="scoreboard-bottom"><span>21—29 November</span><span>SRRC Cricket Ground</span></div>
+          <div className="scoreboard-bottom"><span>21—29 November 2026</span><span>SRRC Cricket Ground</span></div>
         </div>
         <div className="scroll-note">Scroll for the season brief</div>
       </section>
@@ -103,6 +114,27 @@ export default function Home() {
         </a>
       </section>
 
+      <section className="campaign-section" id="campaign">
+        <div className="campaign-heading">
+          <div><p className="eyebrow">Season 5 campaign</p><h2>One league.<br/>One family.</h2></div>
+          <div className="campaign-note"><p>Captain or player, first-timer or returning cricketer—there is a place for you in the auction.</p><a href="https://docs.google.com/forms/d/e/1FAIpQLSfscoEpVUW_JKyYhTsL6wF00Ffk4X1wVTw4UW3ACflvXeicOA/viewform" target="_blank" rel="noreferrer">Register now ↗</a></div>
+        </div>
+        <div className="campaign-grid">
+          {campaignPosters.map((poster, index) => (
+            <a href={poster.src} target="_blank" className={`campaign-card campaign-${index + 1}`} key={poster.src} aria-label={`Open campaign poster ${index + 1}`}>
+              <img src={poster.src} alt={poster.alt} loading="lazy" />
+              <span>Campaign {String(index + 1).padStart(2, "0")} ↗</span>
+            </a>
+          ))}
+        </div>
+        <div className="reassurance-grid">
+          <div><span>New to leather ball?</span><b>Beginners are welcome.</b></div>
+          <div><span>Need cricket equipment?</span><b>Helmet, bat, pads and gloves are covered.</b></div>
+          <div><span>Not picked in the auction?</span><b>100% registration refund.</b></div>
+        </div>
+        <p className="campaign-disclaimer">Campaign highlights · Complete eligibility, kit and refund conditions are governed by the official terms and conditions.</p>
+      </section>
+
       <section className="format-section" id="format">
         <div className="section-heading">
           <p className="eyebrow dark">The competition</p>
@@ -118,7 +150,7 @@ export default function Home() {
       <section className="fixtures-section" id="fixtures">
         <div className="section-bar">
           <div><p className="eyebrow">Season calendar</p><h2>Match days</h2></div>
-          <p>SRRC Cricket Ground<br/><span>Four days · November</span></p>
+          <p>SRRC Cricket Ground<br/><span>Four days · November 2026</span></p>
         </div>
         <div className="match-days">
           {matchDays.map((day, index) => (
