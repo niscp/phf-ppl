@@ -26,6 +26,16 @@ const legacyPhotos = [
   { src: "/legacy-8.jpg", alt: "Archive poster for PHF Premier League Season 4", caption: "From the archive: the Season 4 call-up.", className: "legacy-tall" },
   { src: "/legacy-9.jpg", alt: "PHF winners and runners-up trophies on the cricket field", caption: "Winners. Runners-up. Sportsmanship.", className: "legacy-tall" },
   { src: "/legacy-10.jpg", alt: "PHF Cobras team posing with trophies", caption: "A champion team and the rewards of the season.", className: "legacy-wide" },
+  { src: "/legacy-11.jpg", alt: "PHF Dabang team receiving a trophy on the cricket field", caption: "PHF Dabang raise their prize.", className: "legacy-square" },
+  { src: "/legacy-12.jpg", alt: "PHF Cobras players lined up with individual awards", caption: "Cobras honours across the squad.", className: "legacy-wide" },
+  { src: "/legacy-13.jpg", alt: "PHF Cobras squad gathered around their trophies", caption: "A team built to compete.", className: "legacy-square" },
+  { src: "/legacy-14.jpg", alt: "Celebrating PHF team with the winners trophy", caption: "This is what winning feels like.", className: "legacy-square" },
+  { src: "/legacy-15.jpg", alt: "Players from several PHF teams celebrating together", caption: "Different colours. One league.", className: "legacy-feature" },
+  { src: "/legacy-16.jpg", alt: "PHF Spartans players with their team awards", caption: "Spartans and the season's rewards.", className: "legacy-tall" },
+  { src: "/legacy-17.jpg", alt: "PHF Cobras players and supporters holding a trophy", caption: "The trophy belongs to the whole team.", className: "legacy-wide" },
+  { src: "/legacy-18.jpg", alt: "PHF Cobras squad portrait with trophies", caption: "Cobras: together to the final ball.", className: "legacy-wide" },
+  { src: "/legacy-19.jpg", alt: "Individual PHF award presentation on the cricket field", caption: "A performance recognised.", className: "legacy-tall" },
+  { src: "/legacy-20.jpg", alt: "PHF player receiving a trophy and award", caption: "Every player leaves a mark.", className: "legacy-tall" },
 ];
 
 const format = [
@@ -241,7 +251,7 @@ export default function Home() {
         <div className="legacy-heading">
           <p className="eyebrow">The league in pictures</p>
           <h2>Played together.<br/><span>Remembered forever.</span></h2>
-          <p>Real teams, real trophies, real friendships. These moments from previous seasons are the legacy Season 5 steps into.</p>
+          <p>Twenty real moments. Teams, trophies, individual honours and friendships—the legacy Season 5 steps into.</p>
         </div>
         <div className="legacy-wall">
           {legacyPhotos.map((photo, index) => (
