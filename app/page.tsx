@@ -26,25 +26,49 @@ const archive = [
   {
     season: "03",
     league: "Prestige Premier League",
+    dates: "09–17 Nov 2024",
+    format: "15 overs",
+    champion: "PHF Spartans 2.0",
+    runnerUp: "PHF Cobras",
+    final: "Won by 4 wickets",
     home: "PHF Dabang",
     away: "Titans",
     standout: "Sharad Sharma",
+    feature: "118/5 · 119/7",
+    result: "Titans won by 3 wickets",
+    tournament: "https://cricheroes.in/tournament/1160041/prestige-premier-league-season-3/matches/past-matches",
     href: "https://cricheroes.in/scorecard/13396124/prestige-premier-league---season-3/phf-dabang-vs-titans",
   },
   {
     season: "02",
     league: "Prestige Cricket League (PHF)",
+    dates: "28 Oct–05 Nov 2023",
+    format: "12–16 overs",
+    champion: "PHF Cobras",
+    runnerUp: "PHF Master Blasters",
+    final: "Won by 5 runs",
     home: "PHF Spartans",
     away: "PHF OG",
     standout: "Naman Saxena",
+    feature: "183/1 · 137/8",
+    result: "Spartans won by 46 runs",
+    tournament: "https://cricheroes.in/tournament/752988/prestige-cricket-leaguephf-season-2/matches/past-matches",
     href: "https://cricheroes.in/scorecard/8357024/prestige-cricket-league(phf)-season-2/phf-spartans-vs-phf-og",
   },
   {
     season: "01",
     league: "Prestige Cricket League (PHF)",
+    dates: "10–18 Dec 2022",
+    format: "10–12 overs",
+    champion: "PHF Spartans",
+    runnerUp: "PHF Cobras",
+    final: "Won by 11 runs",
     home: "PHF Strikers",
     away: "Prestige Super Kings",
     standout: "Nishank Singh",
+    feature: "40/5 · 41/4",
+    result: "Super Kings won by 2 wickets",
+    tournament: "https://cricheroes.in/tournament/522214/prestige-cricket-leaguephf-season-1/matches/past-matches",
     href: "https://cricheroes.in/scorecard/4929183/prestige-cricket-league(phf)-season--1/phf-strikers-vs-prestige-super-kings",
   },
 ];
@@ -169,20 +193,24 @@ export default function Home() {
             <p className="eyebrow dark">From the scorebook</p>
             <h2>Three seasons.<br/>Three statements.</h2>
           </div>
-          <p>Featured matches from the PHF cricket story, preserved through their original CricHeroes scorecards.</p>
+          <p>Verified champions, finalists and memorable scorecards from the first three editions of the PHF cricket story.</p>
         </div>
         <div className="archive-grid">
           {archive.map((match) => (
-            <a className="archive-card" href={match.href} target="_blank" rel="noreferrer" key={match.season} aria-label={`Open Season ${Number(match.season)} scorecard on CricHeroes`}>
-              <div className="archive-top"><span>Season {match.season}</span><span>Open scorecard ↗</span></div>
+            <article className="archive-card" key={match.season}>
+              <div className="archive-top"><span>Season {match.season}</span><span>{match.dates} · {match.format}</span></div>
               <div className="archive-number">{match.season}</div>
               <p>{match.league}</p>
+              <div className="honours"><span>Champions</span><strong>{match.champion}</strong><small>Final: {match.final} · Runners-up: {match.runnerUp}</small></div>
+              <div className="featured-label">Featured scorecard</div>
               <div className="archive-teams"><strong>{match.home}</strong><i>vs</i><strong>{match.away}</strong></div>
-              <div className="standout"><span>Standout performance</span><b>{match.standout}</b></div>
-            </a>
+              <div className="feature-result"><b>{match.feature}</b><span>{match.result}</span></div>
+              <div className="standout"><span>Player of the match</span><b>{match.standout}</b></div>
+              <div className="archive-actions"><a href={match.tournament} target="_blank" rel="noreferrer">All matches ↗</a><a href={match.href} target="_blank" rel="noreferrer">Scorecard ↗</a></div>
+            </article>
           ))}
         </div>
-        <p className="archive-source">Match references supplied from CricHeroes · Scores and results remain on the linked scorecards.</p>
+        <p className="archive-source">Verified from public CricHeroes tournament pages and scorecards · Aggregate leaderboards remain CricHeroes PRO content.</p>
       </section>
 
       <section className="season-section" id="season">
