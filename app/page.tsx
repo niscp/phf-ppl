@@ -75,6 +75,7 @@ export default function Home() {
         <div className="pitch-lines" aria-hidden="true"><span /><span /><span /></div>
         <div className="hero-copy">
           <p className="eyebrow"><span>PHF Premier League</span> 21 · 22 · 28 · 29 November 2026</p>
+          <p className="desi-refrain">खेल <i>•</i> जुनून <i>•</i> परिवार</p>
           <h1><span>Season</span><strong>V</strong></h1>
           <p className="hero-lede">Five seasons in. The rivalry is real. Gather your squad and step into the biggest chapter of PHF cricket yet.</p>
           <div className="hero-actions">
@@ -95,7 +96,7 @@ export default function Home() {
       </section>
 
       <section className="ticker" aria-label="League highlights">
-        <div>Season five <i>◆</i> Day &amp; night cricket <i>◆</i> Under the lights <i>◆</i> Bigger games <i>◆</i> Brighter nights <i>◆</i> Real cricket</div>
+        <div>सीज़न पाँच <i>◆</i> Day &amp; night cricket <i>◆</i> खेल · जुनून · परिवार <i>◆</i> Bigger games <i>◆</i> Brighter nights <i>◆</i> Real cricket</div>
       </section>
 
       <section className="poster-section" aria-label="Official Season 5 poster">

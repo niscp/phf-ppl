@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Manrope, IBM_Plex_Mono } from "next/font/google";
+import { Teko, Hind, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Bebas_Neue({ variable: "--font-display", weight: "400", subsets: ["latin"] });
-const body = Manrope({ variable: "--font-body", subsets: ["latin"] });
+const display = Teko({ variable: "--font-display", weight: ["500", "600"], subsets: ["latin"] });
+const body = Hind({ variable: "--font-body", weight: ["400", "500", "600", "700"], subsets: ["latin", "devanagari"] });
 const mono = IBM_Plex_Mono({ variable: "--font-mono", weight: ["400", "600"], subsets: ["latin"] });
 
 export const metadata: Metadata = {
