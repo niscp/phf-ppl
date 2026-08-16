@@ -5,10 +5,10 @@ import { useState } from "react";
 const matchDays = ["21", "22", "28", "29"];
 
 const format = [
-  { value: "8", label: "Teams" },
-  { value: "15", label: "Overs" },
+  { value: "3+", label: "Matches per team" },
   { value: "4", label: "Match days" },
-  { value: "1", label: "Champion" },
+  { value: "1", label: "Night match minimum" },
+  { value: "₹2K", label: "Registration" },
 ];
 
 const archive = [
@@ -76,7 +76,7 @@ export default function Home() {
           <div className="scoreboard-main">
             <span className="innings">Innings</span>
             <strong>05</strong>
-            <div className="score-meta"><span>Teams<br/><b>08</b></span><span>Overs<br/><b>15</b></span></div>
+            <div className="score-meta"><span>Matches<br/><b>3+</b></span><span>Night<br/><b>01</b></span></div>
           </div>
           <div className="scoreboard-bottom"><span>21—29 November</span><span>SRRC Cricket Ground</span></div>
         </div>
@@ -84,19 +84,35 @@ export default function Home() {
       </section>
 
       <section className="ticker" aria-label="League highlights">
-        <div>Season five <i>◆</i> Team registrations <i>◆</i> Weekend cricket <i>◆</i> One trophy <i>◆</i> Season five <i>◆</i> Team registrations</div>
+        <div>Season five <i>◆</i> Day &amp; night cricket <i>◆</i> Under the lights <i>◆</i> Bigger games <i>◆</i> Brighter nights <i>◆</i> Real cricket</div>
+      </section>
+
+      <section className="poster-section" aria-label="Official Season 5 poster">
+        <div className="poster-copy">
+          <p className="eyebrow dark">Official announcement</p>
+          <h2>Under the<br/>lights.</h2>
+          <p>Every team plays a minimum of three matches, including at least one night match. The ground is approximately 15 minutes from PHF.</p>
+          <div className="poster-facts">
+            <div><span>Registration</span><strong>₹2,000</strong></div>
+            <div><span>Auction dates</span><strong>12 / 13 Sep</strong></div>
+          </div>
+          <a className="button poster-button" href="/phf-season-5-poster.jpg" target="_blank">Open full poster <span>↗</span></a>
+        </div>
+        <a className="poster-art" href="/phf-season-5-poster.jpg" target="_blank" aria-label="Open the official PHF Premier League Season 5 poster">
+          <img src="/phf-season-5-poster.jpg" alt="PHF Premier League Season 5 official registration poster" />
+        </a>
       </section>
 
       <section className="format-section" id="format">
         <div className="section-heading">
           <p className="eyebrow dark">The competition</p>
           <h2>Built for big<br/>cricket energy.</h2>
-          <p>A fast, focused tournament where every over matters. Season 5 lands at SRRC Cricket Ground across four match days in November.</p>
+          <p>A day-and-night tournament where every team gets at least three matches, including one under the lights. Season 5 lands at SRRC Cricket Ground across four November match days.</p>
         </div>
         <div className="format-grid">
           {format.map((item) => <div className="format-card" key={item.label}><strong>{item.value}</strong><span>{item.label}</span></div>)}
         </div>
-        <p className="data-note">Season 5 team and over format remains subject to final entries and official playing conditions.</p>
+        <p className="data-note">Official Season 5 highlights · See the linked terms and conditions for complete playing rules.</p>
       </section>
 
       <section className="fixtures-section" id="fixtures">
@@ -161,6 +177,7 @@ export default function Home() {
           <a className="button primary" href="https://docs.google.com/forms/d/e/1FAIpQLSfscoEpVUW_JKyYhTsL6wF00Ffk4X1wVTw4UW3ACflvXeicOA/viewform" target="_blank" rel="noreferrer">Open registration form <span>↗</span></a>
           <a className="resource-link" href="https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk" target="_blank" rel="noreferrer"><span>Read the official</span><b>Terms &amp; conditions ↗</b></a>
           <a className="resource-link" href="https://share.google/clJmAmYZH5Kvxpb4x" target="_blank" rel="noreferrer"><span>Find the venue</span><b>SRRC Cricket Ground ↗</b></a>
+          <div className="contact-row"><span>Questions?</span><a href="tel:+919885301226">Tarun · +91 98853 01226</a><a href="tel:+918438149893">Karthik · +91 84381 49893</a></div>
         </div>
       </section>
 
