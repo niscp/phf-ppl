@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&family=Teko:wght@500;600&display=swap');
 @import "tailwindcss";
 
+:root{--black:#050505;--coal:#0b0c0f;--panel:#111217;--gold:#e9b949;--bright:#ffd36b;--white:#f5f1e8;--muted:#9b9b9d;--line:rgba(255,255,255,.14);--font-display:'Teko',sans-serif;--font-body:'Hind',sans-serif;--font-mono:'IBM Plex Mono',monospace}
 :root{--black:#050505;--coal:#0b0c0f;--panel:#111217;--gold:#e9b949;--bright:#ffd36b;--white:#f5f1e8;--muted:#9b9b9d;--line:rgba(255,255,255,.14)}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--black);color:var(--white);font-family:var(--font-body),sans-serif}a{color:inherit;text-decoration:none}button{font:inherit}img{max-width:100%}main{overflow:hidden}
 .cinema-header{height:86px;position:absolute;inset:0 0 auto;z-index:20;padding:0 4vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.18);background:linear-gradient(#050505d9,transparent)}

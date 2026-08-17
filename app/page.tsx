@@ -21,7 +21,7 @@ const champions = [
 ];
 
 const legacyPhotos = Array.from({ length: 30 }, (_, index) => ({
-  src: `/legacy-${index + 1}.jpg`,
+  src: `legacy-${index + 1}.jpg`,
   alt: `PHF Premier League legacy moment ${index + 1}`,
   className: index % 9 === 0 ? "cinema-wide" : index % 5 === 0 ? "cinema-tall" : "",
 }));
@@ -69,8 +69,8 @@ export default function Home() {
         <div className="section-intro centered"><p>Official Season 5 trailer</p><h2>Feel the<br/><em>league.</em></h2></div>
         <div className="video-shell">
           <span className="video-code">PHFPL / S05 / OFFICIAL TRAILER</span>
-          <video ref={trailerRef} controls playsInline preload="metadata" poster="/campaign-8.jpg" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} aria-label="PHF Premier League Season 5 official trailer">
-            <source src="/phf-season-5-trailer.mp4" type="video/mp4" />
+          <video ref={trailerRef} controls playsInline preload="metadata" poster="campaign-8.jpg" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} aria-label="PHF Premier League Season 5 official trailer">
+            <source src="phf-season-5-trailer.mp4" type="video/mp4" />
           </video>
           {!playing && <button className="hero-play" type="button" onClick={() => trailerRef.current?.play()} aria-label="Play Season 5 trailer"><span>▶</span><b>Play trailer</b></button>}
         </div>
