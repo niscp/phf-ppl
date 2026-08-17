@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 const registerUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfscoEpVUW_JKyYhTsL6wF00Ffk4X1wVTw4UW3ACflvXeicOA/viewform";
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
@@ -42,8 +42,6 @@ const legacyPhotos = Array.from({ length: 30 }, (_, index) => ({
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [playing, setPlaying] = useState(false);
-  const trailerRef = useRef<HTMLVideoElement>(null);
 
   return (
     <main>
@@ -51,7 +49,6 @@ export default function Home() {
         <a className="phf-mark" href="#top" aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
         <button className="cinema-menu" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle navigation"><i/><i/></button>
         <nav className={menuOpen ? "cinema-nav open" : "cinema-nav"} aria-label="Main navigation">
-          <a href="#trailer" onClick={() => setMenuOpen(false)}>Trailer</a>
           <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
@@ -70,7 +67,6 @@ export default function Home() {
           <p className="hero-statement">The lights come on. The rivalries return. PHF cricket enters its biggest season yet.</p>
           <div className="hero-ctas">
             <a className="gold-button" href={registerUrl} target="_blank" rel="noreferrer">Register for the auction <span>↗</span></a>
-            <a className="play-link" href="#trailer"><i>▶</i> Watch trailer</a>
           </div>
         </div>
         <div className="hero-fixture">
@@ -80,17 +76,6 @@ export default function Home() {
       </section>
 
       <div className="broadcast-strip"><div>THE LEAGUE RETURNS <i>◆</i> DAY &amp; NIGHT CRICKET <i>◆</i> 5 YEAR LEGACY <i>◆</i> AUCTION BASED <i>◆</i> THE LEAGUE RETURNS <i>◆</i> DAY &amp; NIGHT CRICKET <i>◆</i></div></div>
-
-      <section className="trailer-stage" id="trailer">
-        <div className="section-intro centered"><p>Official Season 5 trailer</p><h2>Feel the<br/><em>league.</em></h2></div>
-        <div className="video-shell">
-          <span className="video-code">PHFPL / S05 / OFFICIAL TRAILER</span>
-          <video ref={trailerRef} controls playsInline preload="metadata" poster="campaign-8.jpg" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onEnded={() => setPlaying(false)} aria-label="PHF Premier League Season 5 official trailer">
-            <source src="phf-season-5-trailer.mp4" type="video/mp4" />
-          </video>
-          {!playing && <button className="hero-play" type="button" onClick={() => trailerRef.current?.play()} aria-label="Play Season 5 trailer"><span>▶</span><b>Play trailer</b></button>}
-        </div>
-      </section>
 
       <section className="dates-stage" id="dates">
         <div className="section-intro"><p>The 2026 tournament</p><h2>Four days.<br/><em>One champion.</em></h2></div>
