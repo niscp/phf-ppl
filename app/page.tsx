@@ -20,6 +20,20 @@ const champions = [
   { season: "04", year: "2025", winner: "PHF Spartans 2.0", runner: "GARUDA", final: "15 matches · 8 teams · Won final by 6 wickets", href: "https://cricheroes.com/tournament/1680807/prestige-%28phf%29-premier-league-season-4/matches/past-matches" },
 ];
 
+const impactPlayers = [
+  { season: "S01", player: "Nishank Singh", note: "Standout performance", match: "PHF Strikers vs Prestige Super Kings", href: "https://cricheroes.in/scorecard/4929183/prestige-cricket-league(phf)-season--1/phf-strikers-vs-prestige-super-kings" },
+  { season: "S02", player: "Naman Saxena", note: "Standout performance", match: "PHF Spartans vs PHF OG", href: "https://cricheroes.in/scorecard/8357024/prestige-cricket-league(phf)-season-2/phf-spartans-vs-phf-og" },
+  { season: "S03", player: "Sharad Sharma", note: "Standout performance", match: "PHF Dabang vs Titans", href: "https://cricheroes.in/scorecard/13396124/prestige-premier-league---season-3/phf-dabang-vs-titans" },
+  { season: "S04", player: "Santosh Sriramoju", note: "Standout performance", match: "PHF Neon vs Titans", href: "https://cricheroes.in/scorecard/20209758/prestige-(phf)-premier-league---season-4/phf-neon-vs-titans" },
+];
+
+const seasonFiveStages = [
+  { label: "Now open", title: "Player registrations", detail: "Invitations and player entries are being collected.", state: "live" },
+  { label: "12 / 13 Sep", title: "Captain auction", detail: "Captains build their squads when the auction room opens.", state: "next" },
+  { label: "After auction", title: "Teams & squads", detail: "Official team names and player rosters will appear here.", state: "locked" },
+  { label: "Before matchday", title: "Fixtures & table", detail: "Schedule, results and standings will follow.", state: "locked" },
+];
+
 const legacyPhotos = Array.from({ length: 30 }, (_, index) => ({
   src: `legacy-${index + 1}.jpg`,
   alt: `PHF Premier League legacy moment ${index + 1}`,
@@ -39,6 +53,8 @@ export default function Home() {
         <nav className={menuOpen ? "cinema-nav open" : "cinema-nav"} aria-label="Main navigation">
           <a href="#trailer" onClick={() => setMenuOpen(false)}>Trailer</a>
           <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
+          <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
+          <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
           <a className="gold-link" href={registerUrl} target="_blank" rel="noreferrer">Register now</a>
@@ -87,6 +103,28 @@ export default function Home() {
           <div><span>Entry</span><b>₹2,000</b><small>Registration closes 30 Aug</small></div>
           <div><span>Auction</span><b>12 / 13 Sep</b><small>Captain-led squads</small></div>
         </div>
+      </section>
+
+      <section className="auction-stage" id="season-five">
+        <div className="auction-head">
+          <div className="section-intro"><p>Season 5 status</p><h2>The auction room<br/><em>is taking shape.</em></h2></div>
+          <div className="live-invite"><i/><span>Invitations open</span><b>Pre-auction phase</b></div>
+        </div>
+        <p className="auction-copy">Season 5 teams have not been formed yet. We are collecting player registrations and captain invitations now; official squads, fixtures and the points table will unlock after the auction.</p>
+        <div className="auction-track">
+          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href={registerUrl} target="_blank" rel="noreferrer">Join the player pool ↗</a> : <small>{stage.state === "locked" ? "Locked until announced" : "Next milestone"}</small>}</article>)}
+        </div>
+      </section>
+
+      <section className="records-stage" id="records">
+        <div className="records-lead">
+          <div className="section-intro"><p>From the CricHeroes archive</p><h2>Four seasons.<br/><em>Real impact.</em></h2></div>
+          <p>These featured performances come from the official match scorecards shared by PHF. Open any card to view the full scorecard on CricHeroes.</p>
+        </div>
+        <div className="impact-grid">
+          {impactPlayers.map((item) => <a className="impact-card" href={item.href} target="_blank" rel="noreferrer" key={item.season}><span>{item.season}</span><small>{item.note}</small><strong>{item.player}</strong><p>{item.match}</p><i>View scorecard ↗</i></a>)}
+        </div>
+        <div className="records-note"><span>Archive note</span><p>Season-wide batting and bowling leaderboards will be added when complete CricHeroes tournament exports are available. No unverified statistics are shown.</p></div>
       </section>
 
       <section className="legacy-stage" id="legacy">
