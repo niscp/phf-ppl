@@ -20,11 +20,39 @@ const champions = [
   { season: "04", year: "2025", winner: "PHF Spartans 2.0", runner: "GARUDA", final: "15 matches · 8 teams · Won final by 6 wickets", href: "https://cricheroes.com/tournament/1680807/prestige-%28phf%29-premier-league-season-4/matches/past-matches" },
 ];
 
-const impactPlayers = [
-  { season: "S01", player: "Nishank Singh", note: "Standout performance", match: "PHF Strikers vs Prestige Super Kings", href: "https://cricheroes.in/scorecard/4929183/prestige-cricket-league(phf)-season--1/phf-strikers-vs-prestige-super-kings" },
-  { season: "S02", player: "Naman Saxena", note: "Standout performance", match: "PHF Spartans vs PHF OG", href: "https://cricheroes.in/scorecard/8357024/prestige-cricket-league(phf)-season-2/phf-spartans-vs-phf-og" },
-  { season: "S03", player: "Sharad Sharma", note: "Standout performance", match: "PHF Dabang vs Titans", href: "https://cricheroes.in/scorecard/13396124/prestige-premier-league---season-3/phf-dabang-vs-titans" },
-  { season: "S04", player: "Santosh Sriramoju", note: "Standout performance", match: "PHF Neon vs Titans", href: "https://cricheroes.in/scorecard/20209758/prestige-(phf)-premier-league---season-4/phf-neon-vs-titans" },
+const tournamentHonours = [
+  {
+    season: "01", year: "2022", href: "https://cricheroes.com/tournament/522214/prestige-cricket-leaguephf-season-1/stats",
+    mvp: { title: "MVP No. 1", player: "Ansuman Nayak", team: "PHF Spartans", value: "14.904", label: "MVP points", photo: "players/ansuman-nayak.jpeg", profile: "https://cricheroes.com/player-profile/10145421/ansuman-nayak/matches" },
+    leaders: [
+      { title: "Most runs", player: "Naman Saxena", team: "PHF Spartans", value: "44", detail: "4 innings · HS 17", photo: "players/naman-saxena.jpeg", profile: "https://cricheroes.com/player-profile/1030230/naman-saxena/matches" },
+      { title: "Most wickets", player: "Ansuman Nayak", team: "PHF Spartans", value: "7", detail: "Economy 3.00 · Best 3 wickets", photo: "players/ansuman-nayak.jpeg", profile: "https://cricheroes.com/player-profile/10145421/ansuman-nayak/matches" },
+    ],
+  },
+  {
+    season: "02", year: "2023", href: "https://cricheroes.com/tournament/752988/prestige-cricket-leaguephf-season-2/stats",
+    mvp: { title: "MVP No. 1", player: "Naman Saxena", team: "PHF Spartans", value: "33.845", label: "MVP points", photo: "players/naman-saxena.jpeg", profile: "https://cricheroes.com/player-profile/1030230/naman-saxena/matches" },
+    leaders: [
+      { title: "Most runs", player: "Waseem", team: "PHF OG", value: "266", detail: "6 innings · HS 88", photo: "players/waseem.jpg", profile: "https://cricheroes.com/player-profile/2179032/waseem/matches" },
+      { title: "Most wickets", player: "Mayank", team: "PHF Cobras", value: "13", detail: "15 overs · Best 5 wickets", photo: "players/mayank.jpeg", profile: "https://cricheroes.com/player-profile/4489866/mayank/matches" },
+    ],
+  },
+  {
+    season: "03", year: "2024", href: "https://cricheroes.com/tournament/1160041/prestige-premier-league-season-3/stats",
+    mvp: { title: "Player of the tournament", player: "Swethan Kurakula", team: "PHF Cobras", value: "26.760", label: "MVP points", photo: "players/swethan-kurakula.jpeg", profile: "https://cricheroes.com/player-profile/19421803/swethan-kurakula/matches" },
+    leaders: [
+      { title: "Best batter", player: "Arjun Paladi", team: "PHF Dabang", value: "193", detail: "5 innings · HS 91", photo: "players/arjun-paladi.jpg", profile: "https://cricheroes.com/player-profile/1222494/arjun-paladi/matches" },
+      { title: "Best bowler", player: "Garvit", team: "PHF Spartans New", value: "8", detail: "12 overs · Economy 4.60", photo: "players/garvit.jpeg", profile: "https://cricheroes.com/player-profile/5917883/garvit/matches" },
+    ],
+  },
+  {
+    season: "04", year: "2025", href: "https://cricheroes.com/tournament/1680807/prestige-phf-premier-league-season-4/stats",
+    mvp: { title: "MVP No. 1", player: "Srikanth K", team: "Warriors", value: "28.487", label: "MVP points", photo: "players/srikanth-k.png", profile: "https://cricheroes.com/player-profile/33453377/srikanth-k/matches" },
+    leaders: [
+      { title: "Orange Cap", player: "Praveen Mustepally", team: "Garuda", value: "160", detail: "5 innings · HS 64", photo: "players/praveen-mustepally.jpg", profile: "https://cricheroes.com/player-profile/381881/praveen-mustepally/matches" },
+      { title: "Purple Cap", player: "Aditya Pandey", team: "PHF Spartans 2.0", value: "10", detail: "18 overs · Economy 4.00", photo: "players/aditya-pandey.jpeg", profile: "https://cricheroes.com/player-profile/15345610/aditya-pandey/matches" },
+    ],
+  },
 ];
 
 const seasonFiveStages = [
@@ -103,13 +131,27 @@ export default function Home() {
 
       <section className="records-stage" id="records">
         <div className="records-lead">
-          <div className="section-intro"><p>From the CricHeroes archive</p><h2>Four seasons.<br/><em>Real impact.</em></h2></div>
-          <p>These featured performances come from the official match scorecards shared by PHF. Open any card to view the full scorecard on CricHeroes.</p>
+          <div className="section-intro"><p>Official CricHeroes tournament records</p><h2>The league&apos;s<br/><em>hall of fame.</em></h2></div>
+          <p>Every name and number below is taken from the complete tournament leaderboard—not a single match. Open a season or player to inspect the record on CricHeroes.</p>
         </div>
-        <div className="impact-grid">
-          {impactPlayers.map((item) => <a className="impact-card" href={item.href} target="_blank" rel="noreferrer" key={item.season}><span>{item.season}</span><small>{item.note}</small><strong>{item.player}</strong><p>{item.match}</p><i>View scorecard ↗</i></a>)}
+        <div className="honours-board">
+          {tournamentHonours.map((item) => <article className="season-honours" key={item.season}>
+            <div className="honours-season"><span>Season</span><b>{item.season}</b><small>{item.year}</small><a href={item.href} target="_blank" rel="noreferrer">Full leaderboard ↗</a></div>
+            <a className="mvp-portrait" href={item.mvp.profile} target="_blank" rel="noreferrer">
+              <img src={item.mvp.photo} alt={`${item.mvp.player}, ${item.mvp.title} for PHF Season ${item.season}`} loading="lazy"/>
+              <span>{item.mvp.title}</span><strong>{item.mvp.player}</strong><small>{item.mvp.team}</small>
+              <div><b>{item.mvp.value}</b><i>{item.mvp.label}</i></div>
+            </a>
+            <div className="season-leaders">
+              {item.leaders.map((leader) => <a href={leader.profile} target="_blank" rel="noreferrer" className="leader-row" key={leader.title}>
+                <img src={leader.photo} alt={`${leader.player}, ${leader.title} for PHF Season ${item.season}`} loading="lazy"/>
+                <div><span>{leader.title}</span><strong>{leader.player}</strong><small>{leader.team}</small></div>
+                <p><b>{leader.value}</b><small>{leader.detail}</small></p><i>↗</i>
+              </a>)}
+            </div>
+          </article>)}
         </div>
-        <div className="records-note"><span>Archive note</span><p>Season-wide batting and bowling leaderboards will be added when complete CricHeroes tournament exports are available. No unverified statistics are shown.</p></div>
+        <div className="records-note"><span>Verified archive</span><p>Ranks reflect the completed Season 1–4 CricHeroes tournament leaderboards. Season 5 records will begin after the auction, squads and fixtures are announced.</p></div>
       </section>
 
       <section className="legacy-stage" id="legacy">
