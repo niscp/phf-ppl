@@ -23,6 +23,8 @@ ROOT = Path(__file__).resolve().parents[1]
 PHOTO_DIR = ROOT / "public" / "season5-players"
 OUTPUT = ROOT / "app" / "season5-players.json"
 PROFILE_HOSTS = {"cricheroes.com", "www.cricheroes.com", "cricheroes.in", "www.cricheroes.in", "chshare.link"}
+NAME_OVERRIDES = {"player-48": "Tarun Talluri"}  # Confirmed by the player-photo update.
+PHOTO_OVERRIDES = {"player-48"}  # Keep the supplied replacement portrait.
 
 
 def shared_strings(archive: zipfile.ZipFile) -> list[str]:
@@ -76,9 +78,10 @@ def load_players(path: Path) -> list[dict]:
             if not name:
                 continue
             photo_id = drive_id(data.get("G", ""))
+            player_id = f"player-{index}"
             players.append({
-                "id": f"player-{index}",
-                "name": name,
+                "id": player_id,
+                "name": NAME_OVERRIDES.get(player_id, name),
                 "role": role(data.get("F", "")),
                 "photo": None,
                 "cricheroesUrl": profile_url(data.get("K", "")),
@@ -92,6 +95,9 @@ def load_players(path: Path) -> list[dict]:
 
 
 def download_photo(player: dict) -> tuple[str, bool, str]:
+    if player["id"] in PHOTO_OVERRIDES:
+        destination = PHOTO_DIR / f"{player['id']}.jpg"
+        return player["id"], destination.is_file(), "Replacement photo is missing"
     file_id = player["_photoId"]
     if not file_id:
         return player["id"], False, "No photo submitted"
@@ -124,6 +130,9 @@ def main() -> None:
     parser.add_argument("workbook", type=Path)
     args = parser.parse_args()
     players = load_players(args.workbook)
+    previous = {}
+    if OUTPUT.is_file():
+        previous = {item["id"]: item for item in json.loads(OUTPUT.read_text(encoding="utf-8"))}
     PHOTO_DIR.mkdir(parents=True, exist_ok=True)
     result = {}
     with ThreadPoolExecutor(max_workers=5) as pool:
@@ -139,6 +148,11 @@ def main() -> None:
         elif player["_photoId"]:
             failures.append((player["name"], reason))
         del player["_photoId"]
+        old = previous.get(player["id"])
+        if old and old["name"] == player["name"] and old["cricheroesUrl"] == player["cricheroesUrl"]:
+            for key in ("stats", "statsSource", "statsScope", "statsChecked"):
+                if key in old:
+                    player[key] = old[key]
     OUTPUT.write_text(json.dumps(players, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Imported {len(players)} named players; {sum(bool(p['photo']) for p in players)} photos; {sum(bool(p['cricheroesUrl']) for p in players)} CricHeroes links.")
     if failures:
