@@ -20,6 +20,23 @@ ROOT = Path(__file__).resolve().parents[1]
 ROSTER = ROOT / "app" / "season5-players.json"
 FLIGHT = re.compile(r'self\.__next_f\.push\(\[1,("(?:\\.|[^"\\])*")\]\)')
 PROFILE = re.compile(r'https://cricheroes\.com/player-profile/\d+/[^"\s<>\\]+')
+REVIEWED_ALIASES = {
+    "Akash Thadani": "Akki Thadani",
+    "DR SAM": "Diptiranjan Samantaray",
+    "Manisai Dindigala": "Mani",
+    "Chirumamilla Kowshik": "Kowshik",
+    "Chandan Mahapatra": "Chandan",
+    "Saket Kumar": "Saket",
+    "Shobhit Kastuar": "Shobhit K",
+    "Sunil Boddula": "Sunil B",
+    "E V PAVAN KUMAR": "Pavan kumar E V",
+    "Hanuma Madireddy": "Hanuma",
+    "Meet Patel": "Meet",
+    "Sravan Kumar Sriramoju": "Shravan Kumar",
+    "Rachit Tandon": "Rachit",
+    "Phanidhar": "Phanidhar Raju",
+    "SUBASH K REDDY": "Subash Reddy K",
+}
 
 
 def fetch(url: str) -> str:
@@ -65,11 +82,12 @@ def fields(items: list[dict]) -> dict:
     return {item["title"]: item.get("value") for item in items}
 
 
-def verified_stats(html: str, expected_name: str) -> dict:
+def verified_stats(html: str, expected_name: str) -> tuple[dict, str | None]:
     chunks = [json.loads(match.group(1)) for match in FLIGHT.finditer(html)]
     info = embedded_object(chunks, "playerInfo")
     profile_name = info["data"]["name"]
-    if normal_name(profile_name) != normal_name(expected_name):
+    is_alias = normal_name(profile_name) != normal_name(expected_name)
+    if is_alias and REVIEWED_ALIASES.get(expected_name) != profile_name:
         raise ValueError(f"Profile name {profile_name!r} does not match {expected_name!r}")
     stats = embedded_object(chunks, "initialStats")["statistics"]
     bat = fields(stats["batting"])
@@ -87,29 +105,32 @@ def verified_stats(html: str, expected_name: str) -> dict:
             "economy": bowl.get("Economy"),
             "best": bowl.get("Best Bowling"),
         },
-    }
+    }, profile_name if is_alias else None
 
 
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=0, help="Only test the first N linked players")
+    parser.add_argument("--pending-only", action="store_true", help="Skip players with previously verified stats")
     parser.add_argument("--write", action="store_true", help="Update the public roster JSON")
     args = parser.parse_args()
     players = json.loads(ROSTER.read_text(encoding="utf-8"))
-    linked = [player for player in players if player["cricheroesUrl"]]
+    linked = [player for player in players if player["cricheroesUrl"] and (not args.pending_only or not player.get("statsSource"))]
     if args.limit:
         linked = linked[: args.limit]
     success = 0
     for player in linked:
         try:
             source = canonical_profile(player["cricheroesUrl"])
-            stats = verified_stats(fetch(source), player["name"])
+            stats, profile_name = verified_stats(fetch(source), player["name"])
             if not any(value is not None for block in stats.values() for value in block.values()):
                 raise ValueError("All stats are missing")
             player["stats"] = stats
             player["statsSource"] = source
             player["statsScope"] = "CricHeroes career"
             player["statsChecked"] = date.today().isoformat()
+            if profile_name:
+                player["statsProfileName"] = profile_name
             success += 1
             print(f"OK {player['name']}: {source}")
         except (ValueError, KeyError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
