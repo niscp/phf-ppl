@@ -79,6 +79,7 @@ export default function Home() {
         <nav className={menuOpen ? "cinema-nav open" : "cinema-nav"} aria-label="Main navigation">
           <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
+          <a href="./players.html">Players</a>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
@@ -124,6 +125,7 @@ export default function Home() {
           <div className="live-invite"><i/><span>Invitations open</span><b>Pre-auction phase</b></div>
         </div>
         <p className="auction-copy">Season 5 teams have not been formed yet. We are collecting player registrations and captain invitations now; official squads, fixtures and the points table will unlock after the auction.</p>
+        <a className="auction-roster-link" href="./players.html">Explore the Season 5 player pool <span>↗</span></a>
         <div className="auction-track">
           {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href={registerUrl} target="_blank" rel="noreferrer">Join the player pool ↗</a> : <small>{stage.state === "locked" ? "Locked until announced" : "Next milestone"}</small>}</article>)}
         </div>

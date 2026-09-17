@@ -1,0 +1,69 @@
+.roster-page{--roster-gold:#e9b949;--roster-white:#f5f1e8;--roster-muted:#aaa9a5;--roster-line:rgba(255,255,255,.18);min-height:100vh;background:#070809;color:var(--roster-white);font-family:'Hind',sans-serif}
+.roster-page *{box-sizing:border-box}
+.roster-header{height:82px;padding:0 5vw;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--roster-line);background:#090a0c}
+.roster-logo{display:flex;align-items:center;gap:12px;text-transform:uppercase}
+.roster-logo b{width:46px;height:53px;display:grid;place-items:center;clip-path:polygon(8% 0,92% 0,100% 70%,50% 100%,0 70%);border:2px solid var(--roster-gold);background:#111214;color:var(--roster-white);font:600 22px 'Teko',sans-serif}
+.roster-logo span{max-width:100px;font:600 11px/1.1 'IBM Plex Mono',monospace;letter-spacing:.11em}
+.roster-header nav{display:flex;align-items:center;gap:34px;font:600 11px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.06em}
+.roster-header nav a{color:var(--roster-gold)}
+.roster-header nav span{color:#d8d5cd}
+.roster-hero{min-height:490px;position:relative;isolation:isolate;overflow:hidden;padding:88px 6vw 55px;display:grid;grid-template-columns:minmax(420px,1fr) 37%;align-items:end;gap:50px;border-bottom:1px solid var(--roster-line);background:radial-gradient(circle at 70% 30%,#3e301c 0%,#11100e 36%,#070809 70%)}
+.roster-hero:before{content:"05";position:absolute;z-index:-1;right:3vw;top:0;color:transparent;-webkit-text-stroke:2px rgba(233,185,73,.24);font:600 min(42vw,620px)/.78 'Teko',sans-serif}
+.roster-hero-copy{position:relative;z-index:2;max-width:800px}
+.roster-eyebrow{margin:0;color:var(--roster-gold);font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+.roster-hero h1{margin:20px 0 24px;font:600 clamp(100px,12vw,176px)/.68 'Teko',sans-serif;text-transform:uppercase;letter-spacing:-.025em}
+.roster-hero h1 em{color:var(--roster-gold);font-style:normal}
+.roster-hero-copy>p:last-child{max-width:510px;color:#d0ccc3;font-size:19px;line-height:1.45}
+.roster-hero-portraits{height:350px;display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:5px;transform:rotate(-4deg);box-shadow:24px 25px 0 rgba(233,185,73,.12)}
+.roster-hero-portraits img{width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:saturate(.72) contrast(1.08)}
+.roster-hero-portraits img:nth-child(2){object-position:center 42%}
+.roster-hero-count{position:absolute;bottom:28px;right:6vw;z-index:3;display:flex;align-items:baseline;gap:10px;background:#e9b949;color:#0b0b0b;padding:9px 16px 6px;text-transform:uppercase}
+.roster-hero-count b{font:600 42px/.8 'Teko',sans-serif}
+.roster-hero-count span{font:600 10px 'IBM Plex Mono',monospace}
+.roster-directory{padding:105px 6vw 95px;max-width:1600px;margin:auto}
+.roster-intro{display:flex;align-items:end;justify-content:space-between;gap:50px;margin-bottom:48px}
+.roster-intro h2{font:600 clamp(72px,8vw,120px)/.8 'Teko',sans-serif;text-transform:uppercase;margin:18px 0 0}
+.roster-intro>p{max-width:440px;color:#c6c0b6;font-size:16px;line-height:1.5;margin:0 0 5px}
+.roster-controls{display:flex;align-items:end;gap:15px;padding:17px 0;border-top:1px solid var(--roster-line);border-bottom:1px solid var(--roster-line);margin-bottom:27px}
+.roster-controls label{display:flex;flex-direction:column;gap:8px;font:600 10px 'IBM Plex Mono',monospace;color:var(--roster-gold);text-transform:uppercase;letter-spacing:.08em}
+.roster-controls input,.roster-controls select{height:46px;border:1px solid rgba(255,255,255,.3);border-radius:0;background:#121316;color:var(--roster-white);font:500 15px 'Hind',sans-serif;padding:0 14px;outline:none}
+.roster-controls input:focus-visible,.roster-controls select:focus-visible{outline:2px solid var(--roster-gold);outline-offset:2px}
+.roster-search{flex:1;max-width:430px}
+.roster-role{width:220px}
+.roster-result-count{margin-left:auto;margin-bottom:11px;font:600 11px 'IBM Plex Mono',monospace;text-transform:uppercase;color:#c6c0b6;white-space:nowrap}
+.roster-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.roster-card{min-width:0;background:#111317;border:1px solid var(--roster-line);display:flex;flex-direction:column}
+.roster-photo{height:275px;position:relative;overflow:hidden;background:#242323}
+.roster-photo:after{content:"";position:absolute;inset:42% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.42));pointer-events:none}
+.roster-photo img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 30%;transition:transform .35s}
+.roster-card:hover .roster-photo img{transform:scale(1.035)}
+.roster-photo-fallback{height:100%;display:grid;place-items:center;color:rgba(233,185,73,.7);font:600 110px 'Teko',sans-serif;background:linear-gradient(145deg,#252822,#111317)}
+.roster-role-tag{position:absolute;z-index:2;bottom:12px;left:14px;background:var(--roster-gold);color:#0a0a0a;padding:6px 10px 4px;text-transform:uppercase;font:600 11px 'IBM Plex Mono',monospace}
+.roster-card-body{padding:22px 21px 18px;display:flex;flex:1;flex-direction:column}
+.roster-card-body>h3{font:600 clamp(34px,3vw,45px)/.9 'Teko',sans-serif;text-transform:uppercase;letter-spacing:.005em;margin:0 0 20px;overflow-wrap:anywhere}
+.roster-stat-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-top:1px solid var(--roster-line);border-bottom:1px solid var(--roster-line)}
+.roster-stat-block{padding:16px 10px 18px 0;min-height:102px}
+.roster-stat-block+.roster-stat-block{padding-left:15px;border-left:1px solid var(--roster-line)}
+.roster-stat-block h3{margin:0 0 13px;color:var(--roster-gold);font:600 22px/.9 'Teko',sans-serif;text-transform:uppercase}
+.roster-stat-block p{margin:0;max-width:130px;color:#b6b3ac;font-size:12px;line-height:1.35}
+.roster-stat-block dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+.roster-stat-block dl div{display:flex;flex-direction:column-reverse;gap:1px}
+.roster-stat-block dt{font:600 9px 'IBM Plex Mono',monospace;color:#b6b3ac;text-transform:uppercase}
+.roster-stat-block dd{font:600 25px/.9 'Teko',sans-serif;margin:0;font-variant-numeric:tabular-nums}
+.roster-profile-link,.roster-no-profile{min-height:38px;margin-top:auto;padding-top:17px;font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
+.roster-profile-link{color:var(--roster-gold);display:flex;justify-content:space-between;gap:10px}
+.roster-profile-link:hover{text-decoration:underline}
+.roster-no-profile{color:#93918c}
+.roster-empty{padding:80px 20px;text-align:center;border:1px solid var(--roster-line);color:#c6c0b6}
+.roster-pages{display:flex;align-items:center;justify-content:center;gap:20px;margin:42px 0 0;font:600 11px 'IBM Plex Mono',monospace;text-transform:uppercase}
+.roster-pages button{min-width:90px;height:40px;padding:0 12px;background:transparent;border:1px solid var(--roster-gold);color:var(--roster-gold);cursor:pointer;text-transform:uppercase;font:inherit}
+.roster-pages button:disabled{opacity:.35;cursor:not-allowed}
+.roster-pages button:not(:disabled):hover{background:var(--roster-gold);color:#080808}
+.roster-source-note{max-width:800px;margin:56px auto 0;padding-top:18px;border-top:1px solid var(--roster-line);font-size:13px;line-height:1.55;color:#a9a69e;text-align:center}
+.roster-footer{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:30px 6vw;border-top:1px solid var(--roster-line);background:#08090b;font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;color:#aba79e}
+.roster-footer a{color:var(--roster-gold)}
+.roster-page a:focus-visible,.roster-page button:focus-visible{outline:3px solid var(--roster-gold);outline-offset:3px}
+@media(max-width:1050px){.roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.roster-hero{grid-template-columns:1fr 37%;gap:25px}.roster-hero-portraits{height:300px}.roster-hero h1{font-size:12vw}}
+@media(max-width:700px){.roster-header{height:70px;padding:0 20px}.roster-header nav span{display:none}.roster-hero{min-height:680px;display:flex;align-items:flex-start;padding:75px 20px 250px}.roster-hero h1{font-size:24vw}.roster-hero-copy>p:last-child{font-size:17px}.roster-hero-portraits{position:absolute;right:20px;left:20px;bottom:35px;height:210px;transform:rotate(-2deg)}.roster-hero-count{right:20px;bottom:22px}.roster-directory{padding:75px 20px}.roster-intro{display:block;margin-bottom:32px}.roster-intro h2{font-size:72px}.roster-intro>p{margin-top:18px}.roster-controls{flex-wrap:wrap}.roster-search{min-width:100%;max-width:none}.roster-role{width:calc(100% - 120px)}.roster-result-count{width:100px;margin-bottom:12px;text-align:right}.roster-grid{grid-template-columns:1fr}.roster-photo{height:340px}.roster-card-body>h3{font-size:43px}.roster-footer{padding:25px 20px}}
+@media(max-width:390px){.roster-logo span{display:none}.roster-hero{min-height:640px}.roster-hero h1{font-size:26vw}.roster-photo{height:280px}.roster-card-body{padding:17px}.roster-role{width:calc(100% - 100px)}.roster-result-count{width:85px;font-size:9px}}
+@media(prefers-reduced-motion:reduce){.roster-photo img{transition:none}}

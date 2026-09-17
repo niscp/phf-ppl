@@ -1,0 +1,682 @@
+[
+  {
+    "id": "player-2",
+    "name": "Sohan Lath",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-2.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-3",
+    "name": "Aakash Pahwa",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-3.jpg",
+    "cricheroesUrl": "https://chshare.link/player/hGyN8U",
+    "stats": null
+  },
+  {
+    "id": "player-4",
+    "name": "Navin Jha",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-4.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-5",
+    "name": "Bhavya Bansal",
+    "role": "Batter",
+    "photo": "/season5-players/player-5.jpg",
+    "cricheroesUrl": "https://chshare.link/player/sdCbwY",
+    "stats": null
+  },
+  {
+    "id": "player-6",
+    "name": "Himanshu Giri",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-6.jpg",
+    "cricheroesUrl": "https://chshare.link/player/pWxriH",
+    "stats": null
+  },
+  {
+    "id": "player-7",
+    "name": "Saurabh Gupta",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-7.jpg",
+    "cricheroesUrl": "https://chshare.link/player/e6Ok0d",
+    "stats": null
+  },
+  {
+    "id": "player-8",
+    "name": "Krishna Devaraj",
+    "role": "Batter",
+    "photo": "/season5-players/player-8.jpg",
+    "cricheroesUrl": "https://chshare.link/player/4rMv6G",
+    "stats": null
+  },
+  {
+    "id": "player-9",
+    "name": "Sandeep Ram",
+    "role": "Bowler",
+    "photo": "/season5-players/player-9.jpg",
+    "cricheroesUrl": "https://chshare.link/player/oCftt3",
+    "stats": null
+  },
+  {
+    "id": "player-10",
+    "name": "Bhart Arora",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-10.jpg",
+    "cricheroesUrl": "https://chshare.link/player/oa5cR0",
+    "stats": null
+  },
+  {
+    "id": "player-11",
+    "name": "Nikhil Miryala",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-11.jpg",
+    "cricheroesUrl": "https://chshare.link/player/ovbySS",
+    "stats": null
+  },
+  {
+    "id": "player-12",
+    "name": "Akash Thadani",
+    "role": "Bowler",
+    "photo": "/season5-players/player-12.jpg",
+    "cricheroesUrl": "https://chshare.link/player/r6pVxH",
+    "stats": null
+  },
+  {
+    "id": "player-13",
+    "name": "Satish Dhanekula",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-13.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-14",
+    "name": "DR SAM",
+    "role": "Batter",
+    "photo": "/season5-players/player-14.jpg",
+    "cricheroesUrl": "https://chshare.link/player/dbaKr2",
+    "stats": null
+  },
+  {
+    "id": "player-15",
+    "name": "Srikanth Kavuri",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-15.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-16",
+    "name": "Aakash Mehta",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-16.jpg",
+    "cricheroesUrl": "https://chshare.link/player/h62xtR",
+    "stats": null
+  },
+  {
+    "id": "player-17",
+    "name": "Aditya Ambikesh",
+    "role": "Batter",
+    "photo": "/season5-players/player-17.jpg",
+    "cricheroesUrl": "https://chshare.link/player/pGrUxs",
+    "stats": null
+  },
+  {
+    "id": "player-18",
+    "name": "Manisai Dindigala",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-18.jpg",
+    "cricheroesUrl": "https://chshare.link/player/oyxp5B",
+    "stats": null
+  },
+  {
+    "id": "player-19",
+    "name": "Mithun Bhaskar",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-19.jpg",
+    "cricheroesUrl": "https://chshare.link/player/cDGVLe",
+    "stats": null
+  },
+  {
+    "id": "player-20",
+    "name": "Rahul Gome",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-20.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/23679397/Rahul%20Gome/profile",
+    "stats": null
+  },
+  {
+    "id": "player-21",
+    "name": "Saurabh mathur",
+    "role": "Batter",
+    "photo": "/season5-players/player-21.jpg",
+    "cricheroesUrl": "https://chshare.link/player/bw94N4",
+    "stats": null
+  },
+  {
+    "id": "player-22",
+    "name": "Hemanth A",
+    "role": "Batter",
+    "photo": "/season5-players/player-22.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-23",
+    "name": "Dhritiman Sinha",
+    "role": "Bowler",
+    "photo": "/season5-players/player-23.jpg",
+    "cricheroesUrl": "https://chshare.link/player/cKDmXG",
+    "stats": null
+  },
+  {
+    "id": "player-24",
+    "name": "Abhishek S",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-24.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-25",
+    "name": "Mayank Chauhan",
+    "role": "Bowler",
+    "photo": "/season5-players/player-25.jpg",
+    "cricheroesUrl": "https://chshare.link/player/pwFPfd",
+    "stats": null
+  },
+  {
+    "id": "player-26",
+    "name": "Sandeep Mekala",
+    "role": "Batter",
+    "photo": "/season5-players/player-26.jpg",
+    "cricheroesUrl": "https://chshare.link/player/bNLjWz",
+    "stats": null
+  },
+  {
+    "id": "player-27",
+    "name": "Sumit Das",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-27.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/37376681/sumit-das",
+    "stats": null
+  },
+  {
+    "id": "player-28",
+    "name": "Sanchay mohan shrivastava",
+    "role": "Bowler",
+    "photo": "/season5-players/player-28.jpg",
+    "cricheroesUrl": "https://chshare.link/player/g3jr38",
+    "stats": null
+  },
+  {
+    "id": "player-29",
+    "name": "Rai Sumit Kumar Sinha",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-29.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-30",
+    "name": "Kishore Chandra",
+    "role": "Batter",
+    "photo": "/season5-players/player-30.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-31",
+    "name": "Chirumamilla Kowshik",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-31.jpg",
+    "cricheroesUrl": "https://chshare.link/player/cxKKrM",
+    "stats": null
+  },
+  {
+    "id": "player-32",
+    "name": "Vaibhav Shukla",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-32.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-33",
+    "name": "Chandan Mahapatra",
+    "role": "Batter",
+    "photo": "/season5-players/player-33.jpg",
+    "cricheroesUrl": "https://chshare.link/player/f8rWfQ",
+    "stats": null
+  },
+  {
+    "id": "player-34",
+    "name": "Saket Kumar",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-34.jpg",
+    "cricheroesUrl": "https://chshare.link/player/nJ38wb",
+    "stats": null
+  },
+  {
+    "id": "player-35",
+    "name": "Tushar Chatterji",
+    "role": "Batter",
+    "photo": "/season5-players/player-35.jpg",
+    "cricheroesUrl": "https://chshare.link/player/j6EYop",
+    "stats": null
+  },
+  {
+    "id": "player-36",
+    "name": "Shobhit Kastuar",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-36.jpg",
+    "cricheroesUrl": "https://chshare.link/player/pX6M8L",
+    "stats": null
+  },
+  {
+    "id": "player-37",
+    "name": "Nishank Singh",
+    "role": "Batter",
+    "photo": "/season5-players/player-37.jpg",
+    "cricheroesUrl": "https://chshare.link/player/qSPlHX",
+    "stats": null
+  },
+  {
+    "id": "player-38",
+    "name": "Vinay Dwivedi",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-38.jpg",
+    "cricheroesUrl": "https://chshare.link/player/thTxYa",
+    "stats": null
+  },
+  {
+    "id": "player-39",
+    "name": "Romit Kumar",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-39.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-40",
+    "name": "Sunil Boddula",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-40.jpg",
+    "cricheroesUrl": "https://chshare.link/player/gfCCub",
+    "stats": null
+  },
+  {
+    "id": "player-41",
+    "name": "Revanth reddy",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-41.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-42",
+    "name": "Abhinav Bhardwaj",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-42.jpg",
+    "cricheroesUrl": "https://chshare.link/player/s2S4dN",
+    "stats": null
+  },
+  {
+    "id": "player-43",
+    "name": "Amartya Bhardwaj",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-43.jpg",
+    "cricheroesUrl": "https://chshare.link/player/kN6Ftc",
+    "stats": null
+  },
+  {
+    "id": "player-44",
+    "name": "Amitabh Soni",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-44.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/2974775/amitabh-soni/",
+    "stats": null
+  },
+  {
+    "id": "player-45",
+    "name": "Praveen Mustepally",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-45.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/381881/praveen-mustepally/stats",
+    "stats": null
+  },
+  {
+    "id": "player-46",
+    "name": "Avyaan Gupta",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-46.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-47",
+    "name": "Rohith raj",
+    "role": "Batter",
+    "photo": "/season5-players/player-47.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-48",
+    "name": "Tarun",
+    "role": "Batter",
+    "photo": "/season5-players/player-48.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-49",
+    "name": "E V PAVAN KUMAR",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-49.jpg",
+    "cricheroesUrl": "https://chshare.link/player/mmktXb",
+    "stats": null
+  },
+  {
+    "id": "player-50",
+    "name": "Srinivas Janga",
+    "role": "Batter",
+    "photo": "/season5-players/player-50.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-51",
+    "name": "Abhishek Thakur",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-51.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-52",
+    "name": "Rohit Panchal",
+    "role": "Batter",
+    "photo": "/season5-players/player-52.jpg",
+    "cricheroesUrl": "https://chshare.link/player/mBdH4m",
+    "stats": null
+  },
+  {
+    "id": "player-53",
+    "name": "Varnit Shukla",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-53.jpg",
+    "cricheroesUrl": "https://chshare.link/player/f3SZ0q",
+    "stats": null
+  },
+  {
+    "id": "player-54",
+    "name": "Ratna Taji",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-54.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-55",
+    "name": "Mohit T",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-55.jpg",
+    "cricheroesUrl": "https://chshare.link/player/gzLA48",
+    "stats": null
+  },
+  {
+    "id": "player-56",
+    "name": "Hanuma Madireddy",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-56.jpg",
+    "cricheroesUrl": "https://chshare.link/player/f5kW3i",
+    "stats": null
+  },
+  {
+    "id": "player-57",
+    "name": "Ankit Kurani",
+    "role": "Bowler",
+    "photo": "/season5-players/player-57.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-58",
+    "name": "Sindhukumar Recharla",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-58.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-59",
+    "name": "Chetan Barode",
+    "role": "Batter",
+    "photo": "/season5-players/player-59.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-60",
+    "name": "Meet Patel",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-60.jpg",
+    "cricheroesUrl": "https://chshare.link/player/gjjiwl",
+    "stats": null
+  },
+  {
+    "id": "player-61",
+    "name": "Vinay Kushwaha",
+    "role": "Batter",
+    "photo": "/season5-players/player-61.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-62",
+    "name": "Ashwin Kumar",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-62.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/17993651/Ashwin-Kumar",
+    "stats": null
+  },
+  {
+    "id": "player-63",
+    "name": "Tariq",
+    "role": "Batter",
+    "photo": "/season5-players/player-63.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-64",
+    "name": "Karthikesh",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-64.jpg",
+    "cricheroesUrl": "https://chshare.link/player/eRmBlS",
+    "stats": null
+  },
+  {
+    "id": "player-65",
+    "name": "Sravan Kumar Sriramoju",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-65.jpg",
+    "cricheroesUrl": "https://chshare.link/player/tgxxuj",
+    "stats": null
+  },
+  {
+    "id": "player-66",
+    "name": "Prashanth Palipudi (KP)",
+    "role": "Bowler",
+    "photo": "/season5-players/player-66.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-67",
+    "name": "Santosh Kumar Sriramoju",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-67.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-68",
+    "name": "Jitendra Kumar Shukla",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-68.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-69",
+    "name": "Praveer Kumar Kullu",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-69.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-70",
+    "name": "Abhishek Purohit",
+    "role": "Bowler",
+    "photo": "/season5-players/player-70.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-71",
+    "name": "Saptarshi Roy",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-71.jpg",
+    "cricheroesUrl": "https://chshare.link/player/jJtLAW",
+    "stats": null
+  },
+  {
+    "id": "player-72",
+    "name": "Rachit Tandon",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-72.jpg",
+    "cricheroesUrl": "https://chshare.link/player/bw6Z53",
+    "stats": null
+  },
+  {
+    "id": "player-73",
+    "name": "Sunnihith",
+    "role": "Batter",
+    "photo": "/season5-players/player-73.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-74",
+    "name": "Rajeswar Rao",
+    "role": "Bowler",
+    "photo": "/season5-players/player-74.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-75",
+    "name": "Agasthya Bellamkonda",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-75.jpg",
+    "cricheroesUrl": "https://chshare.link/player/qOW5oT",
+    "stats": null
+  },
+  {
+    "id": "player-76",
+    "name": "Aqib Afzal",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-76.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/13193079/aqib-afzal",
+    "stats": null
+  },
+  {
+    "id": "player-77",
+    "name": "Phanidhar",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-77.jpg",
+    "cricheroesUrl": "https://cricheroes.com/player-profile/3100605/phanidhar-raju/profile",
+    "stats": null
+  },
+  {
+    "id": "player-78",
+    "name": "SUBASH K REDDY",
+    "role": "Batter",
+    "photo": "/season5-players/player-78.jpg",
+    "cricheroesUrl": "https://chshare.link/player/ldpSMb",
+    "stats": null
+  },
+  {
+    "id": "player-79",
+    "name": "Yogesh",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-79.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-80",
+    "name": "Bhupesh Jatiani",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-80.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-81",
+    "name": "Swethan kurakula",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-81.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-82",
+    "name": "Abhishek Emmanuel",
+    "role": "Batter",
+    "photo": "/season5-players/player-82.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-83",
+    "name": "Vigneshnaga Alwarappan",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-83.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-84",
+    "name": "Dhruv",
+    "role": "All-rounder",
+    "photo": null,
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-85",
+    "name": "kishore",
+    "role": "All-rounder",
+    "photo": null,
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-86",
+    "name": "Vikram Idiga",
+    "role": "All-rounder",
+    "photo": null,
+    "cricheroesUrl": null,
+    "stats": null
+  }
+]
