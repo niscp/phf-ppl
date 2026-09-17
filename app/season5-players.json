@@ -21,10 +21,10 @@
         "strikeRate": "110.21"
       },
       "bowling": {
-        "overs": "143.0",
         "wickets": 52,
         "economy": "8.08",
-        "best": "5/23"
+        "best": "5/23",
+        "matches": 88
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/32729358/Aakash-Pahwa/stats",
@@ -53,10 +53,10 @@
         "strikeRate": "84.35"
       },
       "bowling": {
-        "overs": "2.0",
         "wickets": 2,
         "economy": "7.50",
-        "best": "2/7"
+        "best": "2/7",
+        "matches": 50
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/14946017/Bhavya-Bansal/stats",
@@ -77,10 +77,10 @@
         "strikeRate": "101.28"
       },
       "bowling": {
-        "overs": "28.5",
         "wickets": 15,
         "economy": "6.94",
-        "best": "4/18"
+        "best": "4/18",
+        "matches": 45
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/33331571/Himanshu-Giri/stats",
@@ -101,10 +101,10 @@
         "strikeRate": "114.82"
       },
       "bowling": {
-        "overs": "121.3",
         "wickets": 40,
         "economy": "8.41",
-        "best": "2/5"
+        "best": "2/5",
+        "matches": 150
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/1954566/Saurabh-Gupta/stats",
@@ -125,10 +125,10 @@
         "strikeRate": "96.13"
       },
       "bowling": {
-        "overs": null,
         "wickets": null,
         "economy": null,
-        "best": null
+        "best": null,
+        "matches": 6
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/31688419/Krishna-Devaraj/stats",
@@ -149,10 +149,10 @@
         "strikeRate": "57.14"
       },
       "bowling": {
-        "overs": "31.0",
         "wickets": 6,
         "economy": "7.06",
-        "best": "2/28"
+        "best": "2/28",
+        "matches": 11
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/9693226/Sandeep-Ram/stats",
@@ -173,10 +173,10 @@
         "strikeRate": "60.00"
       },
       "bowling": {
-        "overs": "4.0",
         "wickets": 3,
         "economy": "6.00",
-        "best": "2/10"
+        "best": "2/10",
+        "matches": 4
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/49147853/Bharat-Arora-PHF-Cricket/stats",
@@ -197,10 +197,10 @@
         "strikeRate": "114.32"
       },
       "bowling": {
-        "overs": "304.3",
         "wickets": 90,
         "economy": "8.18",
-        "best": "3/12"
+        "best": "3/12",
+        "matches": 146
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17251390/Nikhil-Miryala/stats",
@@ -221,10 +221,10 @@
         "strikeRate": "100.00"
       },
       "bowling": {
-        "overs": "172.4",
         "wickets": 54,
         "economy": "7.59",
-        "best": "3/13"
+        "best": "3/13",
+        "matches": 89
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/23504852/Akki-Thadani/stats",
@@ -254,10 +254,10 @@
         "strikeRate": "137.57"
       },
       "bowling": {
-        "overs": "691.1",
         "wickets": 223,
         "economy": "7.09",
-        "best": "5/8"
+        "best": "5/8",
+        "matches": 375
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3862287/Diptiranjan-Samantaray/stats",
@@ -287,10 +287,10 @@
         "strikeRate": "100.00"
       },
       "bowling": {
-        "overs": "345.1",
         "wickets": 117,
         "economy": "6.78",
-        "best": "4/14"
+        "best": "4/14",
+        "matches": 116
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2405122/Aakash-MEHTA/stats",
@@ -311,10 +311,10 @@
         "strikeRate": "71.55"
       },
       "bowling": {
-        "overs": "6.4",
         "wickets": 2,
         "economy": "7.95",
-        "best": "1/2"
+        "best": "1/2",
+        "matches": 45
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/22463628/Aditya-Ambikesh/stats",
@@ -335,10 +335,10 @@
         "strikeRate": "107.45"
       },
       "bowling": {
-        "overs": "34.0",
         "wickets": 11,
         "economy": "8.06",
-        "best": "2/10"
+        "best": "2/10",
+        "matches": 18
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/31280346/Mani/stats",
@@ -360,10 +360,10 @@
         "strikeRate": "94.44"
       },
       "bowling": {
-        "overs": "19.2",
         "wickets": 3,
         "economy": "9.00",
-        "best": "1/16"
+        "best": "1/16",
+        "matches": 11
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/23808488/Mithun-Bhaskar/stats",
@@ -384,10 +384,10 @@
         "strikeRate": "146.79"
       },
       "bowling": {
-        "overs": "36.5",
         "wickets": 10,
         "economy": "7.22",
-        "best": "2/28"
+        "best": "2/28",
+        "matches": 39
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/23679397/Rahul%20Gome/stats",
@@ -408,10 +408,10 @@
         "strikeRate": "101.60"
       },
       "bowling": {
-        "overs": "140.2",
         "wickets": 38,
         "economy": "9.18",
-        "best": "3/19"
+        "best": "3/19",
+        "matches": 364
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3617155/Saurabh-mathur/stats",
@@ -440,10 +440,10 @@
         "strikeRate": "80.00"
       },
       "bowling": {
-        "overs": "109.0",
         "wickets": 39,
         "economy": "8.25",
-        "best": "3/15"
+        "best": "3/15",
+        "matches": 56
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/21977435/Dhritiman-Sinha/stats",
@@ -472,10 +472,10 @@
         "strikeRate": "110.00"
       },
       "bowling": {
-        "overs": "355.4",
         "wickets": 132,
         "economy": "7.21",
-        "best": "5/8"
+        "best": "5/8",
+        "matches": 114
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/4489866/Mayank/stats",
@@ -496,10 +496,10 @@
         "strikeRate": "93.38"
       },
       "bowling": {
-        "overs": "41.0",
         "wickets": 14,
         "economy": "9.22",
-        "best": "4/22"
+        "best": "4/22",
+        "matches": 210
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/1734322/Sandeep-Mekala/stats",
@@ -520,10 +520,10 @@
         "strikeRate": "40.00"
       },
       "bowling": {
-        "overs": "7.0",
         "wickets": 0,
         "economy": "6.57",
-        "best": "0/4"
+        "best": "0/4",
+        "matches": 4
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/37376681/sumit-das/stats",
@@ -544,10 +544,10 @@
         "strikeRate": "54.05"
       },
       "bowling": {
-        "overs": "91.2",
         "wickets": 31,
         "economy": "8.34",
-        "best": "5/18"
+        "best": "5/18",
+        "matches": 35
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/49405001/Sanchay-mohan-shrivastava/stats",
@@ -584,10 +584,10 @@
         "strikeRate": "80.76"
       },
       "bowling": {
-        "overs": "141.0",
         "wickets": 49,
         "economy": "7.19",
-        "best": "4/7"
+        "best": "4/7",
+        "matches": 67
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/19604708/Kowshik/stats",
@@ -617,10 +617,10 @@
         "strikeRate": "127.90"
       },
       "bowling": {
-        "overs": "50.1",
         "wickets": 23,
         "economy": "9.15",
-        "best": "2/1"
+        "best": "2/1",
+        "matches": 127
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/1898304/Chandan/stats",
@@ -642,10 +642,10 @@
         "strikeRate": "115.15"
       },
       "bowling": {
-        "overs": "146.0",
         "wickets": 39,
         "economy": "7.99",
-        "best": "3/8"
+        "best": "3/8",
+        "matches": 54
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/14718162/Saket/stats",
@@ -667,10 +667,10 @@
         "strikeRate": "123.61"
       },
       "bowling": {
-        "overs": "215.0",
         "wickets": 60,
         "economy": "7.68",
-        "best": "6/26"
+        "best": "6/26",
+        "matches": 143
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/24048565/Tushar-Chatterji/stats",
@@ -691,10 +691,10 @@
         "strikeRate": "126.16"
       },
       "bowling": {
-        "overs": "431.1",
         "wickets": 135,
         "economy": "7.49",
-        "best": "5/8"
+        "best": "5/8",
+        "matches": 196
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17356329/Shobhit-K/stats",
@@ -716,10 +716,10 @@
         "strikeRate": "71.65"
       },
       "bowling": {
-        "overs": "49.5",
         "wickets": 11,
         "economy": "9.37",
-        "best": "2/10"
+        "best": "2/10",
+        "matches": 53
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17112868/Nishank-singh/stats",
@@ -740,10 +740,10 @@
         "strikeRate": "125.42"
       },
       "bowling": {
-        "overs": "102.4",
         "wickets": 35,
         "economy": "7.12",
-        "best": "3/10"
+        "best": "3/10",
+        "matches": 60
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3552603/Vinay-Dwivedi/stats",
@@ -772,10 +772,10 @@
         "strikeRate": "81.02"
       },
       "bowling": {
-        "overs": "64.3",
         "wickets": 22,
         "economy": "6.87",
-        "best": "3/17"
+        "best": "3/17",
+        "matches": 31
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17725457/Sunil-B/stats",
@@ -805,10 +805,10 @@
         "strikeRate": "115.34"
       },
       "bowling": {
-        "overs": "127.2",
         "wickets": 45,
         "economy": "7.72",
-        "best": "4/7"
+        "best": "4/7",
+        "matches": 53
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/44278285/Abhinav-Bhardwaj/stats",
@@ -829,10 +829,10 @@
         "strikeRate": "127.15"
       },
       "bowling": {
-        "overs": "516.2",
         "wickets": 143,
         "economy": "7.56",
-        "best": "4/28"
+        "best": "4/28",
+        "matches": 233
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3268413/Amartya-Bhardwaj/stats",
@@ -853,10 +853,10 @@
         "strikeRate": "112.53"
       },
       "bowling": {
-        "overs": "55.0",
         "wickets": 16,
         "economy": "7.73",
-        "best": "3/7"
+        "best": "3/7",
+        "matches": 60
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2974775/amitabh-soni/stats",
@@ -877,10 +877,10 @@
         "strikeRate": "118.00"
       },
       "bowling": {
-        "overs": "108.3",
         "wickets": 30,
         "economy": "7.40",
-        "best": "3/19"
+        "best": "3/19",
+        "matches": 144
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/381881/praveen-mustepally/stats",
@@ -908,8 +908,25 @@
     "name": "Tarun Talluri",
     "role": "Batter",
     "photo": "/season5-players/player-48.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/j1cLQT",
+    "stats": {
+      "batting": {
+        "innings": 14,
+        "runs": 165,
+        "average": "20.63",
+        "strikeRate": "98.21"
+      },
+      "bowling": {
+        "matches": 31,
+        "wickets": 1,
+        "economy": "8.21",
+        "best": "1/1"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/17256551/Talluri-Tarun/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-18",
+    "statsProfileName": "Talluri Tarun"
   },
   {
     "id": "player-49",
@@ -925,10 +942,10 @@
         "strikeRate": "127.13"
       },
       "bowling": {
-        "overs": "405.1",
         "wickets": 114,
         "economy": "7.89",
-        "best": "5/22"
+        "best": "5/22",
+        "matches": 193
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2339891/Pavan-kumar-E-V/stats",
@@ -966,10 +983,10 @@
         "strikeRate": "164.68"
       },
       "bowling": {
-        "overs": "27.3",
         "wickets": 18,
         "economy": "10.73",
-        "best": "3/4"
+        "best": "3/4",
+        "matches": 49
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/12581205/rohit-panchal/stats",
@@ -990,10 +1007,10 @@
         "strikeRate": "83.23"
       },
       "bowling": {
-        "overs": "15.0",
         "wickets": 5,
         "economy": "7.80",
-        "best": "2/16"
+        "best": "2/16",
+        "matches": 19
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17607097/Varnit-Shukla/stats",
@@ -1022,10 +1039,10 @@
         "strikeRate": "37.50"
       },
       "bowling": {
-        "overs": "2.0",
         "wickets": 0,
         "economy": "6.50",
-        "best": "0/13"
+        "best": "0/13",
+        "matches": 1
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/53492214/Mohit-t/stats",
@@ -1046,10 +1063,10 @@
         "strikeRate": "141.06"
       },
       "bowling": {
-        "overs": "39.4",
         "wickets": 14,
         "economy": "9.48",
-        "best": "3/13"
+        "best": "3/13",
+        "matches": 56
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/6973576/Hanuma/stats",
@@ -1095,10 +1112,10 @@
         "strikeRate": "95.10"
       },
       "bowling": {
-        "overs": "33.3",
         "wickets": 11,
         "economy": "7.64",
-        "best": "2/16"
+        "best": "2/16",
+        "matches": 21
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/10116265/Meet/stats",
@@ -1128,10 +1145,10 @@
         "strikeRate": "114.18"
       },
       "bowling": {
-        "overs": "53.0",
         "wickets": 17,
         "economy": "9.13",
-        "best": "3/10"
+        "best": "3/10",
+        "matches": 52
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17993651/Ashwin-Kumar/stats",
@@ -1160,10 +1177,10 @@
         "strikeRate": "108.70"
       },
       "bowling": {
-        "overs": "298.4",
         "wickets": 118,
         "economy": "8.29",
-        "best": "5/16"
+        "best": "5/16",
+        "matches": 229
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2228477/Karthikesh/stats",
@@ -1184,10 +1201,10 @@
         "strikeRate": "129.38"
       },
       "bowling": {
-        "overs": "46.2",
         "wickets": 14,
         "economy": "8.57",
-        "best": "3/16"
+        "best": "3/16",
+        "matches": 34
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17252624/Shravan-Kumar/stats",
@@ -1249,10 +1266,10 @@
         "strikeRate": "75.00"
       },
       "bowling": {
-        "overs": "115.1",
         "wickets": 29,
         "economy": "9.67",
-        "best": "3/11"
+        "best": "3/11",
+        "matches": 73
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/10933448/Saptarshi-Roy/stats",
@@ -1273,10 +1290,10 @@
         "strikeRate": "107.14"
       },
       "bowling": {
-        "overs": "31.0",
         "wickets": 10,
         "economy": "8.61",
-        "best": "3/34"
+        "best": "3/34",
+        "matches": 13
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/44768438/Rachit/stats",
@@ -1314,10 +1331,10 @@
         "strikeRate": "75.27"
       },
       "bowling": {
-        "overs": "84.2",
         "wickets": 40,
         "economy": "6.94",
-        "best": "3/10"
+        "best": "3/10",
+        "matches": 62
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17259364/Agasthya-Bellamkonda/stats",
@@ -1338,10 +1355,10 @@
         "strikeRate": "107.45"
       },
       "bowling": {
-        "overs": "92.2",
         "wickets": 45,
         "economy": "7.21",
-        "best": "5/20"
+        "best": "5/20",
+        "matches": 47
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/13193079/aqib-afzal/stats",
@@ -1362,10 +1379,10 @@
         "strikeRate": "135.85"
       },
       "bowling": {
-        "overs": "270.5",
         "wickets": 101,
         "economy": "6.97",
-        "best": "4/12"
+        "best": "4/12",
+        "matches": 128
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3100605/phanidhar-raju/stats",
@@ -1387,10 +1404,10 @@
         "strikeRate": "114.00"
       },
       "bowling": {
-        "overs": "13.4",
         "wickets": 3,
         "economy": "8.49",
-        "best": "1/7"
+        "best": "1/7",
+        "matches": 28
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2969664/Subash-Reddy-K/stats",

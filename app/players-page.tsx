@@ -8,7 +8,7 @@ type Discipline = {
   runs?: number | null;
   average?: number | string | null;
   strikeRate?: number | string | null;
-  overs?: number | string | null;
+  matches?: number | null;
   wickets?: number | null;
   economy?: number | string | null;
   best?: string | null;
@@ -38,7 +38,7 @@ function getAssetUrl(path: string) {
 function StatBlock({ title, data, kind }: { title: string; data?: Discipline; kind: "batting" | "bowling" }) {
   const fields = kind === "batting"
     ? [["Innings", data?.innings], ["Runs", data?.runs], ["Average", data?.average], ["Strike rate", data?.strikeRate]]
-    : [["Overs", data?.overs], ["Wickets", data?.wickets], ["Economy", data?.economy], ["Best", data?.best]];
+    : [["Matches", data?.matches], ["Wickets", data?.wickets], ["Economy", data?.economy], ["Best", data?.best]];
   const hasValues = fields.some(([, value]) => value !== null && value !== undefined);
 
   return <div className={`roster-stat-block ${kind}`}>

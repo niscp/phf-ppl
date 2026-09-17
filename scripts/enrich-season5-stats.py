@@ -36,6 +36,7 @@ REVIEWED_ALIASES = {
     "Rachit Tandon": "Rachit",
     "Phanidhar": "Phanidhar Raju",
     "SUBASH K REDDY": "Subash Reddy K",
+    "Tarun Talluri": "Talluri Tarun",
 }
 
 
@@ -100,7 +101,7 @@ def verified_stats(html: str, expected_name: str) -> tuple[dict, str | None]:
             "strikeRate": bat.get("SR"),
         },
         "bowling": {
-            "overs": bowl.get("Overs"),
+            "matches": bowl.get("Matches"),
             "wickets": bowl.get("Wickets"),
             "economy": bowl.get("Economy"),
             "best": bowl.get("Best Bowling"),
@@ -112,20 +113,24 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=0, help="Only test the first N linked players")
     parser.add_argument("--pending-only", action="store_true", help="Skip players with previously verified stats")
+    parser.add_argument("--matches-only", action="store_true", help="Refresh bowling matches for verified profiles without changing other stats")
     parser.add_argument("--write", action="store_true", help="Update the public roster JSON")
     args = parser.parse_args()
     players = json.loads(ROSTER.read_text(encoding="utf-8"))
-    linked = [player for player in players if player["cricheroesUrl"] and (not args.pending_only or not player.get("statsSource"))]
+    linked = [player for player in players if player["cricheroesUrl"] and (not args.pending_only or not player.get("statsSource")) and (not args.matches_only or player.get("statsSource"))]
     if args.limit:
         linked = linked[: args.limit]
     success = 0
     for player in linked:
         try:
-            source = canonical_profile(player["cricheroesUrl"])
+            source = player["statsSource"] if args.matches_only else canonical_profile(player["cricheroesUrl"])
             stats, profile_name = verified_stats(fetch(source), player["name"])
             if not any(value is not None for block in stats.values() for value in block.values()):
                 raise ValueError("All stats are missing")
-            player["stats"] = stats
+            if args.matches_only:
+                player["stats"]["bowling"]["matches"] = stats["bowling"]["matches"]
+            else:
+                player["stats"] = stats
             player["statsSource"] = source
             player["statsScope"] = "CricHeroes career"
             player["statsChecked"] = date.today().isoformat()
@@ -137,6 +142,9 @@ def main() -> None:
             print(f"REVIEW {player['name']}: {exc}")
         time.sleep(0.3)
     if args.write:
+        for player in players:
+            if player.get("stats") and player["stats"].get("bowling"):
+                player["stats"]["bowling"].pop("overs", None)
         ROSTER.write_text(json.dumps(players, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Verified {success}/{len(linked)} linked players" + (" and saved" if args.write else " (dry run)"))
 
