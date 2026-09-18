@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-const registerUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfscoEpVUW_JKyYhTsL6wF00Ffk4X1wVTw4UW3ACflvXeicOA/viewform";
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
 const venueUrl = "https://share.google/clJmAmYZH5Kvxpb4x";
 
@@ -56,8 +55,8 @@ const tournamentHonours = [
 ];
 
 const seasonFiveStages = [
-  { label: "Now open", title: "Player registrations", detail: "Invitations and player entries are being collected.", state: "live" },
-  { label: "12 / 13 Sep", title: "Captain auction", detail: "Captains build their squads when the auction room opens.", state: "next" },
+  { label: "Closed", title: "Player registrations", detail: "The Season 5 player pool is in place.", state: "live" },
+  { label: "Up next", title: "Captain auction", detail: "Six captains will build balanced squads when the auction opens.", state: "next" },
   { label: "After auction", title: "Teams & squads", detail: "Official team names and player rosters will appear here.", state: "locked" },
   { label: "Before matchday", title: "Fixtures & table", detail: "Schedule, results and standings will follow.", state: "locked" },
 ];
@@ -80,10 +79,11 @@ export default function Home() {
           <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="./players.html">Players</a>
+          <a href="./auction.html">Auction</a>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
-          <a className="gold-link" href={registerUrl} target="_blank" rel="noreferrer">Register now</a>
+          <a className="gold-link" href="./auction.html">Auction room ↗</a>
         </nav>
       </header>
 
@@ -95,7 +95,7 @@ export default function Home() {
           <h1><span>Five years.</span><strong>One legacy.</strong></h1>
           <p className="hero-statement">The lights come on. The rivalries return. PHF cricket enters its biggest season yet.</p>
           <div className="hero-ctas">
-            <a className="gold-button" href={registerUrl} target="_blank" rel="noreferrer">Register for the auction <span>↗</span></a>
+            <a className="gold-button" href="./auction.html">Enter the auction room <span>↗</span></a>
           </div>
         </div>
         <div className="hero-fixture">
@@ -114,20 +114,20 @@ export default function Home() {
         <div className="event-rail">
           <div><span>Venue</span><b>SRRC Cricket Ground</b><a href={venueUrl} target="_blank" rel="noreferrer">Map ↗</a></div>
           <div><span>Format</span><b>Minimum 3 matches</b><small>Including one night match</small></div>
-          <div><span>Entry</span><b>₹2,000</b><small>Registration closes 30 Aug</small></div>
-          <div><span>Auction</span><b>12 / 13 Sep</b><small>Captain-led squads</small></div>
+          <div><span>Entry</span><b>₹2,000</b><small>Invitations closed</small></div>
+          <div><span>Auction</span><b>Coming up</b><small>Six captain-led squads</small></div>
         </div>
       </section>
 
       <section className="auction-stage" id="season-five">
         <div className="auction-head">
           <div className="section-intro"><p>Season 5 status</p><h2>The auction room<br/><em>is taking shape.</em></h2></div>
-          <div className="live-invite"><i/><span>Invitations open</span><b>Pre-auction phase</b></div>
+          <div className="live-invite"><i/><span>Invitations closed</span><b>Pre-auction phase</b></div>
         </div>
-        <p className="auction-copy">Season 5 teams have not been formed yet. We are collecting player registrations and captain invitations now; official squads, fixtures and the points table will unlock after the auction.</p>
-        <a className="auction-roster-link" href="./players.html">Explore the Season 5 player pool <span>↗</span></a>
+        <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. Six playing captains will form nearly equal squads in the upcoming auction; official teams, fixtures and standings will follow.</p>
+        <a className="auction-roster-link" href="./auction.html">Explore the auction room <span>↗</span></a>
         <div className="auction-track">
-          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href={registerUrl} target="_blank" rel="noreferrer">Join the player pool ↗</a> : <small>{stage.state === "locked" ? "Locked until announced" : "Next milestone"}</small>}</article>)}
+          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href="./players.html">View registered players ↗</a> : stage.state === "next" ? <a href="./auction.html">View auction room ↗</a> : <small>Locked until announced</small>}</article>)}
         </div>
       </section>
 
@@ -172,7 +172,7 @@ export default function Home() {
 
       <section className="final-call" id="register">
         <div className="final-photo" />
-        <div className="final-copy"><p>Season 5 · Registrations open</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href={registerUrl} target="_blank" rel="noreferrer">Enter Season 5 <b>↗</b></a></div>
+        <div className="final-copy"><p>Season 5 · Auction ahead</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href="./auction.html">Enter the auction room <b>↗</b></a></div>
         <div className="final-details"><a href={termsUrl} target="_blank" rel="noreferrer">Terms &amp; conditions ↗</a><a href={venueUrl} target="_blank" rel="noreferrer">Venue map ↗</a><span>Tarun · +91 98853 01226</span><span>Karthik · +91 84381 49893</span></div>
       </section>
 

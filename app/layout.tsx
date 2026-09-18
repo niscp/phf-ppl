@@ -8,7 +8,7 @@ const mono = IBM_Plex_Mono({ variable: "--font-mono", weight: ["400", "600"], su
 
 export const metadata: Metadata = {
   title: "PHF Premier League | Cricket Season 5",
-  description: "PHF Premier League returns for Cricket Season 5 on 21, 22, 28 and 29 November 2026. Register for the auction-based league.",
+  description: "PHF Premier League returns for Cricket Season 5 on 21, 22, 28 and 29 November 2026. Explore the registered player pool and upcoming captain auction.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: {
     title: "PHF Premier League | Cricket Season 5",
