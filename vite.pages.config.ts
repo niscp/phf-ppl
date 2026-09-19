@@ -15,6 +15,7 @@ export default defineConfig({
         players: fileURLToPath(new URL("./players.html", import.meta.url)),
         auction: fileURLToPath(new URL("./auction.html", import.meta.url)),
         auctionAdmin: fileURLToPath(new URL("./auction-admin.html", import.meta.url)),
+        teams: fileURLToPath(new URL("./teams.html", import.meta.url)),
       },
     },
   },

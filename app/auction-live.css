@@ -1,0 +1,69 @@
+.auction-admin-wrap{max-width:1600px}
+.auction-admin-room{padding:30px;background:#0d1720}
+.auction-admin-room>form{max-width:560px;margin:18px 0 24px}
+.auction-live-board{display:grid;grid-template-columns:minmax(300px,36%) 1fr;border:1px solid #5c6b72;background:#09131c;min-height:650px}
+.auction-board-player{min-width:0;border-right:1px solid #536168;background:#132430;display:flex;flex-direction:column}
+.auction-board-photo{height:400px;overflow:hidden;position:relative;background:#263b47}
+.auction-board-photo:after{content:"";position:absolute;inset:auto 0 0;height:100px;background:linear-gradient(transparent,#132430)}
+.auction-board-photo img,.auction-board-photo .auction-no-photo{width:100%;height:100%;object-fit:cover;object-position:center 22%}
+.auction-board-player-info{padding:0 28px 28px;margin-top:-25px;z-index:1;position:relative}
+.auction-board-player-info>span,.auction-board-player-info>a{color:var(--gold);font-size:13px}
+.auction-board-player-info h3{font:600 clamp(48px,5vw,82px)/.9 "Teko",sans-serif;margin:8px 0 20px}
+.auction-board-player-info .auction-stat-line{grid-template-columns:repeat(2,1fr);row-gap:18px;margin-bottom:20px}
+.auction-board-empty{margin:auto;padding:35px;text-align:center}
+.auction-board-empty h3{font:600 60px/1 "Teko",sans-serif;margin:20px 0 8px}
+.auction-board-ball{display:block;width:110px;height:110px;margin:0 auto;border-radius:50%;background:repeating-linear-gradient(85deg,#b3392a,#b3392a 46px,#f5e4cb 47px,#f5e4cb 50px,#b3392a 51px,#b3392a 58px);box-shadow:inset -18px -15px 25px #692314}
+.auction-board-right{min-width:0;display:flex;flex-direction:column}
+.auction-board-teams{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#42535e;flex:1}
+.auction-bid-card{border:0;border-radius:0;text-align:left;background:#162631;color:#f5f0e5;padding:18px;min-width:0;display:flex;flex-direction:column;gap:15px;position:relative}
+button.auction-bid-card:not(:disabled):hover,button.auction-bid-card:focus-visible{background:#243946;outline:2px solid #efbd58;outline-offset:-2px}
+.auction-bid-card.leading{background:#3e3020;box-shadow:inset 0 0 0 2px #efbd58}
+.auction-bid-card:disabled{opacity:1;cursor:not-allowed}
+.auction-bid-card:disabled .auction-bid-prompt{opacity:.35}
+.auction-bid-card-head{display:flex;align-items:center;gap:10px;min-height:57px}
+.auction-bid-card-head strong{font:600 clamp(18px,1.6vw,27px)/.9 "Teko",sans-serif;min-width:0;overflow-wrap:anywhere}
+.auction-bid-card-head em{margin-left:auto;font:700 10px "Hind",sans-serif;color:#efbd58;font-style:normal}
+.auction-crest{flex:none;display:grid;place-items:center;width:52px;height:58px;clip-path:polygon(50% 0,94% 17%,88% 75%,50% 100%,12% 75%,6% 17%);background:#efbd58;color:#10202b}
+.auction-crest img{height:100%;width:100%;object-fit:cover}
+.auction-crest b{font:700 24px/1 "Teko",sans-serif}
+.auction-bid-card dl{margin:0;display:grid;gap:4px}
+.auction-bid-card dl div{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.auction-bid-card dt{font-size:11px;color:#c7d0d1}
+.auction-bid-card dd{font:600 19px/1 "Teko",sans-serif;margin:0;white-space:nowrap}
+.auction-bid-card dl div:last-child dd{color:#efbd58}
+.auction-bid-card>small{font-size:11px;color:#aab8bc}
+.auction-bid-prompt{display:block;color:#efbd58;font-weight:700;font-size:11px;border-top:1px solid #72818a;padding-top:10px;margin-top:auto}
+.auction-board-no-teams{grid-column:1/-1;align-self:center;text-align:center;padding:40px}
+.auction-board-control{background:#efbd58;color:#101a21;padding:22px 28px}
+.auction-board-totals{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:20px}
+.auction-board-totals>div{border-right:1px solid #83672c;min-width:0}
+.auction-board-totals>div:last-child{border:0}
+.auction-board-totals span,.auction-squad-title span{display:block;font-size:11px;font-weight:700}
+.auction-board-totals strong{display:block;font:600 clamp(26px,3vw,48px)/1 "Teko",sans-serif;overflow-wrap:anywhere;margin-top:5px}
+.auction-board-buttons{display:flex;gap:10px;margin-top:18px}
+.auction-page .auction-board-buttons button{background:#15242e;color:#f5f0e5;border:1px solid #15242e;padding:12px 20px;font-weight:700}
+.auction-page .auction-board-buttons .auction-sold-button{background:#0c543d;border-color:#0c543d;flex:1;font-size:16px}
+.auction-board-control p{font-size:11px;margin:16px 0 0;max-width:670px}
+.auction-team>.auction-crest{float:right}
+.auction-squads-wrap{max-width:1500px;margin:auto;padding:70px 5vw 100px}
+.auction-squads-wrap h1{font:600 clamp(56px,8vw,110px)/.85 "Teko",sans-serif;margin:10px 0 0}
+.auction-squad-selector{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:30px 0}
+.auction-squad-selector button{background:#162631;color:#f5f0e5;border:1px solid #53636c;min-height:170px;padding:20px 10px;display:flex;align-items:center;flex-direction:column;gap:8px;text-align:center}
+.auction-squad-selector button.selected,.auction-squad-selector button:hover,.auction-squad-selector button:focus-visible{border-color:#efbd58;background:#283742;outline:0}
+.auction-squad-selector strong{font:600 23px/1 "Teko",sans-serif}
+.auction-squad-selector button>span:last-child{font-size:11px;color:#b5c3c7}
+.auction-squad-detail{border:1px solid #56656d;background:#101d26}
+.auction-squad-title{display:flex;gap:22px;align-items:center;padding:25px 32px;border-bottom:1px solid #56656d;background:#233644}
+.auction-squad-title h2{font:600 clamp(38px,4vw,65px)/.9 "Teko",sans-serif;margin:5px 0}
+.auction-squad-title>div:nth-last-child(-n+2){margin-left:auto}
+.auction-squad-title b{font:600 28px/1 "Teko",sans-serif;color:#efbd58}
+.auction-squad-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:20px}
+.auction-squad-grid article{display:flex;align-items:center;gap:15px;background:#1b2b35;border:1px solid #465a64;padding:10px;min-width:0}
+.auction-squad-grid img,.auction-squad-grid .auction-no-photo{width:85px;height:105px;object-fit:cover;object-position:top;flex:none}
+.auction-squad-grid article div:last-child{min-width:0}
+.auction-squad-grid article span{font-size:11px;color:#efbd58}
+.auction-squad-grid h3{font:600 27px/1 "Teko",sans-serif;margin:5px 0;overflow-wrap:anywhere}
+.auction-squad-grid b{font-size:13px}
+@media(max-width:1150px){.auction-live-board{grid-template-columns:34% 66%}.auction-board-teams{grid-template-columns:repeat(2,minmax(0,1fr))}.auction-squad-selector{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.auction-live-board{display:block}.auction-board-player{border:0}.auction-board-photo{height:330px}.auction-board-teams{grid-template-columns:repeat(2,minmax(0,1fr))}.auction-board-control{padding:18px}.auction-board-totals{gap:10px}.auction-board-totals strong{font-size:28px}.auction-board-buttons{flex-wrap:wrap}.auction-board-buttons button{flex:1}.auction-squad-selector{grid-template-columns:repeat(2,1fr)}.auction-squad-title{flex-wrap:wrap}.auction-squad-title>div:nth-last-child(-n+2){margin-left:0}.auction-squad-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.auction-board-teams{grid-template-columns:1fr 1fr}.auction-bid-card{padding:11px;gap:9px}.auction-bid-card-head{display:block}.auction-bid-card-head .auction-crest{width:35px;height:40px;float:left;margin-right:6px}.auction-bid-card-head strong{font-size:21px}.auction-bid-card dl div{display:block}.auction-bid-card dt{display:block}.auction-bid-card dd{font-size:20px}.auction-board-totals{grid-template-columns:1fr 1fr}.auction-board-totals>div:last-child{grid-column:1/-1}.auction-squad-selector button{min-height:135px}.auction-squad-grid{grid-template-columns:1fr}.auction-squad-title{padding:18px}.auction-squad-title>div:nth-child(2){width:calc(100% - 80px)}}

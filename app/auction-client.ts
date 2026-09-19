@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { announcedCaptains, announcedTeams } from "./season5-teams";
 
 const url = import.meta.env.VITE_SUPABASE_URL;
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -22,6 +23,7 @@ export type AuctionConfig = {
 export type AuctionTeam = {
   id: string;
   name: string;
+  logo_url: string | null;
   purse: number;
   spent: number;
 };
@@ -55,11 +57,13 @@ export type AuctionSnapshot = {
   events: AuctionEvent[];
 };
 
+export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
+
 export async function getAuctionSnapshot(): Promise<AuctionSnapshot> {
-  if (!auctionClient) return { config: null, teams: [], players: [], events: [] };
+  if (!auctionClient) return preAuctionSnapshot;
   const [config, teams, players, events] = await Promise.all([
     auctionClient.from("auction_config").select("status,current_player_id,minimum_increment,default_base_price,min_squad_size,max_squad_size,money_label").eq("id", 1).maybeSingle(),
-    auctionClient.from("auction_teams").select("id,name,purse,spent").order("name"),
+    auctionClient.from("auction_teams").select("id,name,logo_url,purse,spent").order("name"),
     auctionClient.from("auction_players").select("id,name,role,photo,status,team_id,sold_price,current_bid,current_bid_team_id,base_price").order("name"),
     auctionClient.from("auction_events").select("id,event_type,player_id,team_id,amount,created_at").order("id", { ascending: false }).limit(12),
   ]);

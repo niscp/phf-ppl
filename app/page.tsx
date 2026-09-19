@@ -79,6 +79,7 @@ export default function Home() {
           <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="./players.html">Players</a>
+          <a href="./teams.html">Teams</a>
           <a href="./auction.html">Auction</a>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>

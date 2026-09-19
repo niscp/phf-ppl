@@ -1,0 +1,89 @@
+import type { AuctionPlayer, AuctionTeam } from "./auction-client";
+
+export type AnnouncedTeam = AuctionTeam & { captainPlayerId: string };
+
+export const announcedTeams: AnnouncedTeam[] = [
+  {
+    id: "11111111-1111-4111-8111-111111111111",
+    name: "PHF Blasterz",
+    logo_url: "/team-logos/phf-blasterz.jpg",
+    purse: 100000,
+    spent: 0,
+    captainPlayerId: "player-11",
+  },
+  {
+    id: "22222222-2222-4222-8222-222222222222",
+    name: "The Ball Breakers",
+    logo_url: "/team-logos/the-ball-breakers.jpg",
+    purse: 100000,
+    spent: 0,
+    captainPlayerId: "player-2",
+  },
+  {
+    id: "33333333-3333-4333-8333-333333333333",
+    name: "Super PHF Kings",
+    logo_url: "/team-logos/super-phf-kings.jpg",
+    purse: 100000,
+    spent: 0,
+    captainPlayerId: "player-24",
+  },
+  {
+    id: "44444444-4444-4444-8444-444444444444",
+    name: "High Flyers",
+    logo_url: null,
+    purse: 100000,
+    spent: 0,
+    captainPlayerId: "player-17",
+  },
+];
+
+export const announcedCaptains: AuctionPlayer[] = [
+  {
+    id: "player-11",
+    name: "Nikhil Miryala",
+    role: "All-rounder",
+    photo: "/season5-players/player-11.jpg",
+    status: "captain",
+    team_id: "11111111-1111-4111-8111-111111111111",
+    sold_price: 0,
+    current_bid: null,
+    current_bid_team_id: null,
+    base_price: null,
+  },
+  {
+    id: "player-2",
+    name: "Sohan Lath",
+    role: "All-rounder",
+    photo: "/season5-players/player-2.jpg",
+    status: "captain",
+    team_id: "22222222-2222-4222-8222-222222222222",
+    sold_price: 0,
+    current_bid: null,
+    current_bid_team_id: null,
+    base_price: null,
+  },
+  {
+    id: "player-24",
+    name: "Abhishek S",
+    role: "All-rounder",
+    photo: "/season5-players/player-24.jpg",
+    status: "captain",
+    team_id: "33333333-3333-4333-8333-333333333333",
+    sold_price: 0,
+    current_bid: null,
+    current_bid_team_id: null,
+    base_price: null,
+  },
+  {
+    id: "player-17",
+    name: "Aditya Ambikesh",
+    role: "Batter",
+    photo: "/season5-players/player-17.jpg",
+    status: "captain",
+    team_id: "44444444-4444-4444-8444-444444444444",
+    sold_price: 0,
+    current_bid: null,
+    current_bid_team_id: null,
+    base_price: null,
+  },
+];
