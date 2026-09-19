@@ -1,19 +1,18 @@
 # Season 5 self-hosted auction setup
 
-The public site remains on GitHub Pages. The live auction backend runs on the PHF EC2 server using Node.js, PostgreSQL and WebSockets. Redis and Supabase are not required.
+The complete website and live auction backend run on the PHF EC2 server using Nginx, Node.js, PostgreSQL and WebSockets. Redis and Supabase are not required.
 
 ## Production layout
 
-- `https://niscp.github.io/phf-ppl/` — public website
-- `https://auction-api.YOUR-DOMAIN/` — API and WebSocket endpoint
+- `https://phfppl.dwemory.com/` — public website, API and WebSocket endpoint
 - PostgreSQL — reachable only inside the Docker network
-- Caddy — automatic HTTPS and reverse proxy
+- Existing Nginx — static site, HTTPS and reverse proxy
 
 ## EC2 prerequisites
 
-1. Point an `A` DNS record such as `auction-api.example.com` to the EC2 public IPv4 address.
+1. Point the `phfppl.dwemory.com` `A` record to the EC2 public IPv4 address.
 2. Permit inbound TCP 80 and 443 in the EC2 security group. Do not expose ports 5432 or 8080.
-3. Install Docker Engine and the Docker Compose plugin.
+3. Docker Engine, Docker Compose, Nginx and Certbot must be installed.
 4. Clone this repository on the server and enter the `deploy` directory.
 
 ## Configure and start
@@ -27,17 +26,21 @@ Edit `.env` and replace every placeholder. Use independent random values for the
 ```bash
 docker compose up -d --build
 docker compose ps
-curl https://auction-api.example.com/health
+sudo cp phfppl.nginx /etc/nginx/sites-available/phfppl
+sudo ln -s /etc/nginx/sites-available/phfppl /etc/nginx/sites-enabled/phfppl
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot --nginx -d phfppl.dwemory.com
+curl https://phfppl.dwemory.com/health
 ```
 
 The API applies `server/schema.sql` idempotently at startup and creates or updates the auctioneer account from `ADMIN_EMAIL` and `ADMIN_PASSWORD`.
 
-## Connect GitHub Pages
+## Optional GitHub Pages mirror
 
 In GitHub → repository Settings → Secrets and variables → Actions → Variables, set:
 
 ```text
-VITE_AUCTION_API_URL=https://auction-api.example.com
+VITE_AUCTION_API_URL=https://phfppl.dwemory.com
 ```
 
 Run the Pages workflow again. Never put `DATABASE_URL`, `POSTGRES_PASSWORD`, `JWT_SECRET` or `ADMIN_PASSWORD` in GitHub Pages variables or browser code.
