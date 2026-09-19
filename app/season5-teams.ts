@@ -43,6 +43,14 @@ export const announcedTeams: AnnouncedTeam[] = [
     spent: 0,
     captainPlayerId: "player-7",
   },
+  {
+    id: "66666666-6666-4666-8666-666666666666",
+    name: "PHF Amigos",
+    logo_url: "/team-logos/phf-amigos.jpg",
+    purse: 100000,
+    spent: 0,
+    captainPlayerId: "player-15",
+  },
 ];
 
 export const announcedCaptains: AuctionPlayer[] = [
@@ -101,6 +109,18 @@ export const announcedCaptains: AuctionPlayer[] = [
     photo: "/season5-players/player-7.jpg",
     status: "captain",
     team_id: "55555555-5555-4555-8555-555555555555",
+    sold_price: 0,
+    current_bid: null,
+    current_bid_team_id: null,
+    base_price: null,
+  },
+  {
+    id: "player-15",
+    name: "Srikanth Kavuri",
+    role: "All-rounder",
+    photo: "/season5-players/player-15.jpg",
+    status: "captain",
+    team_id: "66666666-6666-4666-8666-666666666666",
     sold_price: 0,
     current_bid: null,
     current_bid_team_id: null,

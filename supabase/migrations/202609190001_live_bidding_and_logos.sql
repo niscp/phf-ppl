@@ -9,7 +9,8 @@ values
   ('22222222-2222-4222-8222-222222222222', 'The Ball Breakers', '/team-logos/the-ball-breakers.jpg', 100000),
   ('33333333-3333-4333-8333-333333333333', 'Super PHF Kings', '/team-logos/super-phf-kings.jpg', 100000),
   ('44444444-4444-4444-8444-444444444444', 'High Flyers', '/team-logos/high-flyers.jpg', 100000),
-  ('55555555-5555-4555-8555-555555555555', 'PHF Avengers', '/team-logos/phf-avengers.jpg', 100000)
+  ('55555555-5555-4555-8555-555555555555', 'PHF Avengers', '/team-logos/phf-avengers.jpg', 100000),
+  ('66666666-6666-4666-8666-666666666666', 'PHF Amigos', '/team-logos/phf-amigos.jpg', 100000)
 on conflict (id) do update set name = excluded.name, logo_url = excluded.logo_url;
 
 insert into public.auction_players(id, name, role, photo, status, team_id, sold_price)
@@ -18,7 +19,8 @@ values
   ('player-2', 'Sohan Lath', 'All-rounder', '/season5-players/player-2.jpg', 'captain', '22222222-2222-4222-8222-222222222222', 0),
   ('player-24', 'Abhishek S', 'All-rounder', '/season5-players/player-24.jpg', 'captain', '33333333-3333-4333-8333-333333333333', 0),
   ('player-17', 'Aditya Ambikesh', 'Batter', '/season5-players/player-17.jpg', 'captain', '44444444-4444-4444-8444-444444444444', 0),
-  ('player-7', 'Saurabh Gupta', 'All-rounder', '/season5-players/player-7.jpg', 'captain', '55555555-5555-4555-8555-555555555555', 0)
+  ('player-7', 'Saurabh Gupta', 'All-rounder', '/season5-players/player-7.jpg', 'captain', '55555555-5555-4555-8555-555555555555', 0),
+  ('player-15', 'Srikanth Kavuri', 'All-rounder', '/season5-players/player-15.jpg', 'captain', '66666666-6666-4666-8666-666666666666', 0)
 on conflict (id) do update set name = excluded.name, role = excluded.role, photo = excluded.photo,
   status = excluded.status, team_id = excluded.team_id, sold_price = 0, updated_at = now();
 
