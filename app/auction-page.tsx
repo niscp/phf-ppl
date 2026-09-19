@@ -3,9 +3,8 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
-import type { Session } from "@supabase/supabase-js";
 import registeredPlayers from "./season5-players.json";
-import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
+import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSession, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
 import { canBid, maxBidAllowed, nextBid, provisionalPurse, squadSize } from "./auction-math";
 import { auctionExcludedPlayerIds } from "./season5-teams";
 
@@ -155,7 +154,7 @@ function PublicAuction({ snapshot, loading, error }: { snapshot: AuctionSnapshot
 function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refresh: () => Promise<void> }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<AuctionSession | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -223,9 +222,9 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
 
   return <main className="auction-page auction-admin-page"><header className="auction-header"><a className="auction-brand" href={localLink("auction.html")}><b>PHF</b><span>Auctioneer</span></a><nav><a href={localLink("auction.html")}>Public board</a><span>Private console</span></nav></header>
     <div className="auction-admin-wrap"><p className="auction-overline">Season 5 · Auction operations</p><h1>Auctioneer console</h1>
-      {!auctionClient ? <div className="auction-admin-notice"><h2>Supabase connection needed</h2><p>The public auction preparation page is ready. To activate this private console, create a Supabase project, apply the auction migration, and add the project URL and publishable key to the GitHub Pages build. Do not put the service-role key in the website.</p></div>
+      {!auctionClient ? <div className="auction-admin-notice"><h2>Auction API connection needed</h2><p>The public auction preparation page is ready. Add the self-hosted auction API URL to the website build as <code>VITE_AUCTION_API_URL</code>.</p></div>
         : !session ? <form className="auction-admin-form" onSubmit={signIn}><h2>Sign in</h2><p>Only approved auctioneers can change the live board.</p><label>Email<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>Password<input type="password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label><button>Sign in</button></form>
-          : !isAdmin ? <div className="auction-admin-notice"><h2>Access not granted</h2><p>Your account is signed in, but it is not on the auctioneer list. Ask the organizer to add your Supabase user ID to auction_admins.</p><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
+          : !isAdmin ? <div className="auction-admin-notice"><h2>Access not granted</h2><p>Your account is signed in, but it is not an active auctioneer account.</p><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
             : <><div className="auction-admin-top"><span>Board: <b>{snapshot.config?.status ?? "not initialized"}</b></span><span>Teams: <b>{snapshot.teams.length} / 6</b></span><span>Captains: <b>{captainCount} / 6</b></span><span>Auction pool: <b>{snapshot.players.filter((player) => player.status !== "captain").length} / {playerPool.length}</b></span><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
               {feedback && <p className="auction-feedback" role="status">{feedback}</p>}
               <section className="auction-admin-panel"><h2>1. Prepare the room</h2><p>Import the frozen Season 5 auction pool, then add all six teams. Captains are assigned directly to squads and are not auctioned.</p><button disabled={busy || snapshot.config?.status !== "preparing"} onClick={() => action("auction_import_players", { p_players: playerPool.map((player) => ({ id: player.id, name: player.name, role: player.role, photo: player.photo })) })}>Import {playerPool.length} auction players</button><form onSubmit={(event) => { event.preventDefault(); action("auction_add_team", { p_name: teamName.trim(), p_purse: Number(teamPurse) }).then(() => setTeamName("")); }}><label>Team name<input required value={teamName} onChange={(event) => setTeamName(event.target.value)} /></label><label>Starting purse<input type="number" min="1" required value={teamPurse} onChange={(event) => setTeamPurse(event.target.value)} /></label><button disabled={busy || snapshot.teams.length >= 6 || snapshot.config?.status !== "preparing"}>Add team</button></form><ul>{snapshot.teams.map((team) => <li key={team.id}>{team.name} · {amount(team.purse, unit)}</li>)}</ul></section>

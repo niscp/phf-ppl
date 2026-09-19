@@ -160,7 +160,7 @@ export default function Home() {
       <section className="legacy-stage" id="legacy">
         <div className="legacy-title"><p>Five years in the making</p><h2>This is<br/>our <em>legacy.</em></h2><span>Thirty real moments. One PHF family.</span></div>
         <div className="cinema-gallery">
-          {legacyPhotos.map((photo, index) => <a className={photo.className} href={photo.src} target="_blank" key={photo.src} aria-label={`Open legacy photograph ${index + 1}`}><img src={photo.src} alt={photo.alt} loading="lazy"/><span>{String(index + 1).padStart(2, "0")}</span></a>)}
+          {legacyPhotos.map((photo, index) => <a className={photo.className} href={photo.src} target="_blank" rel="noreferrer" key={photo.src} aria-label={`Open legacy photograph ${index + 1}`}><img src={photo.src} alt={photo.alt} loading="lazy"/><span>{String(index + 1).padStart(2, "0")}</span></a>)}
         </div>
       </section>
 

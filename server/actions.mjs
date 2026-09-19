@@ -1,0 +1,148 @@
+const allowedStatuses = new Set(["live", "paused", "complete"]);
+
+async function audit(db, actorId, action, details = {}) {
+  await db.query("insert into auction_audit(actor_id,action,details) values($1,$2,$3)", [actorId, action, details]);
+}
+
+async function configForUpdate(db) {
+  const { rows } = await db.query("select * from auction_config where id=1 for update");
+  return rows[0];
+}
+
+export async function runAction(db, actorId, name, p = {}) {
+  switch (name) {
+    case "auction_import_players": {
+      const config = await configForUpdate(db);
+      if (config.status !== "preparing") throw new Error("Player import is closed");
+      if (!Array.isArray(p.p_players) || p.p_players.length > 200) throw new Error("Invalid player import");
+      for (const player of p.p_players) {
+        if (!/^player-[0-9]+$/.test(player.id || "") || String(player.name || "").trim().length < 2) throw new Error("Invalid player entry");
+        await db.query(`insert into auction_players(id,name,role,photo) values($1,$2,$3,$4)
+          on conflict(id) do update set name=excluded.name,role=excluded.role,photo=excluded.photo,updated_at=now()
+          where auction_players.status='queued'`, [player.id, String(player.name).trim(), player.role || "Player", player.photo || null]);
+      }
+      await db.query("delete from auction_players where id='player-65'");
+      await audit(db, actorId, name, { submitted: p.p_players.length });
+      return p.p_players.length;
+    }
+    case "auction_add_team": {
+      const config = await configForUpdate(db);
+      if (config.status !== "preparing") throw new Error("Teams are locked");
+      const count = Number((await db.query("select count(*) from auction_teams")).rows[0].count);
+      if (count >= 6) throw new Error("Six teams already exist");
+      const purse = Number(p.p_purse);
+      if (!Number.isSafeInteger(purse) || purse <= 0) throw new Error("Purse must be positive");
+      const { rows } = await db.query("insert into auction_teams(id,name,purse) values(gen_random_uuid(),$1,$2) returning id", [String(p.p_name || "").trim(), purse]);
+      await audit(db, actorId, name, { team_id: rows[0].id });
+      return rows[0].id;
+    }
+    case "auction_assign_captain": {
+      const config = await configForUpdate(db);
+      if (config.status !== "preparing") throw new Error("Captain assignments are locked");
+      const { rowCount } = await db.query("update auction_players set status='captain',team_id=$1,sold_price=0,updated_at=now() where id=$2 and status='queued'", [p.p_team_id, p.p_player_id]);
+      if (!rowCount) throw new Error("Choose a queued player");
+      await db.query("insert into auction_events(event_type,player_id,team_id,amount) values('captain',$1,$2,0)", [p.p_player_id, p.p_team_id]);
+      await audit(db, actorId, name, p); return null;
+    }
+    case "auction_unassign_captain": {
+      const config = await configForUpdate(db);
+      if (config.status !== "preparing") throw new Error("Captain assignments are locked");
+      const { rowCount } = await db.query("update auction_players set status='queued',team_id=null,sold_price=null,updated_at=now() where id=$1 and status='captain'", [p.p_player_id]);
+      if (!rowCount) throw new Error("Choose an assigned captain");
+      await db.query("delete from auction_events where player_id=$1 and event_type='captain'", [p.p_player_id]);
+      await audit(db, actorId, name, p); return null;
+    }
+    case "auction_set_rules": {
+      const base = Number(p.p_base_price), increment = Number(p.p_increment), min = Number(p.p_min_squad_size), max = Number(p.p_max_squad_size);
+      if (![base, increment, min, max].every(Number.isSafeInteger) || base < 0 || increment <= 0 || min < 1 || max < min) throw new Error("Invalid auction rules");
+      const { rowCount } = await db.query(`update auction_config set default_base_price=$1,minimum_increment=$2,min_squad_size=$3,max_squad_size=$4,money_label=$5,updated_at=now() where id=1 and status='preparing'`, [base, increment, min, max, String(p.p_money_label || "").trim()]);
+      if (!rowCount) throw new Error("Rules are locked once the auction starts");
+      await audit(db, actorId, name, p); return null;
+    }
+    case "auction_set_status": {
+      const config = await configForUpdate(db); const next = p.p_status;
+      if (!allowedStatuses.has(next)) throw new Error("Invalid auction status transition");
+      if (next === "live" && config.status === "preparing") {
+        const teamCount = Number((await db.query("select count(*) from auction_teams")).rows[0].count);
+        const captainCount = Number((await db.query("select count(*) from auction_players where status='captain'")).rows[0].count);
+        if (teamCount !== 6 || captainCount !== 6 || config.default_base_price === null || config.minimum_increment === null) throw new Error("Add six teams, six captains, players and auction rules first");
+      } else if (!(next === "live" && config.status === "paused") && !(next === "paused" && config.status === "live") && !(next === "complete" && config.status === "paused")) throw new Error("Invalid auction status transition");
+      if (next === "complete") {
+        if (config.current_player_id) throw new Error("Finish the current player first");
+        const { rows } = await db.query(`select min(n)::int min,max(n)::int max from (select count(p.id)::int n from auction_teams t left join auction_players p on p.team_id=t.id and p.status in ('captain','sold') group by t.id) s`);
+        if (rows[0].min < config.min_squad_size || rows[0].max - rows[0].min > 1) throw new Error("Squads must meet the minimum size and differ by at most one player");
+      }
+      await db.query("update auction_config set status=$1,updated_at=now() where id=1", [next]);
+      await audit(db, actorId, name, { from: config.status, to: next }); return null;
+    }
+    case "auction_start_player": {
+      const config = await configForUpdate(db);
+      if (config.status !== "live" || config.current_player_id) throw new Error("Finish the current player or resume the auction");
+      const { rowCount } = await db.query("update auction_players set status='up',updated_at=now() where id=$1 and status='queued'", [p.p_player_id]);
+      if (!rowCount) throw new Error("Choose a queued player");
+      await db.query("update auction_config set current_player_id=$1,updated_at=now() where id=1", [p.p_player_id]);
+      await db.query("insert into auction_events(event_type,player_id) values('called',$1)", [p.p_player_id]);
+      await audit(db, actorId, name, p); return null;
+    }
+    case "auction_place_bid": {
+      const config = await configForUpdate(db);
+      if (config.status !== "live" || !config.current_player_id) throw new Error("No live player on the block");
+      const player = (await db.query("select * from auction_players where id=$1 for update", [config.current_player_id])).rows[0];
+      const team = (await db.query("select * from auction_teams where id=$1 for update", [p.p_team_id])).rows[0];
+      if (!team) throw new Error("Choose a team");
+      const squad = Number((await db.query("select count(*) from auction_players where team_id=$1 and status in ('captain','sold')", [team.id])).rows[0].count);
+      const value = Number(p.p_amount); const minimum = player.current_bid === null ? (player.base_price ?? config.default_base_price) : Number(player.current_bid) + Number(config.minimum_increment);
+      const reserve = Math.max(0, config.min_squad_size - squad - 1) * Number(config.default_base_price);
+      if (!Number.isSafeInteger(value) || value < minimum) throw new Error("Bid is below the next valid amount");
+      if (squad >= config.max_squad_size) throw new Error("Team squad is full");
+      if (value > Number(team.purse) - Number(team.spent) - reserve) throw new Error("Bid would leave too little purse to complete the minimum squad");
+      await db.query("update auction_players set current_bid=$1,current_bid_team_id=$2,updated_at=now() where id=$3", [value, team.id, player.id]);
+      await db.query("insert into auction_events(event_type,player_id,team_id,amount) values('bid',$1,$2,$3)", [player.id, team.id, value]);
+      await audit(db, actorId, name, { player_id: player.id, team_id: team.id, amount: value }); return null;
+    }
+    case "auction_sell_current": {
+      const config = await configForUpdate(db);
+      if (config.status !== "live" || !config.current_player_id) throw new Error("No live player");
+      const player = (await db.query("select * from auction_players where id=$1 for update", [config.current_player_id])).rows[0];
+      if (!player.current_bid_team_id || player.current_bid === null) throw new Error("Record a bid first");
+      const team = (await db.query("select * from auction_teams where id=$1 for update", [player.current_bid_team_id])).rows[0];
+      if (Number(team.spent) + Number(player.current_bid) > Number(team.purse)) throw new Error("Team cannot complete this purchase");
+      await db.query("update auction_teams set spent=spent+$1 where id=$2", [player.current_bid, team.id]);
+      await db.query("update auction_players set status='sold',team_id=$1,sold_price=current_bid,updated_at=now() where id=$2", [team.id, player.id]);
+      await db.query("update auction_config set current_player_id=null,updated_at=now() where id=1");
+      await db.query("insert into auction_events(event_type,player_id,team_id,amount) values('sold',$1,$2,$3)", [player.id, team.id, player.current_bid]);
+      await audit(db, actorId, name, { player_id: player.id, team_id: team.id, amount: player.current_bid }); return null;
+    }
+    case "auction_mark_unsold": {
+      const config = await configForUpdate(db);
+      if (config.status !== "live" || !config.current_player_id) throw new Error("No live player");
+      await db.query("update auction_players set status='unsold',current_bid=null,current_bid_team_id=null,updated_at=now() where id=$1", [config.current_player_id]);
+      await db.query("update auction_config set current_player_id=null,updated_at=now() where id=1");
+      await db.query("insert into auction_events(event_type,player_id) values('unsold',$1)", [config.current_player_id]);
+      await audit(db, actorId, name, { player_id: config.current_player_id }); return null;
+    }
+    case "auction_reset_current_bids": {
+      const config = await configForUpdate(db);
+      if (!config.current_player_id || !["live", "paused"].includes(config.status)) throw new Error("No current player to reset");
+      await db.query("update auction_players set current_bid=null,current_bid_team_id=null,updated_at=now() where id=$1", [config.current_player_id]);
+      await audit(db, actorId, name, { player_id: config.current_player_id }); return null;
+    }
+    case "auction_requeue_unsold": {
+      const config = await configForUpdate(db);
+      if (!["live", "paused"].includes(config.status)) throw new Error("Auction is not open");
+      const { rowCount } = await db.query("update auction_players set status='queued',updated_at=now() where id=$1 and status='unsold'", [p.p_player_id]);
+      if (!rowCount) throw new Error("Choose an unsold player");
+      await db.query("insert into auction_events(event_type,player_id) values('requeued',$1)", [p.p_player_id]);
+      await audit(db, actorId, name, p); return null;
+    }
+    case "auction_set_team_logo": {
+      const logo = String(p.p_logo_url || "").trim() || null;
+      if (logo && (logo.length > 500 || !/^(https:\/\/|\/[A-Za-z0-9_./-]+$)/.test(logo))) throw new Error("Use an HTTPS or site-local logo URL");
+      const { rowCount } = await db.query("update auction_teams set logo_url=$1 where id=$2", [logo, p.p_team_id]);
+      if (!rowCount) throw new Error("Team not found");
+      await audit(db, actorId, name, p); return null;
+    }
+    default: throw new Error("Unknown auction action");
+  }
+}
+
