@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import playersJson from "./season5-players.json";
+import { auctionExcludedPlayerIds } from "./season5-teams";
 
 type Discipline = {
   innings?: number | null;
@@ -26,7 +27,7 @@ type Player = {
   statsProfileName?: string;
 };
 
-const players = (playersJson as Player[]).slice().sort((a, b) => a.name.localeCompare(b.name));
+const players = (playersJson as Player[]).filter((player) => !auctionExcludedPlayerIds.has(player.id)).sort((a, b) => a.name.localeCompare(b.name));
 const pageSize = 12;
 const roleOptions = ["All players", "All-rounder", "Batter", "Bowler"];
 
@@ -74,12 +75,12 @@ export default function PlayersPage() {
       <div className="roster-hero-copy">
         <p className="roster-eyebrow">PHF Premier League / 2026</p>
         <h1>The player<br/><em>pool.</em></h1>
-        <p>Every player who entered the Season 5 registration form. Real faces, real names, and the roles they chose.</p>
+        <p>The Season 5 auction pool. Playing captains are shown with their teams instead of here.</p>
       </div>
       <div className="roster-hero-portraits" aria-hidden="true">
         {players.filter((player) => player.photo).slice(0, 4).map((player) => <img key={player.id} src={getAssetUrl(player.photo!)} alt="" />)}
       </div>
-      <div className="roster-hero-count"><b>{players.length}</b><span>player registrations</span></div>
+      <div className="roster-hero-count"><b>{players.length}</b><span>auction players</span></div>
     </section>
 
     <section className="roster-directory" aria-label="Registered players">
@@ -104,7 +105,7 @@ export default function PlayersPage() {
       </article>)}</div> : <div className="roster-empty">No players match that search.</div>}
 
       {pageCount > 1 && <div className="roster-pages" aria-label="Player pages"><button type="button" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</button><span>Page {page} of {pageCount}</span><button type="button" onClick={() => setPage(Math.min(pageCount, page + 1))} disabled={page === pageCount}>Next</button></div>}
-      <p className="roster-source-note">Player names, submitted photos and roles come from the Season 5 registration form. Career stats come from each player-submitted CricHeroes link; profile nicknames are shown when they differ. These are not Season 5 or PHF-only totals. An unavailable message never means zero runs or wickets. No contact or payment details are published.</p>
+      <p className="roster-source-note">Player names, submitted photos and roles come from the Season 5 registration form. Playing captains are excluded from this auction pool and appear on the Teams page. Career stats come from each player-submitted CricHeroes link; profile nicknames are shown when they differ. These are not Season 5 or PHF-only totals. An unavailable message never means zero runs or wickets. No contact or payment details are published.</p>
     </section>
     <footer className="roster-footer"><a href={homeUrl}>PHF Premier League</a><span>Season 5 · 2026</span></footer>
   </main>;

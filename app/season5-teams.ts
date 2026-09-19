@@ -30,10 +30,18 @@ export const announcedTeams: AnnouncedTeam[] = [
   {
     id: "44444444-4444-4444-8444-444444444444",
     name: "High Flyers",
-    logo_url: null,
+    logo_url: "/team-logos/high-flyers.jpg",
     purse: 100000,
     spent: 0,
     captainPlayerId: "player-17",
+  },
+  {
+    id: "55555555-5555-4555-8555-555555555555",
+    name: "PHF Avengers",
+    logo_url: "/team-logos/phf-avengers.jpg",
+    purse: 100000,
+    spent: 0,
+    captainPlayerId: "player-7",
   },
 ];
 
@@ -86,4 +94,21 @@ export const announcedCaptains: AuctionPlayer[] = [
     current_bid_team_id: null,
     base_price: null,
   },
+  {
+    id: "player-7",
+    name: "Saurabh Gupta",
+    role: "All-rounder",
+    photo: "/season5-players/player-7.jpg",
+    status: "captain",
+    team_id: "55555555-5555-4555-8555-555555555555",
+    sold_price: 0,
+    current_bid: null,
+    current_bid_team_id: null,
+    base_price: null,
+  },
 ];
+
+export const auctionExcludedPlayerIds = new Set([
+  ...announcedTeams.map((team) => team.captainPlayerId),
+  "player-65", // Sravan Kumar Sriramoju — removed from the Season 5 player pool.
+]);
