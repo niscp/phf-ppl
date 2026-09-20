@@ -3,13 +3,15 @@
 import { useState } from "react";
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
-const venueUrl = "https://share.google/clJmAmYZH5Kvxpb4x";
+const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
 
 const matchDays = [
   { day: "21", label: "Opening Friday" },
   { day: "22", label: "Super Saturday" },
-  { day: "28", label: "Finals weekend" },
-  { day: "29", label: "Championship day" },
+  { day: "28", label: "Round-robin Friday" },
+  { day: "29", label: "Round-robin Saturday" },
+  { day: "05", month: "Dec", label: "Finals weekend" },
+  { day: "06", month: "Dec", label: "Championship day" },
 ];
 
 const champions = [
@@ -56,7 +58,7 @@ const tournamentHonours = [
 
 const seasonFiveStages = [
   { label: "Closed", title: "Player registrations", detail: "The Season 5 player pool is in place.", state: "live" },
-  { label: "Up next", title: "Captain auction", detail: "Six captains will build balanced squads when the auction opens.", state: "next" },
+  { label: "27 Sep 2026", title: "Captain auction", detail: "Six captains will build balanced squads on auction day.", state: "next" },
   { label: "After auction", title: "Teams & squads", detail: "Official team names and player rosters will appear here.", state: "locked" },
   { label: "Before matchday", title: "Fixtures & table", detail: "Schedule, results and standings will follow.", state: "locked" },
 ];
@@ -100,23 +102,24 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-fixture">
-          <span>Match days</span><b>21 · 22 · 28 · 29</b><small>November 2026 · SRRC Cricket Ground</small>
+          <span>Match days</span><b>21 · 22 · 28 · 29 Nov</b><small>5 · 6 December 2026 · Melbourne Cricket Ground</small>
         </div>
         <div className="hero-edition"><span>Edition</span><b>05</b></div>
       </section>
 
-      <div className="broadcast-strip"><div>THE LEAGUE RETURNS <i>◆</i> DAY &amp; NIGHT CRICKET <i>◆</i> 5 YEAR LEGACY <i>◆</i> AUCTION BASED <i>◆</i> THE LEAGUE RETURNS <i>◆</i> DAY &amp; NIGHT CRICKET <i>◆</i></div></div>
+      <div className="broadcast-strip"><div>THE LEAGUE RETURNS <i>◆</i> DAYTIME CRICKET <i>◆</i> IPL-STYLE ROUND ROBIN <i>◆</i> AUCTION BASED <i>◆</i> THE LEAGUE RETURNS <i>◆</i> ONE MATCH PER PLAYER PER DAY <i>◆</i></div></div>
 
       <section className="dates-stage" id="dates">
-        <div className="section-intro"><p>The 2026 tournament</p><h2>Four days.<br/><em>One champion.</em></h2></div>
+        <div className="section-intro"><p>The 2026 tournament</p><h2>Six days.<br/><em>One champion.</em></h2></div>
         <div className="date-grid">
-          {matchDays.map((item, index) => <article className="date-tile" key={item.day}><span>0{index + 1}</span><strong>{item.day}</strong><b>Nov</b><small>{item.label}</small></article>)}
+          {matchDays.map((item, index) => <article className="date-tile" key={`${item.day}-${item.month ?? "Nov"}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.day}</strong><b>{item.month ?? "Nov"}</b><small>{item.label}</small></article>)}
         </div>
         <div className="event-rail">
-          <div><span>Venue</span><b>SRRC Cricket Ground</b><a href={venueUrl} target="_blank" rel="noreferrer">Map ↗</a></div>
-          <div><span>Format</span><b>Minimum 3 matches</b><small>Including one night match</small></div>
+          <div><span>Venue</span><b>Melbourne Cricket Ground</b><a href={venueUrl} target="_blank" rel="noreferrer">Map search ↗</a></div>
+          <div><span>Format</span><b>IPL-style round robin</b><small>Every team plays every other team</small></div>
+          <div><span>Playing policy</span><b>Day games only</b><small>One match per player per day</small></div>
           <div><span>Entry</span><b>₹2,000</b><small>Invitations closed</small></div>
-          <div><span>Auction</span><b>Coming up</b><small>Six captain-led squads</small></div>
+          <div><span>Auction</span><b>27 September 2026</b><small>Six captain-led squads</small></div>
         </div>
       </section>
 
@@ -125,7 +128,7 @@ export default function Home() {
           <div className="section-intro"><p>Season 5 status</p><h2>The auction room<br/><em>is taking shape.</em></h2></div>
           <div className="live-invite"><i/><span>Invitations closed</span><b>Pre-auction phase</b></div>
         </div>
-        <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. Six playing captains will form nearly equal squads in the upcoming auction; official teams, fixtures and standings will follow.</p>
+        <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. On 27 September 2026, six playing captains will form nearly equal squads in the player auction; official fixtures and standings will follow.</p>
         <a className="auction-roster-link" href="./auction.html">Explore the auction room <span>↗</span></a>
         <div className="auction-track">
           {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href="./players.html">View registered players ↗</a> : stage.state === "next" ? <a href="./auction.html">View auction room ↗</a> : <small>Locked until announced</small>}</article>)}
@@ -177,7 +180,7 @@ export default function Home() {
         <div className="final-details"><a href={termsUrl} target="_blank" rel="noreferrer">Terms &amp; conditions ↗</a><a href={venueUrl} target="_blank" rel="noreferrer">Venue map ↗</a><span>Tarun · +91 98853 01226</span><span>Karthik · +91 84381 49893</span></div>
       </section>
 
-      <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November 2026</p><a href="#top">Back to top ↑</a></footer>
+      <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
     </main>
   );
 }

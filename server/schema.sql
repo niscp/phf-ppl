@@ -9,18 +9,37 @@ create table if not exists auction_admins (
 );
 create unique index if not exists auction_admins_email_lower on auction_admins(lower(email));
 
+create table if not exists auction_instances (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  kind text not null default 'demo' check (kind in ('official','demo')),
+  state_data jsonb,
+  active boolean not null default false,
+  archived boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create unique index if not exists auction_instances_one_active on auction_instances(active) where active;
+insert into auction_instances(name,kind,active)
+select 'Season 5 Official Auction','official',true
+where not exists (select 1 from auction_instances);
+
 create table if not exists auction_config (
   id integer primary key default 1 check (id = 1),
   status text not null default 'preparing' check (status in ('preparing','live','paused','complete')),
   current_player_id text,
   default_base_price bigint,
   minimum_increment bigint,
+  increment_threshold bigint,
+  increment_above_threshold bigint,
   min_squad_size integer not null default 14,
   max_squad_size integer default 15,
   money_label text not null default '₹',
   updated_at timestamptz not null default now()
 );
 insert into auction_config(id) values (1) on conflict do nothing;
+alter table auction_config add column if not exists increment_threshold bigint;
+alter table auction_config add column if not exists increment_above_threshold bigint;
 
 create table if not exists auction_teams (
   id uuid primary key,

@@ -2,7 +2,12 @@ import type { AuctionConfig, AuctionPlayer, AuctionTeam } from "./auction-client
 
 export function nextBid(player: AuctionPlayer | undefined, config: AuctionConfig | null): number | null {
   if (!player || !config) return null;
-  if (player.current_bid !== null) return player.current_bid + (config.minimum_increment ?? 0);
+  if (player.current_bid !== null) {
+    const increment = config.increment_threshold !== null && player.current_bid >= config.increment_threshold
+      ? (config.increment_above_threshold ?? config.minimum_increment ?? 0)
+      : (config.minimum_increment ?? 0);
+    return player.current_bid + increment;
+  }
   return player.base_price ?? config.default_base_price;
 }
 

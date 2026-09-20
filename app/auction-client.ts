@@ -30,10 +30,10 @@ async function request(path: string, init: RequestInit = {}) {
 export const auctionClient = apiUrl ? {
   auth: {
     async getSession() { return { data: { session: storedSession() } }; },
-    onAuthStateChange(listener: AuthListener) { authListeners.add(listener); return { data: { subscription: { unsubscribe: () => authListeners.delete(listener) } } }; },
+    onAuthStateChange(listener: AuthListener) { authListeners.add(listener); return { data: { subscription: { unsubscribe: () => { authListeners.delete(listener); } } } }; },
     async signInWithPassword(credentials: { email: string; password: string }) {
       try {
-        const body = await request("/api/auth/login", { method: "POST", body: JSON.stringify(credentials) });
+        const body = await request("/api/auth/login", { method: "POST", body: JSON.stringify({ username: credentials.email, password: credentials.password }) });
         window.localStorage.setItem(tokenKey, body.token); window.localStorage.setItem(`${tokenKey}-user`, JSON.stringify(body.user));
         const session = storedSession(); authListeners.forEach((listener) => listener("SIGNED_IN", session));
         return { data: { session }, error: null };
@@ -53,7 +53,11 @@ export const auctionClient = apiUrl ? {
       return { data: body.data, error: null };
     } catch (error) { return { data: null, error: error as Error }; }
   },
-  channel() {
+  async listAuctions() {
+    try { const body = await request("/api/admin/auctions"); return { data: body.auctions as AuctionInstance[], error: null }; }
+    catch (error) { return { data: [] as AuctionInstance[], error: error as Error }; }
+  },
+  channel(_name?: string) {
     let callback: (() => void) | null = null;
     return {
       on(_event: string, _filter: unknown, listener: () => void) { callback = listener; return this; },
@@ -69,12 +73,13 @@ export const auctionClient = apiUrl ? {
 } : null;
 
 export type AuctionStatus = "preparing" | "live" | "paused" | "complete";
+export type AuctionInstance = { id: string; name: string; kind: "official" | "demo"; active: boolean; archived: boolean; status: AuctionStatus; player_count: number; created_at: string; updated_at: string };
 export type PlayerStatus = "queued" | "captain" | "up" | "sold" | "unsold";
-export type AuctionConfig = { status: AuctionStatus; current_player_id: string | null; minimum_increment: number | null; default_base_price: number | null; min_squad_size: number; max_squad_size: number | null; money_label: string | null };
+export type AuctionConfig = { status: AuctionStatus; current_player_id: string | null; minimum_increment: number | null; increment_threshold: number | null; increment_above_threshold: number | null; default_base_price: number | null; min_squad_size: number; max_squad_size: number | null; money_label: string | null };
 export type AuctionTeam = { id: string; name: string; logo_url: string | null; purse: number; spent: number };
 export type AuctionPlayer = { id: string; name: string; role: string; photo: string | null; status: PlayerStatus; team_id: string | null; sold_price: number | null; current_bid: number | null; current_bid_team_id: string | null; base_price: number | null };
 export type AuctionEvent = { id: number; event_type: string; player_id: string; team_id: string | null; amount: number | null; created_at: string };
-export type AuctionSnapshot = { config: AuctionConfig | null; teams: AuctionTeam[]; players: AuctionPlayer[]; events: AuctionEvent[] };
+export type AuctionSnapshot = { auction?: { id: string; name: string; kind: "official" | "demo" } | null; config: AuctionConfig | null; teams: AuctionTeam[]; players: AuctionPlayer[]; events: AuctionEvent[] };
 
 export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
 export async function getAuctionSnapshot(): Promise<AuctionSnapshot> {

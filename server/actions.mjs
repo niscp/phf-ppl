@@ -9,8 +9,106 @@ async function configForUpdate(db) {
   return rows[0];
 }
 
+async function currentState(db) {
+  const [config, teams, players, events] = await Promise.all([
+    db.query("select * from auction_config where id=1"),
+    db.query("select * from auction_teams order by name"),
+    db.query("select * from auction_players order by name"),
+    db.query("select event_type,player_id,team_id,amount,created_at from auction_events order by id"),
+  ]);
+  return { config: config.rows[0], teams: teams.rows, players: players.rows, events: events.rows };
+}
+
+async function saveActiveState(db) {
+  const active = (await db.query("select id from auction_instances where active=true for update")).rows[0];
+  if (!active) throw new Error("No active auction");
+  await db.query("update auction_instances set state_data=$1,updated_at=now() where id=$2", [await currentState(db), active.id]);
+  return active.id;
+}
+
+function resetState(source, rules = {}) {
+  const purse = Number(rules.purse || source.teams?.[0]?.purse || 100000);
+  return {
+    config: {
+      status: "preparing", current_player_id: null,
+      default_base_price: Number(rules.base || source.config?.default_base_price || 2000),
+      minimum_increment: Number(rules.increment || source.config?.minimum_increment || 1000),
+      increment_threshold: Number(rules.threshold || source.config?.increment_threshold || 50000),
+      increment_above_threshold: Number(rules.incrementAbove || source.config?.increment_above_threshold || 2000),
+      min_squad_size: Number(rules.minSquad || source.config?.min_squad_size || 14),
+      max_squad_size: Number(rules.maxSquad || source.config?.max_squad_size || 15),
+      money_label: String(rules.moneyLabel || source.config?.money_label || "₹"),
+    },
+    teams: (source.teams || []).map((team) => ({ ...team, purse, spent: 0 })),
+    players: (source.players || []).map((player) => ({ ...player, status: player.status === "captain" ? "captain" : "queued", team_id: player.status === "captain" ? player.team_id : null, sold_price: player.status === "captain" ? 0 : null, current_bid: null, current_bid_team_id: null, base_price: null })),
+    events: [],
+  };
+}
+
+async function loadState(db, state) {
+  await db.query("update auction_config set current_player_id=null where id=1");
+  await db.query("delete from auction_events");
+  await db.query("delete from auction_players");
+  await db.query("delete from auction_teams");
+  for (const team of state.teams || []) await db.query("insert into auction_teams(id,name,logo_url,purse,spent) values($1,$2,$3,$4,$5)", [team.id, team.name, team.logo_url || null, team.purse, team.spent || 0]);
+  for (const player of state.players || []) await db.query(`insert into auction_players(id,name,role,photo,status,team_id,sold_price,current_bid,current_bid_team_id,base_price) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [player.id, player.name, player.role, player.photo || null, player.status, player.team_id || null, player.sold_price, player.current_bid, player.current_bid_team_id || null, player.base_price]);
+  const config = state.config || {};
+  await db.query(`update auction_config set status=$1,current_player_id=$2,default_base_price=$3,minimum_increment=$4,increment_threshold=$5,increment_above_threshold=$6,min_squad_size=$7,max_squad_size=$8,money_label=$9,updated_at=now() where id=1`, [config.status || "preparing", config.current_player_id || null, config.default_base_price, config.minimum_increment, config.increment_threshold, config.increment_above_threshold, config.min_squad_size || 14, config.max_squad_size || 15, config.money_label || "₹"]);
+  for (const event of state.events || []) await db.query("insert into auction_events(event_type,player_id,team_id,amount,created_at) values($1,$2,$3,$4,$5)", [event.event_type, event.player_id, event.team_id || null, event.amount, event.created_at || new Date()]);
+}
+
 export async function runAction(db, actorId, name, p = {}) {
   switch (name) {
+    case "auction_create_instance": {
+      const nameValue = String(p.p_name || "").trim();
+      if (nameValue.length < 3 || nameValue.length > 80) throw new Error("Auction name must be 3–80 characters");
+      const kind = p.p_kind === "official" ? "official" : "demo";
+      const source = await currentState(db);
+      const state = resetState(source, { purse: p.p_purse, base: p.p_base_price, increment: p.p_increment, threshold: p.p_increment_threshold, incrementAbove: p.p_increment_above_threshold, minSquad: p.p_min_squad_size, maxSquad: p.p_max_squad_size, moneyLabel: p.p_money_label });
+      if (Array.isArray(p.p_players)) for (const player of p.p_players) {
+        if (!/^player-[0-9]+$/.test(player.id || "") || String(player.name || "").trim().length < 2) throw new Error("Invalid player entry");
+        if (!state.players.some((existing) => existing.id === player.id)) state.players.push({ id: player.id, name: String(player.name).trim(), role: player.role || "Player", photo: player.photo || null, status: "queued", team_id: null, sold_price: null, current_bid: null, current_bid_team_id: null, base_price: null });
+      }
+      const { rows } = await db.query("insert into auction_instances(name,kind,state_data) values($1,$2,$3) returning id", [nameValue, kind, state]);
+      await audit(db, actorId, name, { auction_id: rows[0].id, auction_name: nameValue }); return rows[0].id;
+    }
+    case "auction_duplicate_instance": {
+      const sourceRow = (await db.query("select * from auction_instances where id=$1 and archived=false", [p.p_id])).rows[0];
+      if (!sourceRow) throw new Error("Auction not found");
+      if (sourceRow.active) await saveActiveState(db);
+      const fresh = (await db.query("select state_data from auction_instances where id=$1", [p.p_id])).rows[0].state_data;
+      const copyName = String(p.p_name || `${sourceRow.name} copy`).trim();
+      const { rows } = await db.query("insert into auction_instances(name,kind,state_data) values($1,'demo',$2) returning id", [copyName, resetState(fresh)]);
+      await audit(db, actorId, name, { source_id: p.p_id, auction_id: rows[0].id }); return rows[0].id;
+    }
+    case "auction_open_instance": {
+      const config = await configForUpdate(db);
+      if (config.status === "live") throw new Error("Pause the live auction before switching");
+      const target = (await db.query("select * from auction_instances where id=$1 and archived=false for update", [p.p_id])).rows[0];
+      if (!target) throw new Error("Auction not found");
+      await saveActiveState(db);
+      await loadState(db, target.state_data || resetState(await currentState(db)));
+      await db.query("update auction_instances set active=false where active=true");
+      await db.query("update auction_instances set active=true,updated_at=now() where id=$1", [target.id]);
+      await audit(db, actorId, name, { auction_id: target.id }); return null;
+    }
+    case "auction_update_instance": {
+      const nameValue = String(p.p_name || "").trim();
+      if (nameValue.length < 3 || nameValue.length > 80) throw new Error("Auction name must be 3–80 characters");
+      const { rowCount } = await db.query("update auction_instances set name=$1,kind=$2,updated_at=now() where id=$3 and archived=false", [nameValue, p.p_kind === "official" ? "official" : "demo", p.p_id]);
+      if (!rowCount) throw new Error("Auction not found");
+      await audit(db, actorId, name, { auction_id: p.p_id }); return null;
+    }
+    case "auction_archive_instance": {
+      const { rowCount } = await db.query("update auction_instances set archived=true,updated_at=now() where id=$1 and active=false", [p.p_id]);
+      if (!rowCount) throw new Error("Open another auction before archiving this one");
+      await audit(db, actorId, name, { auction_id: p.p_id }); return null;
+    }
+    case "auction_delete_instance": {
+      const { rowCount } = await db.query("delete from auction_instances where id=$1 and active=false and kind='demo'", [p.p_id]);
+      if (!rowCount) throw new Error("Only an inactive demo auction can be deleted");
+      await audit(db, actorId, name, { auction_id: p.p_id }); return null;
+    }
     case "auction_import_players": {
       const config = await configForUpdate(db);
       if (config.status !== "preparing") throw new Error("Player import is closed");
@@ -53,9 +151,9 @@ export async function runAction(db, actorId, name, p = {}) {
       await audit(db, actorId, name, p); return null;
     }
     case "auction_set_rules": {
-      const base = Number(p.p_base_price), increment = Number(p.p_increment), min = Number(p.p_min_squad_size), max = Number(p.p_max_squad_size);
-      if (![base, increment, min, max].every(Number.isSafeInteger) || base < 0 || increment <= 0 || min < 1 || max < min) throw new Error("Invalid auction rules");
-      const { rowCount } = await db.query(`update auction_config set default_base_price=$1,minimum_increment=$2,min_squad_size=$3,max_squad_size=$4,money_label=$5,updated_at=now() where id=1 and status='preparing'`, [base, increment, min, max, String(p.p_money_label || "").trim()]);
+      const base = Number(p.p_base_price), increment = Number(p.p_increment), threshold = Number(p.p_increment_threshold), incrementAbove = Number(p.p_increment_above_threshold), min = Number(p.p_min_squad_size), max = Number(p.p_max_squad_size);
+      if (![base, increment, threshold, incrementAbove, min, max].every(Number.isSafeInteger) || base < 0 || increment <= 0 || threshold < 0 || incrementAbove <= 0 || min < 1 || max < min) throw new Error("Invalid auction rules");
+      const { rowCount } = await db.query(`update auction_config set default_base_price=$1,minimum_increment=$2,increment_threshold=$3,increment_above_threshold=$4,min_squad_size=$5,max_squad_size=$6,money_label=$7,updated_at=now() where id=1 and status='preparing'`, [base, increment, threshold, incrementAbove, min, max, String(p.p_money_label || "").trim()]);
       if (!rowCount) throw new Error("Rules are locked once the auction starts");
       await audit(db, actorId, name, p); return null;
     }
@@ -91,7 +189,8 @@ export async function runAction(db, actorId, name, p = {}) {
       const team = (await db.query("select * from auction_teams where id=$1 for update", [p.p_team_id])).rows[0];
       if (!team) throw new Error("Choose a team");
       const squad = Number((await db.query("select count(*) from auction_players where team_id=$1 and status in ('captain','sold')", [team.id])).rows[0].count);
-      const value = Number(p.p_amount); const minimum = player.current_bid === null ? (player.base_price ?? config.default_base_price) : Number(player.current_bid) + Number(config.minimum_increment);
+      const increment = config.increment_threshold !== null && Number(player.current_bid) >= Number(config.increment_threshold) ? Number(config.increment_above_threshold ?? config.minimum_increment) : Number(config.minimum_increment);
+      const value = Number(p.p_amount); const minimum = player.current_bid === null ? (player.base_price ?? config.default_base_price) : Number(player.current_bid) + increment;
       const reserve = Math.max(0, config.min_squad_size - squad - 1) * Number(config.default_base_price);
       if (!Number.isSafeInteger(value) || value < minimum) throw new Error("Bid is below the next valid amount");
       if (squad >= config.max_squad_size) throw new Error("Team squad is full");
@@ -145,4 +244,3 @@ export async function runAction(db, actorId, name, p = {}) {
     default: throw new Error("Unknown auction action");
   }
 }
-
