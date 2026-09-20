@@ -37,6 +37,22 @@ REVIEWED_ALIASES = {
     "Phanidhar": "Phanidhar Raju",
     "SUBASH K REDDY": "Subash Reddy K",
     "Tarun Talluri": "Talluri Tarun",
+    # Registration-sheet links reviewed on 2026-09-20.
+    "Navin Jha": "navin kumar jha",
+    "Srikanth Kavuri": "Srikanth K",
+    "Abhishek S": "Abhishek S - PHF",
+    "Rai Sumit Kumar Sinha": "Sumit Sinha",
+    "Romit Kumar": "Romit K",
+    "Revanth reddy": "Revanth",
+    "Srinivas Janga": "SRINIVAS GN",
+    "Prashanth Palipudi (KP)": "Krishna Prashanth (KP)",
+    "Santosh Kumar Sriramoju": "Santosh Sriramoju",
+    "Jitendra Kumar Shukla": "Jeet",
+    "Praveer Kumar Kullu": "Praveer",
+    "Sunnihith": "DSY",
+    "Rajeswar Rao": "Raj",
+    "Yogesh": "Yogi",
+    "Bhupesh Jatiani": "Bhupesh",
 }
 
 

@@ -82,11 +82,10 @@ export default function Home() {
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="./players.html">Players</a>
           <a href="./teams.html">Teams</a>
-          <a href="./auction.html">Auction</a>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
-          <a className="gold-link" href="./auction.html">Auction room ↗</a>
+          <a className="gold-link" href="./teams.html">Meet the teams ↗</a>
         </nav>
       </header>
 
@@ -98,7 +97,7 @@ export default function Home() {
           <h1><span>Five years.</span><strong>One legacy.</strong></h1>
           <p className="hero-statement">The lights come on. The rivalries return. PHF cricket enters its biggest season yet.</p>
           <div className="hero-ctas">
-            <a className="gold-button" href="./auction.html">Enter the auction room <span>↗</span></a>
+            <a className="gold-button" href="./players.html">Meet the players <span>↗</span></a>
           </div>
         </div>
         <div className="hero-fixture">
@@ -129,9 +128,9 @@ export default function Home() {
           <div className="live-invite"><i/><span>Invitations closed</span><b>Pre-auction phase</b></div>
         </div>
         <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. On 27 September 2026, six playing captains will form nearly equal squads in the player auction; official fixtures and standings will follow.</p>
-        <a className="auction-roster-link" href="./auction.html">Explore the auction room <span>↗</span></a>
+        <a className="auction-roster-link" href="./players.html">Explore the player pool <span>↗</span></a>
         <div className="auction-track">
-          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href="./players.html">View registered players ↗</a> : stage.state === "next" ? <a href="./auction.html">View auction room ↗</a> : <small>Locked until announced</small>}</article>)}
+          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href="./players.html">View registered players ↗</a> : <small>{stage.state === "next" ? "Details coming soon" : "Locked until announced"}</small>}</article>)}
         </div>
       </section>
 
@@ -176,7 +175,7 @@ export default function Home() {
 
       <section className="final-call" id="register">
         <div className="final-photo" />
-        <div className="final-copy"><p>Season 5 · Auction ahead</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href="./auction.html">Enter the auction room <b>↗</b></a></div>
+        <div className="final-copy"><p>Season 5 · Auction ahead</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href="./players.html">Meet the players <b>↗</b></a></div>
         <div className="final-details"><a href={termsUrl} target="_blank" rel="noreferrer">Terms &amp; conditions ↗</a><a href={venueUrl} target="_blank" rel="noreferrer">Venue map ↗</a><span>Tarun · +91 98853 01226</span><span>Karthik · +91 84381 49893</span></div>
       </section>
 
