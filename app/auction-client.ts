@@ -84,5 +84,9 @@ export type AuctionSnapshot = { auction?: { id: string; name: string; kind: "off
 export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
 export async function getAuctionSnapshot(): Promise<AuctionSnapshot> {
   if (!auctionClient) return preAuctionSnapshot;
-  return request("/api/auction") as Promise<AuctionSnapshot>;
+  const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+  const auctionId = params?.get("auction") || params?.get("id");
+  return auctionId
+    ? request("/api/auction/view", { method: "POST", body: JSON.stringify({ auctionId }) }) as Promise<AuctionSnapshot>
+    : request("/api/auction") as Promise<AuctionSnapshot>;
 }

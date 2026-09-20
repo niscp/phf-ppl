@@ -30,6 +30,28 @@ export function createApp(pool, broadcast = () => {}) {
     } catch (error) { next(error); }
   });
 
+  app.post("/api/auction/view", async (req, res, next) => {
+    try {
+      const auctionId = String(req.body?.auctionId || "").trim();
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(auctionId)) return res.status(400).json({ error: "Invalid auction ID" });
+      const { rows } = await pool.query("select id,name,kind,active,archived,state_data from auction_instances where id=$1", [auctionId]);
+      const selected = rows[0];
+      if (!selected || selected.archived) return res.status(404).json({ error: "Auction not found" });
+      if (selected.active) {
+        const [config, teams, players, events] = await Promise.all([
+          pool.query("select status,current_player_id,minimum_increment,increment_threshold,increment_above_threshold,default_base_price,min_squad_size,max_squad_size,money_label from auction_config where id=1"),
+          pool.query("select id,name,logo_url,purse::float8 purse,spent::float8 spent from auction_teams order by name"),
+          pool.query("select id,name,role,photo,status,team_id,sold_price::float8 sold_price,current_bid::float8 current_bid,current_bid_team_id,base_price::float8 base_price from auction_players order by name"),
+          pool.query("select id::float8 id,event_type,player_id,team_id,amount::float8 amount,created_at from auction_events order by id desc limit 12"),
+        ]);
+        return res.set("Cache-Control", "no-store").json({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows });
+      }
+      const state = selected.state_data || {};
+      const events = Array.isArray(state.events) ? [...state.events].reverse().slice(0, 12) : [];
+      res.set("Cache-Control", "no-store").json({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: state.config || null, teams: state.teams || [], players: state.players || [], events });
+    } catch (error) { next(error); }
+  });
+
   app.post("/api/auth/login", async (req, res, next) => {
     try {
       const username = String(req.body?.username || req.body?.email || "").trim().toLowerCase();
