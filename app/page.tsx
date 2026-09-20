@@ -82,7 +82,7 @@ export default function Home() {
           <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="./players.html">Players</a>
-          <div className="cinema-nav-teams"><a href="./teams.html">Teams</a><div className="cinema-team-menu" aria-label="Season 5 teams">{announcedTeams.map((team) => <a key={team.id} href={`./teams.html#${team.id}`}>{team.name}</a>)}</div></div>
+          <div className="cinema-nav-teams"><a href="./teams.html">Teams</a><div className="cinema-team-menu" aria-label="Season 5 teams">{announcedTeams.map((team) => <a key={team.id} href={`./teams.html?team=${team.id}`}>{team.name}</a>)}</div></div>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>

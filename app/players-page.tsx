@@ -65,6 +65,11 @@ export default function PlayersPage() {
   const verifiedCount = players.filter((player) => player.statsSource).length;
   const homeUrl = typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/";
 
+  function changePage(nextPage: number) {
+    setPage(nextPage);
+    window.requestAnimationFrame(() => document.getElementById("player-directory")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+
   return <main className="roster-page">
     <header className="roster-header">
       <a className="roster-logo" href={homeUrl} aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
@@ -83,7 +88,7 @@ export default function PlayersPage() {
       <div className="roster-hero-count"><b>{players.length}</b><span>auction players</span></div>
     </section>
 
-    <section className="roster-directory" aria-label="Registered players">
+    <section className="roster-directory" id="player-directory" aria-label="Registered players">
       <div className="roster-intro"><div><p className="roster-eyebrow">The roster</p><h2>Meet the players.</h2></div><p>{verifiedCount} of {profileCount} submitted CricHeroes profiles have career stats. {players.length - profileCount} registrations did not include a profile link. These are career totals, not PHF-only figures.</p></div>
       <div className="roster-controls">
         <label className="roster-search">Find a player<input type="search" value={query} onChange={(event) => { setQuery(event.target.value); setPage(1); }} placeholder="Search by name" /></label>
@@ -104,7 +109,7 @@ export default function PlayersPage() {
         </div>
       </article>)}</div> : <div className="roster-empty">No players match that search.</div>}
 
-      {pageCount > 1 && <div className="roster-pages" aria-label="Player pages"><button type="button" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</button><span>Page {page} of {pageCount}</span><button type="button" onClick={() => setPage(Math.min(pageCount, page + 1))} disabled={page === pageCount}>Next</button></div>}
+      {pageCount > 1 && <div className="roster-pages" aria-label="Player pages"><button type="button" onClick={() => changePage(Math.max(1, page - 1))} disabled={page === 1}>Previous</button><span>Page {page} of {pageCount}</span><button type="button" onClick={() => changePage(Math.min(pageCount, page + 1))} disabled={page === pageCount}>Next</button></div>}
       <p className="roster-source-note">Player names, submitted photos and roles come from the Season 5 registration form. Playing captains are excluded from this auction pool and appear on the Teams page. Career stats come from each player-submitted CricHeroes link; profile nicknames are shown when they differ. These are not Season 5 or PHF-only totals. An unavailable message never means zero runs or wickets. No contact or payment details are published.</p>
     </section>
     <footer className="roster-footer"><a href={homeUrl}>PHF Premier League</a><span>Season 5 · 2026</span></footer>
