@@ -62,6 +62,7 @@ button.auction-bid-card:not(:disabled):hover,button.auction-bid-card:focus-visib
 .auction-squad-grid img,.auction-squad-grid .auction-no-photo{width:85px;height:105px;object-fit:cover;object-position:top;flex:none}
 .auction-squad-grid article div:last-child{min-width:0}
 .auction-squad-grid article span{font-size:11px;color:#efbd58}
+.auction-squad-grid article.captain-card{grid-column:span 2;border-color:#efbd58;background:linear-gradient(120deg,#263947,#172630)}.auction-squad-stats{margin-top:14px}.auction-squad-stats .auction-stat-line{grid-template-columns:repeat(4,minmax(55px,1fr));gap:7px}.auction-squad-stats .auction-stat-line b{font-size:23px}.auction-squad-stats>a{display:inline-block;margin-top:11px;color:#efbd58;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .auction-squad-grid h3{font:600 27px/1 "Teko",sans-serif;margin:5px 0;overflow-wrap:anywhere}
 .auction-squad-grid b{font-size:13px}
 @media(max-width:1150px){.auction-live-board{grid-template-columns:34% 66%}.auction-board-teams{grid-template-columns:repeat(2,minmax(0,1fr))}.auction-squad-selector{grid-template-columns:repeat(3,1fr)}}
