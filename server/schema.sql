@@ -34,7 +34,7 @@ create table if not exists auction_config (
   increment_above_threshold bigint,
   min_squad_size integer not null default 14,
   max_squad_size integer default 15,
-  money_label text not null default '₹',
+  money_label text not null default 'CR',
   updated_at timestamptz not null default now()
 );
 insert into auction_config(id) values (1) on conflict do nothing;
@@ -88,12 +88,12 @@ create table if not exists auction_audit (
 );
 
 insert into auction_teams(id, name, logo_url, purse) values
- ('11111111-1111-4111-8111-111111111111','PHF Blasterz','/team-logos/phf-blasterz.jpg',100000),
- ('22222222-2222-4222-8222-222222222222','The Ball Breakers','/team-logos/the-ball-breakers.jpg',100000),
- ('33333333-3333-4333-8333-333333333333','Super PHF Kings','/team-logos/super-phf-kings.jpg',100000),
- ('44444444-4444-4444-8444-444444444444','High Flyers','/team-logos/high-flyers.jpg',100000),
- ('55555555-5555-4555-8555-555555555555','PHF Avengers','/team-logos/phf-avengers.jpg',100000),
- ('66666666-6666-4666-8666-666666666666','PHF Amigos','/team-logos/phf-amigos.jpg',100000)
+ ('11111111-1111-4111-8111-111111111111','PHF Blasterz','/team-logos/phf-blasterz.jpg',28),
+ ('22222222-2222-4222-8222-222222222222','The Ball Breakers','/team-logos/the-ball-breakers.jpg',28),
+ ('33333333-3333-4333-8333-333333333333','Super PHF Kings','/team-logos/super-phf-kings.jpg',28),
+ ('44444444-4444-4444-8444-444444444444','High Flyers','/team-logos/high-flyers.jpg',28),
+ ('55555555-5555-4555-8555-555555555555','PHF Avengers','/team-logos/phf-avengers.jpg',28),
+ ('66666666-6666-4666-8666-666666666666','PHF Amigos','/team-logos/phf-amigos.jpg',28)
 on conflict (id) do update set name=excluded.name, logo_url=excluded.logo_url;
 
 insert into auction_players(id,name,role,photo,status,team_id,sold_price) values

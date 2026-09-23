@@ -27,17 +27,17 @@ async function saveActiveState(db) {
 }
 
 function resetState(source, rules = {}) {
-  const purse = Number(rules.purse || source.teams?.[0]?.purse || 100000);
+  const purse = Number(rules.purse || source.teams?.[0]?.purse || 28);
   return {
     config: {
       status: "preparing", current_player_id: null,
-      default_base_price: Number(rules.base || source.config?.default_base_price || 2000),
-      minimum_increment: Number(rules.increment || source.config?.minimum_increment || 1000),
-      increment_threshold: Number(rules.threshold || source.config?.increment_threshold || 50000),
-      increment_above_threshold: Number(rules.incrementAbove || source.config?.increment_above_threshold || 2000),
+      default_base_price: Number(rules.base || source.config?.default_base_price || 1),
+      minimum_increment: Number(rules.increment || source.config?.minimum_increment || 1),
+      increment_threshold: Number(rules.threshold || source.config?.increment_threshold || 28),
+      increment_above_threshold: Number(rules.incrementAbove || source.config?.increment_above_threshold || 1),
       min_squad_size: Number(rules.minSquad || source.config?.min_squad_size || 14),
       max_squad_size: Number(rules.maxSquad || source.config?.max_squad_size || 15),
-      money_label: String(rules.moneyLabel || source.config?.money_label || "₹"),
+      money_label: String(rules.moneyLabel || source.config?.money_label || "CR"),
     },
     teams: (source.teams || []).map((team) => ({ ...team, purse, spent: 0 })),
     players: (source.players || []).map((player) => ({ ...player, status: player.status === "captain" ? "captain" : "queued", team_id: player.status === "captain" ? player.team_id : null, sold_price: player.status === "captain" ? 0 : null, current_bid: null, current_bid_team_id: null, base_price: null })),
@@ -53,7 +53,7 @@ async function loadState(db, state) {
   for (const team of state.teams || []) await db.query("insert into auction_teams(id,name,logo_url,purse,spent) values($1,$2,$3,$4,$5)", [team.id, team.name, team.logo_url || null, team.purse, team.spent || 0]);
   for (const player of state.players || []) await db.query(`insert into auction_players(id,name,role,photo,status,team_id,sold_price,current_bid,current_bid_team_id,base_price) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [player.id, player.name, player.role, player.photo || null, player.status, player.team_id || null, player.sold_price, player.current_bid, player.current_bid_team_id || null, player.base_price]);
   const config = state.config || {};
-  await db.query(`update auction_config set status=$1,current_player_id=$2,default_base_price=$3,minimum_increment=$4,increment_threshold=$5,increment_above_threshold=$6,min_squad_size=$7,max_squad_size=$8,money_label=$9,updated_at=now() where id=1`, [config.status || "preparing", config.current_player_id || null, config.default_base_price, config.minimum_increment, config.increment_threshold, config.increment_above_threshold, config.min_squad_size || 14, config.max_squad_size || 15, config.money_label || "₹"]);
+  await db.query(`update auction_config set status=$1,current_player_id=$2,default_base_price=$3,minimum_increment=$4,increment_threshold=$5,increment_above_threshold=$6,min_squad_size=$7,max_squad_size=$8,money_label=$9,updated_at=now() where id=1`, [config.status || "preparing", config.current_player_id || null, config.default_base_price, config.minimum_increment, config.increment_threshold, config.increment_above_threshold, config.min_squad_size || 14, config.max_squad_size || 15, config.money_label || "CR"]);
   for (const event of state.events || []) await db.query("insert into auction_events(event_type,player_id,team_id,amount,created_at) values($1,$2,$3,$4,$5)", [event.event_type, event.player_id, event.team_id || null, event.amount, event.created_at || new Date()]);
 }
 
@@ -152,7 +152,7 @@ export async function runAction(db, actorId, name, p = {}) {
     }
     case "auction_set_rules": {
       const base = Number(p.p_base_price), increment = Number(p.p_increment), threshold = Number(p.p_increment_threshold), incrementAbove = Number(p.p_increment_above_threshold), min = Number(p.p_min_squad_size), max = Number(p.p_max_squad_size);
-      if (![base, increment, threshold, incrementAbove, min, max].every(Number.isSafeInteger) || base < 0 || increment <= 0 || threshold < 0 || incrementAbove <= 0 || min < 1 || max < min) throw new Error("Invalid auction rules");
+      if (![base, increment, threshold, incrementAbove, min, max].every(Number.isSafeInteger) || base < 1 || increment <= 0 || threshold < 0 || incrementAbove <= 0 || min < 1 || max < min) throw new Error("Invalid auction rules");
       const { rowCount } = await db.query(`update auction_config set default_base_price=$1,minimum_increment=$2,increment_threshold=$3,increment_above_threshold=$4,min_squad_size=$5,max_squad_size=$6,money_label=$7,updated_at=now() where id=1 and status='preparing'`, [base, increment, threshold, incrementAbove, min, max, String(p.p_money_label || "").trim()]);
       if (!rowCount) throw new Error("Rules are locked once the auction starts");
       await audit(db, actorId, name, p); return null;
@@ -164,11 +164,17 @@ export async function runAction(db, actorId, name, p = {}) {
         const teamCount = Number((await db.query("select count(*) from auction_teams")).rows[0].count);
         const captainCount = Number((await db.query("select count(*) from auction_players where status='captain'")).rows[0].count);
         if (teamCount !== 6 || captainCount !== 6 || config.default_base_price === null || config.minimum_increment === null) throw new Error("Add six teams, six captains, players and auction rules first");
+        const playerCount = Number((await db.query("select count(*) from auction_players")).rows[0].count);
+        if (playerCount < teamCount * config.min_squad_size || playerCount > teamCount * config.max_squad_size) throw new Error("The player pool cannot form squads within the configured size range");
+        const underfunded = Number((await db.query("select count(*) from auction_teams where purse < $1", [(config.min_squad_size - 1) * Number(config.default_base_price)])).rows[0].count);
+        if (underfunded) throw new Error("Every team purse must cover the minimum squad at base price");
       } else if (!(next === "live" && config.status === "paused") && !(next === "paused" && config.status === "live") && !(next === "complete" && config.status === "paused")) throw new Error("Invalid auction status transition");
       if (next === "complete") {
         if (config.current_player_id) throw new Error("Finish the current player first");
+        const unallocated = Number((await db.query("select count(*) from auction_players where status not in ('captain','sold')")).rows[0].count);
+        if (unallocated) throw new Error("Every registered player must be allocated before completing the auction");
         const { rows } = await db.query(`select min(n)::int min,max(n)::int max from (select count(p.id)::int n from auction_teams t left join auction_players p on p.team_id=t.id and p.status in ('captain','sold') group by t.id) s`);
-        if (rows[0].min < config.min_squad_size || rows[0].max - rows[0].min > 1) throw new Error("Squads must meet the minimum size and differ by at most one player");
+        if (rows[0].min < config.min_squad_size || rows[0].max > config.max_squad_size || rows[0].max - rows[0].min > 1) throw new Error("Squads must stay within the configured size range and differ by at most one player");
       }
       await db.query("update auction_config set status=$1,updated_at=now() where id=1", [next]);
       await audit(db, actorId, name, { from: config.status, to: next }); return null;
