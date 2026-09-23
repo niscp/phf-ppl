@@ -6,7 +6,7 @@ const config = {
   status: "live",
   current_player_id: "p1",
   minimum_increment: "1",
-  increment_threshold: "5",
+  increment_threshold: "10",
   increment_above_threshold: "2",
   default_base_price: "1",
   min_squad_size: 14,
@@ -19,7 +19,7 @@ const team = { id: "t1", purse: "28", spent: "0" };
 
 test("numeric database strings do not concatenate when calculating the next bid", () => {
   assert.equal(nextBid({ current_bid: "1", base_price: null }, config), 2);
-  assert.equal(nextBid({ current_bid: "5", base_price: null }, config), 7);
+  assert.equal(nextBid({ current_bid: "10", base_price: null }, config), 12);
 });
 
 test("opening bid uses the 1 CR base price", () => {
