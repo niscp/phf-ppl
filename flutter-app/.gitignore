@@ -5,6 +5,7 @@
 .pub-cache/
 .pub/
 build/
+releases/
 android/.gradle/
 android/local.properties
 ios/Pods/
