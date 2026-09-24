@@ -1,29 +1,34 @@
-# Auction Arena — Flutter migration
+# Auction Arena
 
-This is the shared Android/iOS Flutter source. It replaces the Kotlin/Compose client in `../android-app` as the development direction; the old debug APK remains a usable fallback until Flutter has been built and device-tested.
+Auction Arena is the native Flutter companion for the PHF Premier League auction platform. The same codebase targets Android and iOS and connects to `https://phfppl.dwemory.com` by default.
 
-## Implemented source
+## Included
 
-- One codebase with home, searchable players, live bid/purse board, squads, and join-by-auction-ID.
-- Same existing PHF auction API and three-second refresh cycle.
-- Responsive Material UI with stadium-scoreboard colors; no WebView.
-- Model test for the current server's string-formatted money values.
+- Cinematic cricket-auction home, player pool, live bidding board and team squads.
+- Searchable player list with photos, roles, batting and bowling statistics.
+- Join any published auction using its auction ID.
+- Live WebSocket invalidation on Android/iOS with resilient polling fallback and lifecycle pause/resume.
+- Clear loading, empty, offline and retry states.
+- Release identity `com.dwemory.auctionarena`, private signing and automated signed AAB/APK builds.
 
-## Finish platform setup
-
-Flutter could not download its Dart SDK in this environment because the SDK artifact host did not resolve. When it is reachable:
+## Validate locally
 
 ```sh
-cd flutter-app
-flutter create --platforms=android,ios --org com.auctionarena .
 flutter pub get
 flutter analyze
-flutter test
-flutter build apk --debug
+dart test
+flutter build appbundle --release
 ```
 
-The Android APK will be at `build/app/outputs/flutter-apk/app-debug.apk`. Building for iOS requires the full Xcode app, a macOS host, and Apple signing for device/App Store distribution; this machine currently has only Command Line Tools, not full Xcode.
+Override the server at build time when required:
 
-## Product boundary
+```sh
+flutter build appbundle --release \
+  --dart-define=AUCTION_API_BASE_URL=https://your-auction.example.com
+```
 
-This is still a spectator MVP with PHF as the featured league, not a production multi-tenant competitor. Before opening it to other organizers, the server must be reworked for tenant isolation, organizer accounts, per-auction authorization, event/audit semantics, and robust real-time updates. Do not expose the present PHF database to unrelated leagues.
+## Releases
+
+GitHub Actions runs analysis, unit tests, signed AAB and signed APK builds. The Play Store bundle is the `.aab`; the `.apk` is for direct internal testing. Follow [android/RELEASE.md](android/RELEASE.md) for versioning, signing backup and publication.
+
+The current backend is operated for PHF. Before selling the platform to unrelated organizers, finish organizer self-service, tenant isolation, billing, per-auction authorization and a formal audit/event history.
