@@ -35,7 +35,7 @@ create table if not exists auction_config (
   minimum_increment numeric(12,2),
   increment_threshold numeric(12,2),
   increment_above_threshold numeric(12,2),
-  min_squad_size integer not null default 14,
+  min_squad_size integer not null default 15,
   max_squad_size integer default 15,
   money_label text not null default 'CR',
   updated_at timestamptz not null default now()

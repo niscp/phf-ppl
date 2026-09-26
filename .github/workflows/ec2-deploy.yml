@@ -76,7 +76,8 @@ jobs:
             "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" \
             --only-show-errors
           tar -czf "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
-            package.json package-lock.json Dockerfile.auction server deploy/docker-compose.yml
+            package.json package-lock.json Dockerfile.auction server deploy/docker-compose.yml \
+            deploy/migrations/20260926-replace-duplicate-shravan-with-harshank.sql
           aws s3 cp "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
             "s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz" \
             --only-show-errors
@@ -169,6 +170,11 @@ jobs:
               "mkdir -p \"$release\"",
               "curl -fsSL \"$download_url\" -o \"$archive\"",
               "tar -xzf \"$archive\" -C \"$release\"",
+              "db_id=$(docker ps --filter label=com.docker.compose.service=postgres --format {{.ID}} | head -n 1)",
+              "test -n \"$db_id\"",
+              "mkdir -p \"$old_workdir/backups\"",
+              "docker exec \"$db_id\" pg_dump -U phf_auction -d phf_auction -Fc > \"$old_workdir/backups/pre-harshank-${release_sha}.dump\"",
+              "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20260926-replace-duplicate-shravan-with-harshank.sql\"",
               "cp \"$release/deploy/docker-compose.yml\" \"$old_config\"",
               "docker build -f \"$release/Dockerfile.auction\" -t \"${project}-api:latest\" \"$release\"",
               "docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d --no-deps --no-build --force-recreate api",

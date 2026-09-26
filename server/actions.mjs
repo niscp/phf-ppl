@@ -39,7 +39,7 @@ function resetState(source, rules = {}) {
       minimum_increment: Number(rules.increment || source.config?.minimum_increment || 1),
       increment_threshold: Number(rules.threshold || source.config?.increment_threshold || 28),
       increment_above_threshold: Number(rules.incrementAbove || source.config?.increment_above_threshold || 1),
-      min_squad_size: Number(rules.minSquad || source.config?.min_squad_size || 14),
+      min_squad_size: Number(rules.minSquad || source.config?.min_squad_size || 15),
       max_squad_size: Number(rules.maxSquad || source.config?.max_squad_size || 15),
       money_label: String(rules.moneyLabel || source.config?.money_label || "CR"),
     },
@@ -58,7 +58,7 @@ async function loadState(db, state) {
   for (const team of state.teams || []) await db.query("insert into auction_teams(id,name,logo_url,purse,spent) values($1,$2,$3,$4,$5)", [team.id, team.name, team.logo_url || null, team.purse, team.spent || 0]);
   for (const player of state.players || []) await db.query(`insert into auction_players(id,name,role,photo,status,team_id,sold_price,current_bid,current_bid_team_id,base_price) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, [player.id, player.name, player.role, player.photo || null, player.status, player.team_id || null, player.sold_price, player.current_bid, player.current_bid_team_id || null, player.base_price]);
   const config = state.config || {};
-  await db.query(`update auction_config set status=$1,current_player_id=$2,default_base_price=$3,minimum_increment=$4,increment_threshold=$5,increment_above_threshold=$6,min_squad_size=$7,max_squad_size=$8,money_label=$9,updated_at=now() where id=1`, [config.status || "preparing", config.current_player_id || null, config.default_base_price, config.minimum_increment, config.increment_threshold, config.increment_above_threshold, config.min_squad_size || 14, config.max_squad_size || 15, config.money_label || "CR"]);
+  await db.query(`update auction_config set status=$1,current_player_id=$2,default_base_price=$3,minimum_increment=$4,increment_threshold=$5,increment_above_threshold=$6,min_squad_size=$7,max_squad_size=$8,money_label=$9,updated_at=now() where id=1`, [config.status || "preparing", config.current_player_id || null, config.default_base_price, config.minimum_increment, config.increment_threshold, config.increment_above_threshold, config.min_squad_size || 15, config.max_squad_size || 15, config.money_label || "CR"]);
   for (const event of state.events || []) await db.query("insert into auction_events(event_type,player_id,team_id,amount,created_at) values($1,$2,$3,$4,$5)", [event.event_type, event.player_id, event.team_id || null, event.amount, event.created_at || new Date()]);
 }
 
