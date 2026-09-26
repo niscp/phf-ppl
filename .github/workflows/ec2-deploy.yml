@@ -145,7 +145,7 @@ jobs:
               "postgres_id=$(docker ps --filter label=com.docker.compose.service=postgres --format {{.ID}} | head -n 1)",
               "test -n \"$postgres_id\"",
               "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < /tmp/phfppl-add-players.sql",
-              "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction -Atc \"select count(*) from auction_players where id = any (array['player-88','player-89','player-90','player-91'])\"",
+              "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction -Atc \"select count(*) from auction_players where substring(id from 8)::integer between 88 and 91\"",
               "rm -f /tmp/phfppl-add-players.sql"
             ]}' > /tmp/ssm-player-parameters.json
 
