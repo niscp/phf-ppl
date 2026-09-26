@@ -6,40 +6,39 @@ begin
     select 1
     from auction_players
     where id = 'player-90'
-      and (status = 'queued' or name = 'Harshank')
+      and name = 'Shravan'
   ) then
-    raise exception 'player-90 must exist and remain queued before replacing the duplicate registration';
+    raise exception 'Expected the retained Shravan registration at player-90';
   end if;
 end $$;
 
-update auction_players
-set name = 'Harshank',
-    role = 'All-rounder',
-    photo = '/season5-players/player-90.jpg',
+insert into auction_players(id, name, role, photo, status)
+values ('player-65', 'Harshank', 'All-rounder', '/season5-players/player-65.jpg', 'queued')
+on conflict (id) do update
+set name = excluded.name,
+    role = excluded.role,
+    photo = excluded.photo,
     updated_at = now()
-where id = 'player-90'
-  and status = 'queued'
-  and name <> 'Harshank';
+where auction_players.status = 'queued';
 
 update auction_instances
 set state_data = jsonb_set(
       jsonb_set(
         state_data,
         '{players}',
-        (
-          select jsonb_agg(
-            case
-              when player->>'id' = 'player-90' then
-                player || jsonb_build_object(
-                  'name', 'Harshank',
-                  'role', 'All-rounder',
-                  'photo', '/season5-players/player-90.jpg'
-                )
-              else player
-            end
-            order by position
+        (state_data->'players') || jsonb_build_array(
+          jsonb_build_object(
+            'id', 'player-65',
+            'name', 'Harshank',
+            'role', 'All-rounder',
+            'photo', '/season5-players/player-65.jpg',
+            'status', 'queued',
+            'team_id', null,
+            'sold_price', null,
+            'current_bid', null,
+            'current_bid_team_id', null,
+            'base_price', null
           )
-          from jsonb_array_elements(state_data->'players') with ordinality entries(player, position)
         )
       ),
       '{config}',
@@ -52,11 +51,10 @@ set state_data = jsonb_set(
 where archived = false
   and jsonb_typeof(state_data->'players') = 'array'
   and jsonb_typeof(state_data->'config') = 'object'
-  and exists (
+  and not exists (
     select 1
     from jsonb_array_elements(state_data->'players') player
-    where player->>'id' = 'player-90'
-      and player->>'status' = 'queued'
+    where player->>'id' = 'player-65'
   );
 
 update auction_config
@@ -68,10 +66,13 @@ where id = 1;
 do $$
 begin
   if (select count(*) from auction_players) <> 90 then
-    raise exception 'Expected exactly 90 registered players';
+    raise exception 'Expected exactly 90 registered players after adding Harshank';
   end if;
-  if (select count(*) from auction_players where id = 'player-90' and name = 'Harshank') <> 1 then
-    raise exception 'Expected Harshank to replace duplicate player-90';
+  if (select count(*) from auction_players where id = 'player-65' and name = 'Harshank') <> 1 then
+    raise exception 'Expected Harshank at the freed player-65 slot';
+  end if;
+  if (select count(*) from auction_players where id = 'player-90' and name = 'Shravan') <> 1 then
+    raise exception 'Expected Shravan to remain at player-90';
   end if;
   if (select min_squad_size from auction_config where id = 1) <> 15
      or (select max_squad_size from auction_config where id = 1) <> 15 then

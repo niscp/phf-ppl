@@ -130,5 +130,4 @@ export const announcedCaptains: AuctionPlayer[] = [
 
 export const auctionExcludedPlayerIds = new Set([
   ...announcedTeams.map((team) => team.captainPlayerId),
-  "player-65", // Sravan Kumar Sriramoju — removed from the Season 5 player pool.
 ]);

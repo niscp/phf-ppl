@@ -1420,28 +1420,11 @@
   },
   {
     "id": "player-65",
-    "name": "Sravan Kumar Sriramoju",
+    "name": "Harshank",
     "role": "All-rounder",
     "photo": "/season5-players/player-65.jpg",
-    "cricheroesUrl": "https://chshare.link/player/tgxxuj",
-    "stats": {
-      "batting": {
-        "innings": 33,
-        "runs": 436,
-        "average": "16.77",
-        "strikeRate": "129.38"
-      },
-      "bowling": {
-        "matches": 34,
-        "wickets": 14,
-        "economy": "8.57",
-        "best": "3/16"
-      }
-    },
-    "statsSource": "https://cricheroes.com/player-profile/17252624/Shravan-Kumar/stats",
-    "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-20",
-    "statsProfileName": "Shravan Kumar"
+    "cricheroesUrl": "https://chshare.link/player/ggn2QR",
+    "stats": null
   },
   {
     "id": "player-66",
@@ -1909,10 +1892,10 @@
   },
   {
     "id": "player-90",
-    "name": "Harshank",
+    "name": "Shravan",
     "role": "All-rounder",
     "photo": "/season5-players/player-90.jpg",
-    "cricheroesUrl": "https://chshare.link/player/ggn2QR",
+    "cricheroesUrl": null,
     "stats": null
   },
   {
