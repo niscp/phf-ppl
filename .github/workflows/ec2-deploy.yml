@@ -131,11 +131,11 @@ jobs:
           curl -fsS --retry 8 --retry-delay 3 https://phfppl.dwemory.com/ > /tmp/phfppl-home.html
           grep -q 'root' /tmp/phfppl-home.html
 
-      - name: Sync new players into live auction rooms
+      - name: Sync live auction players and 30 CR purse
         env:
           EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
         run: |
-          sql_payload="$(base64 -w 0 deploy/migrations/20260926-add-season5-players.sql)"
+          sql_payload="$(cat deploy/migrations/20260926-add-season5-players.sql deploy/migrations/20260926-set-team-purse-30.sql | base64 -w 0)"
 
           jq -n \
             --arg sql "$sql_payload" \
