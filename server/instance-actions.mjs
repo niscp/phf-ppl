@@ -1,5 +1,6 @@
 import { normalizeAuctionState } from './auction-units.mjs';
 import { activeAuctionRound } from './auction-rounds.mjs';
+import { manuallyAssignInState, undoSaleInState } from './auction-corrections.mjs';
 
 const round2 = (value) => Math.round(Number(value) * 100) / 100;
 const squadSize = (state, teamId) => state.players.filter((p) => p.team_id === teamId && ['captain', 'sold'].includes(p.status)).length;
@@ -45,8 +46,15 @@ export async function runInstanceAction(db, actorId, auctionId, name, p = {}) {
         const captains = state.players.filter((player) => player.status === 'captain').length;
         if (!state.teams.length || captains !== state.teams.length) throw new Error('Assign one captain to every team before starting');
         if (state.players.length < state.teams.length * config.min_squad_size) throw new Error('Not enough players to complete minimum squads');
+        const reserveTarget = Number(config.max_squad_size ?? config.min_squad_size);
+        if (state.teams.some((team) => Number(team.purse) < (reserveTarget - 1) * Number(config.default_base_price))) throw new Error('Every team purse must cover a full squad at base price');
       }
-      if (next === 'complete' && (config.current_player_id || state.players.some((player) => !['captain', 'sold'].includes(player.status)))) throw new Error('Allocate every player before completing the auction');
+      if (next === 'complete') {
+        if (config.current_player_id || state.players.some((player) => !['captain', 'sold'].includes(player.status))) throw new Error('Allocate every player before completing the auction');
+        const counts = state.teams.map((team) => squadSize(state, team.id));
+        const min = Math.min(...counts), max = Math.max(...counts);
+        if (min < Number(config.min_squad_size) || max > Number(config.max_squad_size) || max - min > 1) throw new Error('Squads must stay within the configured size range and differ by at most one player');
+      }
       config.status = next;
       break;
     }
@@ -107,6 +115,14 @@ export async function runInstanceAction(db, actorId, auctionId, name, p = {}) {
     }
     case 'auction_undo_last_bid': {
       undoLastBid(state, config);
+      break;
+    }
+    case 'auction_undo_sale': {
+      data = undoSaleInState(state, String(p.p_player_id || ''));
+      break;
+    }
+    case 'auction_manual_assign': {
+      data = manuallyAssignInState(state, String(p.p_player_id || ''), String(p.p_team_id || ''), p.p_amount);
       break;
     }
     default: throw new Error('Action is not supported for concurrent auction rooms');

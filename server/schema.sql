@@ -19,7 +19,13 @@ create table if not exists auction_instances (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-drop index if exists auction_instances_one_active;
+with ranked_active as (
+  select id,row_number() over(order by updated_at desc,id) position
+  from auction_instances where active=true
+)
+update auction_instances set active=false
+where id in (select id from ranked_active where position>1);
+create unique index if not exists auction_instances_one_active on auction_instances(active) where active=true;
 
 create table if not exists auction_config (
   id integer primary key default 1 check (id = 1),

@@ -31,6 +31,7 @@ class AuctionLiveFeed {
   bool _paused = false;
   bool _disposed = false;
   bool _loading = false;
+  bool _refreshRequested = false;
   int _failedLoads = 0;
   int _failedSockets = 0;
 
@@ -65,7 +66,11 @@ class AuctionLiveFeed {
   }
 
   Future<void> refresh() async {
-    if (_disposed || _paused || _loading) return;
+    if (_disposed || _paused) return;
+    if (_loading) {
+      _refreshRequested = true;
+      return;
+    }
     _loading = true;
     try {
       final value = await api.load(auctionId: auctionId);
@@ -77,7 +82,12 @@ class AuctionLiveFeed {
     } finally {
       _loading = false;
       if (!_disposed && !_paused) {
-        _schedulePoll(_failedLoads == 0 ? pollInterval : _loadBackoff());
+        if (_refreshRequested) {
+          _refreshRequested = false;
+          unawaited(refresh());
+        } else {
+          _schedulePoll(_failedLoads == 0 ? pollInterval : _loadBackoff());
+        }
       }
     }
   }

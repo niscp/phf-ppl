@@ -5,13 +5,29 @@ import pg from "pg";
 import bcrypt from "bcryptjs";
 import { WebSocketServer } from "ws";
 import { createApp } from "./app.mjs";
-import { migrateActiveAuctionToCr } from "./auction-units.mjs";
+import { migrateActiveAuctionToCr, normalizeAuctionState } from "./auction-units.mjs";
 
 for (const name of ["DATABASE_URL", "JWT_SECRET"]) if (!process.env[name]) throw new Error(`${name} is required`);
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 10 });
 const schema = await fs.readFile(new URL("./schema.sql", import.meta.url), "utf8");
 await pool.query(schema);
 await migrateActiveAuctionToCr(pool);
+
+async function ensureActiveAuction() {
+  const existing = await pool.query("select id from auction_instances where active=true limit 1");
+  if (existing.rows[0]) return existing.rows[0].id;
+  const [config, teams, players, events] = await Promise.all([
+    pool.query("select * from auction_config where id=1"),
+    pool.query("select * from auction_teams order by name"),
+    pool.query("select * from auction_players order by name"),
+    pool.query("select event_type,player_id,team_id,amount,created_at from auction_events order by id"),
+  ]);
+  const state = normalizeAuctionState({ config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows });
+  const { rows } = await pool.query("insert into auction_instances(name,kind,state_data,active) values('Season 5 Official Auction','official',$1,true) returning id", [state]);
+  return rows[0].id;
+}
+
+await ensureActiveAuction();
 
 if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
   const hash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);

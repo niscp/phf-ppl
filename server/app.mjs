@@ -3,7 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { runAction } from "./actions.mjs";
+import { runAction, saveActiveState } from "./actions.mjs";
 import { runInstanceAction } from "./instance-actions.mjs";
 import { normalizeAuctionState } from "./auction-units.mjs";
 
@@ -13,7 +13,9 @@ function originsFromEnv() {
 
 export function createApp(pool, broadcast = () => {}, queueSync = async () => {}) {
   const app = express();
+  const loginAttempts = new Map();
   app.disable("x-powered-by");
+  app.set("trust proxy", 1);
   app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(cors({ origin(origin, done) { const allowed = originsFromEnv(); done(null, !origin || allowed.includes(origin)); } }));
   app.use(express.json({ limit: "1mb" }));
@@ -56,11 +58,20 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
 
   app.post("/api/auth/login", async (req, res, next) => {
     try {
+      const key = req.ip || "unknown";
+      const now = Date.now();
+      const attempt = loginAttempts.get(key);
+      if (attempt?.blockedUntil > now) return res.status(429).json({ error: "Too many sign-in attempts. Try again in 15 minutes." });
       const username = String(req.body?.username || req.body?.email || "").trim().toLowerCase();
       const { rows } = await pool.query("select id,email,password_hash from auction_admins where lower(email)=$1 and active=true", [username]);
       const admin = rows[0];
-      if (!admin || !(await bcrypt.compare(String(req.body?.password || ""), admin.password_hash))) return res.status(401).json({ error: "Invalid username or password" });
-      const token = jwt.sign({ sub: String(admin.id), email: admin.email, role: "auction_admin" }, process.env.JWT_SECRET, { expiresIn: "12h", issuer: "phf-auction" });
+      if (!admin || !(await bcrypt.compare(String(req.body?.password || ""), admin.password_hash))) {
+        const count = attempt?.firstAttempt > now - 15 * 60_000 ? attempt.count + 1 : 1;
+        loginAttempts.set(key, { count, firstAttempt: count === 1 ? now : attempt.firstAttempt, blockedUntil: count >= 8 ? now + 15 * 60_000 : 0 });
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+      loginAttempts.delete(key);
+      const token = jwt.sign({ sub: String(admin.id), email: admin.email, role: "auction_admin" }, process.env.JWT_SECRET, { expiresIn: "18h", issuer: "phf-auction" });
       res.json({ token, user: { id: String(admin.id), email: admin.email } });
     } catch (error) { next(error); }
   });
@@ -121,12 +132,17 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
       const active = auctionId
         ? (await db.query("select active from auction_instances where id=$1", [auctionId])).rows[0]?.active === true
         : true;
-      const data = auctionId && !active
-        ? await runInstanceAction(db, Number(req.user.sub), auctionId, String(req.body?.name || ""), req.body?.args || {})
-        : await runAction(db, Number(req.user.sub), String(req.body?.name || ""), req.body?.args || {});
+      let data;
+      let syncAuctionId = auctionId;
+      if (auctionId && !active) {
+        data = await runInstanceAction(db, Number(req.user.sub), auctionId, String(req.body?.name || ""), req.body?.args || {});
+      } else {
+        data = await runAction(db, Number(req.user.sub), String(req.body?.name || ""), req.body?.args || {});
+        syncAuctionId = await saveActiveState(db) || auctionId;
+      }
       await db.query("commit");
-      if (auctionId) void queueSync(auctionId).catch((error) => console.error("Could not queue cloud synchronization", error));
-      broadcast({ type: "auction_updated" }); res.json({ data });
+      if (syncAuctionId) void queueSync(syncAuctionId).catch((error) => console.error("Could not queue cloud synchronization", error));
+      broadcast({ type: "auction_updated", auctionId: syncAuctionId || null }); res.json({ data });
     } catch (error) { await db.query("rollback"); next(error); }
     finally { db.release(); }
   });
