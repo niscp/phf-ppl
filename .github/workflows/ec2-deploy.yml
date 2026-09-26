@@ -1,0 +1,137 @@
+name: Deploy PHFPL website to EC2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'public/**'
+      - 'src/**'
+      - '*.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.pages.config.ts'
+      - '.github/workflows/ec2-deploy.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: phfppl-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, validate and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://phfppl.dwemory.com
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production website
+        run: npm run build:pages
+        env:
+          VITE_PUBLIC_BASE: /
+          VITE_AUCTION_API_URL: https://phfppl.dwemory.com
+
+      - name: Validate build output
+        run: |
+          test -s gh-pages/index.html
+          test -s gh-pages/players.html
+          test -s gh-pages/teams.html
+          test -s gh-pages/auction.html
+
+      - name: Assume AWS deployment role through OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: phfppl-${{ github.run_id }}
+
+      - name: Package and upload immutable release
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+        run: |
+          tar -C gh-pages -czf "/tmp/phfppl-${GITHUB_SHA}.tgz" .
+          aws s3 cp "/tmp/phfppl-${GITHUB_SHA}.tgz" \
+            "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" \
+            --only-show-errors
+
+      - name: Deploy through Systems Manager
+        id: ssm
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          artifact="s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz"
+          download_url="$(aws s3 presign "$artifact" --expires-in 900)"
+
+          jq -n \
+            --arg sha "$GITHUB_SHA" \
+            --arg url "$download_url" \
+            '{commands:[
+              "set -euo pipefail",
+              ("release_sha=" + ($sha|@sh)),
+              ("download_url=" + ($url|@sh)),
+              "archive=/tmp/phfppl-${release_sha}.tgz",
+              "releases=/var/www/phfppl-releases",
+              "release=${releases}/${release_sha}",
+              "live=/var/www/phfppl",
+              "next=/var/www/.phfppl-next",
+              "previous=",
+              "mkdir -p \"$release\"",
+              "curl -fsSL \"$download_url\" -o \"$archive\"",
+              "tar -xzf \"$archive\" -C \"$release\"",
+              "test -s \"$release/index.html\"",
+              "chown -R www-data:www-data \"$release\"",
+              "if test -L \"$live\"; then previous=$(readlink -f \"$live\"); elif test -d \"$live\"; then previous=${releases}/legacy-$(date +%Y%m%d%H%M%S); mv \"$live\" \"$previous\"; fi",
+              "ln -sfn \"$release\" \"$next\"",
+              "mv -Tf \"$next\" \"$live\"",
+              "if ! curl -kfsS --retry 5 --retry-delay 2 https://phfppl.dwemory.com/ >/dev/null; then rm -f \"$live\"; test -z \"$previous\" || ln -s \"$previous\" \"$live\"; echo Health-check-failed-previous-release-restored >&2; exit 1; fi",
+              "rm -f \"$archive\"",
+              "find \"$releases\" -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf -- {} +"
+            ]}' > /tmp/ssm-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "PHFPL ${GITHUB_SHA}" \
+            --parameters file:///tmp/ssm-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          echo "command_id=$command_id" >> "$GITHUB_OUTPUT"
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID"
+          aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
+
+      - name: Verify public website
+        run: |
+          curl -fsS --retry 8 --retry-delay 3 https://phfppl.dwemory.com/ > /tmp/phfppl-home.html
+          grep -q 'root' /tmp/phfppl-home.html
+
+      - name: Remove deployment artifact
+        if: always()
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+        run: aws s3 rm "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" --only-show-errors || true
