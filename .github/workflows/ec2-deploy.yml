@@ -86,7 +86,7 @@ jobs:
             --arg sha "$GITHUB_SHA" \
             --arg url "$download_url" \
             '{commands:[
-              "set -euo pipefail",
+              "set -eu",
               ("release_sha=" + ($sha|@sh)),
               ("download_url=" + ($url|@sh)),
               "archive=/tmp/phfppl-${release_sha}.tgz",
