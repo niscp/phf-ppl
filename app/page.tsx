@@ -1,15 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { announcedTeams } from "./season5-teams";
+import { getAuctionSnapshot, preAuctionSnapshot, type AuctionSnapshot } from "./auction-client";
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
-const venueUrl = "https://share.google/clJmAmYZH5Kvxpb4x";
+const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
 
 const matchDays = [
-  { day: "21", label: "Opening Friday" },
-  { day: "22", label: "Super Saturday" },
-  { day: "28", label: "Finals weekend" },
-  { day: "29", label: "Championship day" },
+  { day: "21", label: "League day 1" },
+  { day: "22", label: "League day 2" },
+  { day: "27", label: "League day 3" },
+  { day: "28", label: "League day 4" },
+  { day: "05", month: "Dec", label: "League day 5" },
+  { day: "06", month: "Dec", label: "Championship day" },
+];
+
+const fixtures = [
+  { date: "21 Nov", matches: [["7:15 AM", "Team 1", "Team 6"], ["10:30 AM", "Team 2", "Team 5"], ["2:00 PM", "Team 3", "Team 4"]] },
+  { date: "22 Nov", matches: [["7:15 AM", "Team 1", "Team 5"], ["10:30 AM", "Team 6", "Team 4"], ["2:00 PM", "Team 2", "Team 3"]] },
+  { date: "27 Nov", matches: [["7:15 AM", "Team 6", "Team 2"], ["10:30 AM", "Team 1", "Team 4"], ["2:00 PM", "Team 5", "Team 3"]] },
+  { date: "28 Nov", matches: [["7:15 AM", "Team 4", "Team 2"], ["10:30 AM", "Team 1", "Team 3"], ["2:00 PM", "Team 5", "Team 6"]] },
+  { date: "05 Dec", matches: [["7:15 AM", "Team 3", "Team 6"], ["10:30 AM", "Team 4", "Team 5"], ["2:00 PM", "Team 1", "Team 2"]] },
+];
+
+const finals = [
+  { time: "10:30 AM", title: "Bronze match", teams: "3rd vs 4th" },
+  { time: "2:00 PM", title: "Grand final", teams: "1st vs 2nd" },
 ];
 
 const champions = [
@@ -56,9 +73,9 @@ const tournamentHonours = [
 
 const seasonFiveStages = [
   { label: "Closed", title: "Player registrations", detail: "The Season 5 player pool is in place.", state: "live" },
-  { label: "Up next", title: "Captain auction", detail: "Six captains will build balanced squads when the auction opens.", state: "next" },
+  { label: "27 Sep 2026", title: "Captain auction", detail: "Six captains will build balanced squads on auction day.", state: "next" },
   { label: "After auction", title: "Teams & squads", detail: "Official team names and player rosters will appear here.", state: "locked" },
-  { label: "Before matchday", title: "Fixtures & table", detail: "Schedule, results and standings will follow.", state: "locked" },
+  { label: "Published", title: "Fixtures", detail: "Fifteen league matches and Finals Day are now confirmed.", state: "live" },
 ];
 
 const legacyPhotos = Array.from({ length: 30 }, (_, index) => ({
@@ -69,6 +86,28 @@ const legacyPhotos = Array.from({ length: 30 }, (_, index) => ({
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [auction, setAuction] = useState<AuctionSnapshot>(preAuctionSnapshot);
+  const [auctionOnline, setAuctionOnline] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      try {
+        const next = await getAuctionSnapshot();
+        if (active) { setAuction(next); setAuctionOnline(Boolean(next.config)); }
+      } catch { if (active) setAuctionOnline(false); }
+    };
+    void refresh();
+    const timer = window.setInterval(refresh, 15000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+
+  const command = useMemo(() => {
+    const currentState = auction.players.find((player) => player.id === auction.config?.current_player_id);
+    const current = currentState ?? null;
+    const sold = auction.players.filter((player) => player.status === "sold").length;
+    return { current, sold, status: auction.config?.status ?? "preparing", id: auction.auction?.id ?? "" };
+  }, [auction]);
 
   return (
     <main>
@@ -76,15 +115,15 @@ export default function Home() {
         <a className="phf-mark" href="#top" aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
         <button className="cinema-menu" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle navigation"><i/><i/></button>
         <nav className={menuOpen ? "cinema-nav open" : "cinema-nav"} aria-label="Main navigation">
-          <a href="#dates" onClick={() => setMenuOpen(false)}>Match days</a>
+          <a href="#fixtures" onClick={() => setMenuOpen(false)}>Fixtures</a>
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="./players.html">Players</a>
-          <a href="./teams.html">Teams</a>
-          <a href="./auction.html">Auction</a>
+          <div className="cinema-nav-teams"><a href="./teams.html">Teams</a><div className="cinema-team-menu" aria-label="Season 5 teams">{announcedTeams.map((team) => <a key={team.id} href={`./teams.html?team=${team.id}`}>{team.name}</a>)}</div></div>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
+          <a href="#sponsors" onClick={() => setMenuOpen(false)}>Sponsors</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
-          <a className="gold-link" href="./auction.html">Auction room ↗</a>
+          <a className="gold-link" href="./auction.html">Live auction ↗</a>
         </nav>
       </header>
 
@@ -96,28 +135,71 @@ export default function Home() {
           <h1><span>Five years.</span><strong>One legacy.</strong></h1>
           <p className="hero-statement">The lights come on. The rivalries return. PHF cricket enters its biggest season yet.</p>
           <div className="hero-ctas">
-            <a className="gold-button" href="./auction.html">Enter the auction room <span>↗</span></a>
+            <a className="gold-button" href="./players.html">Meet the players <span>↗</span></a>
           </div>
         </div>
         <div className="hero-fixture">
-          <span>Match days</span><b>21 · 22 · 28 · 29</b><small>November 2026 · SRRC Cricket Ground</small>
+          <span>Match days</span><b>21 · 22 · 27 · 28 Nov</b><small>5 · 6 December 2026 · Melbourne Cricket Ground</small>
         </div>
         <div className="hero-edition"><span>Edition</span><b>05</b></div>
       </section>
 
-      <div className="broadcast-strip"><div>THE LEAGUE RETURNS <i>◆</i> DAY &amp; NIGHT CRICKET <i>◆</i> 5 YEAR LEGACY <i>◆</i> AUCTION BASED <i>◆</i> THE LEAGUE RETURNS <i>◆</i> DAY &amp; NIGHT CRICKET <i>◆</i></div></div>
+      <div className="broadcast-strip"><div>THE LEAGUE RETURNS <i>◆</i> DAYTIME CRICKET <i>◆</i> IPL-STYLE ROUND ROBIN <i>◆</i> AUCTION BASED <i>◆</i> THE LEAGUE RETURNS <i>◆</i> ONE MATCH PER PLAYER PER DAY <i>◆</i></div></div>
+
+      <section className="command-centre" aria-label="Season 5 command centre">
+        <div className="command-title">
+          <p>Season 5 command centre</p>
+          <h2>Everything happening.<br/><em>Right now.</em></h2>
+        </div>
+        <div className="command-live">
+          <div className={`command-signal ${auctionOnline ? "connected" : "standby"}`}><i/>{auctionOnline ? "Connected to auction room" : "Auction room on standby"}</div>
+          <span className="command-state">{command.status}</span>
+          <h3>{command.current ? command.current.name : command.status === "complete" ? "The squads are ready" : "The hammer awaits"}</h3>
+          <p>{command.current ? `${command.current.role ?? "Player"} is currently on the block.` : "Follow every bid, sale and squad update from one live board."}</p>
+          <div className="command-numbers"><div><b>{command.sold}</b><span>Players sold</span></div><div><b>{auction.teams.length || 6}</b><span>Teams</span></div><div><b>{auctionOnline ? auction.players.length : "80+"}</b><span>Player pool</span></div></div>
+          <div className="command-actions"><a href={`./auction.html${command.id ? `?auction=${command.id}` : ""}`}>Open live board</a><a href={`./teams.html${command.id ? `?auction=${command.id}` : ""}`}>View squads</a></div>
+        </div>
+        <div className="command-links">
+          <a href="./players.html"><span>Player directory</span><strong>Photos, roles &amp; career stats</strong><i>↗</i></a>
+          <a href="./teams.html"><span>Six franchises</span><strong>Captains, crests &amp; squads</strong><i>↗</i></a>
+          <a href="#dates"><span>Tournament calendar</span><strong>Six matchdays at MCG</strong><i>↓</i></a>
+        </div>
+      </section>
 
       <section className="dates-stage" id="dates">
-        <div className="section-intro"><p>The 2026 tournament</p><h2>Four days.<br/><em>One champion.</em></h2></div>
+        <div className="section-intro"><p>The 2026 tournament</p><h2>Six days.<br/><em>One champion.</em></h2></div>
         <div className="date-grid">
-          {matchDays.map((item, index) => <article className="date-tile" key={item.day}><span>0{index + 1}</span><strong>{item.day}</strong><b>Nov</b><small>{item.label}</small></article>)}
+          {matchDays.map((item, index) => <article className="date-tile" key={`${item.day}-${item.month ?? "Nov"}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.day}</strong><b>{item.month ?? "Nov"}</b><small>{item.label}</small></article>)}
         </div>
         <div className="event-rail">
-          <div><span>Venue</span><b>SRRC Cricket Ground</b><a href={venueUrl} target="_blank" rel="noreferrer">Map ↗</a></div>
-          <div><span>Format</span><b>Minimum 3 matches</b><small>Including one night match</small></div>
+          <div><span>Venue</span><b>Melbourne Cricket Ground</b><a href={venueUrl} target="_blank" rel="noreferrer">Map search ↗</a></div>
+          <div><span>Format</span><b>IPL-style round robin</b><small>Every team plays every other team</small></div>
+          <div><span>Playing policy</span><b>Day games only</b><small>One match per player per day</small></div>
           <div><span>Entry</span><b>₹2,000</b><small>Invitations closed</small></div>
-          <div><span>Auction</span><b>Coming up</b><small>Six captain-led squads</small></div>
+          <div><span>Auction</span><b>27 September 2026</b><small>Six captain-led squads</small></div>
         </div>
+      </section>
+
+      <section className="fixtures-stage" id="fixtures">
+        <div className="fixtures-lead">
+          <div className="section-intro"><p>Official Season 5 schedule</p><h2>Fifteen battles.<br/><em>One final.</em></h2></div>
+          <div className="fixtures-summary"><b>6</b><span>Teams</span><b>5</b><span>Games each</span><b>17</b><span>Total matches</span></div>
+        </div>
+        <div className="lottery-note">
+          <span>Live lottery · 27 September</span>
+          <p>Team numbers 1–6 will be drawn live on Auction Day. No choosing fixtures. No choosing opponents.</p>
+        </div>
+        <div className="fixture-board">
+          {fixtures.map((day, dayIndex) => <article className="fixture-day" key={day.date}>
+            <header><span>League day {dayIndex + 1}</span><strong>{day.date}</strong></header>
+            <div>{day.matches.map(([time, home, away]) => <div className="fixture-row" key={`${day.date}-${time}`}><time>{time}</time><b>{home}</b><i>vs</i><b>{away}</b></div>)}</div>
+          </article>)}
+        </div>
+        <div className="finals-board">
+          <div className="finals-date"><span>Finals day</span><strong>06 Dec</strong></div>
+          {finals.map((match) => <article key={match.title}><time>{match.time}</time><span>{match.title}</span><strong>{match.teams}</strong></article>)}
+        </div>
+        <p className="fixtures-footnote">Every match counts. Every point matters.</p>
       </section>
 
       <section className="auction-stage" id="season-five">
@@ -125,10 +207,10 @@ export default function Home() {
           <div className="section-intro"><p>Season 5 status</p><h2>The auction room<br/><em>is taking shape.</em></h2></div>
           <div className="live-invite"><i/><span>Invitations closed</span><b>Pre-auction phase</b></div>
         </div>
-        <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. Six playing captains will form nearly equal squads in the upcoming auction; official teams, fixtures and standings will follow.</p>
-        <a className="auction-roster-link" href="./auction.html">Explore the auction room <span>↗</span></a>
+        <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. On 27 September 2026, six playing captains will form nearly equal squads before team numbers are decided by live lottery.</p>
+        <a className="auction-roster-link" href="./players.html">Explore the player pool <span>↗</span></a>
         <div className="auction-track">
-          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href="./players.html">View registered players ↗</a> : stage.state === "next" ? <a href="./auction.html">View auction room ↗</a> : <small>Locked until announced</small>}</article>)}
+          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href={stage.title === "Fixtures" ? "#fixtures" : "./players.html"}>{stage.title === "Fixtures" ? "View full schedule ↓" : "View registered players ↗"}</a> : <small>{stage.state === "next" ? "Details coming soon" : "Locked until announced"}</small>}</article>)}
         </div>
       </section>
 
@@ -157,6 +239,28 @@ export default function Home() {
         <div className="records-note"><span>Verified archive</span><p>Ranks reflect the completed Season 1–4 CricHeroes tournament leaderboards. Season 5 records will begin after the auction, squads and fixtures are announced.</p></div>
       </section>
 
+      <section className="sponsors-stage" id="sponsors">
+        <div className="sponsors-copy">
+          <div className="section-intro"><p>Season 5 partners</p><h2>Backing the<br/><em>next chapter.</em></h2></div>
+          <p className="sponsors-intro">The partners helping turn Season 5 into a bigger stage for our players, teams and community.</p>
+          <div className="presenting-partner">
+            <span>Presenting sponsor</span>
+            <strong>Kotak Mahindra Bank</strong>
+          </div>
+          <div className="partner-list">
+            <article><span>Proud partner</span><strong>The Aartah School</strong></article>
+            <article><span>Proud partner</span><strong>Viseshta Avenues</strong></article>
+            <article><span>Proud partner</span><strong>Palm Valley</strong><small>Wealth in every acre</small></article>
+            <article><span>Beverage partner</span><strong>Monin</strong></article>
+            <article><span>Mobility partner</span><strong>GetMeCab</strong></article>
+          </div>
+        </div>
+        <a className="sponsors-poster" href="season5-auction-sponsors.jpg" target="_blank" rel="noreferrer" aria-label="Open the official Season 5 Player Auction poster">
+          <img src="season5-auction-sponsors.jpg" alt="PHF Premier League Season 5 Player Auction poster featuring the teams and official sponsors" loading="lazy"/>
+          <span>Official auction poster ↗</span>
+        </a>
+      </section>
+
       <section className="legacy-stage" id="legacy">
         <div className="legacy-title"><p>Five years in the making</p><h2>This is<br/>our <em>legacy.</em></h2><span>Thirty real moments. One PHF family.</span></div>
         <div className="cinema-gallery">
@@ -173,11 +277,12 @@ export default function Home() {
 
       <section className="final-call" id="register">
         <div className="final-photo" />
-        <div className="final-copy"><p>Season 5 · Auction ahead</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href="./auction.html">Enter the auction room <b>↗</b></a></div>
+        <div className="final-copy"><p>Season 5 · Auction ahead</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href="./players.html">Meet the players <b>↗</b></a></div>
         <div className="final-details"><a href={termsUrl} target="_blank" rel="noreferrer">Terms &amp; conditions ↗</a><a href={venueUrl} target="_blank" rel="noreferrer">Venue map ↗</a><span>Tarun · +91 98853 01226</span><span>Karthik · +91 84381 49893</span></div>
       </section>
 
-      <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November 2026</p><a href="#top">Back to top ↑</a></footer>
+      <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
+      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href="./auction.html"><i/>Live</a><a href="./teams.html">Teams</a></nav>
     </main>
   );
 }

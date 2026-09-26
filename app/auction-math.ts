@@ -2,8 +2,16 @@ import type { AuctionConfig, AuctionPlayer, AuctionTeam } from "./auction-client
 
 export function nextBid(player: AuctionPlayer | undefined, config: AuctionConfig | null): number | null {
   if (!player || !config) return null;
-  if (player.current_bid !== null) return player.current_bid + (config.minimum_increment ?? 0);
-  return player.base_price ?? config.default_base_price;
+  if (player.current_bid !== null) {
+    const currentBid = Number(player.current_bid);
+    const threshold = config.increment_threshold === null ? null : Number(config.increment_threshold);
+    const standardIncrement = Number(config.minimum_increment ?? 0);
+    const higherIncrement = Number(config.increment_above_threshold ?? standardIncrement);
+    const increment = threshold !== null && currentBid >= threshold ? higherIncrement : standardIncrement;
+    return Math.round((currentBid + increment) * 100) / 100;
+  }
+  const openingBid = player.base_price ?? config.default_base_price;
+  return openingBid === null ? null : Number(openingBid);
 }
 
 export function squadSize(players: AuctionPlayer[], teamId: string): number {
@@ -13,11 +21,11 @@ export function squadSize(players: AuctionPlayer[], teamId: string): number {
 export function maxBidAllowed(team: AuctionTeam, players: AuctionPlayer[], config: AuctionConfig | null): number {
   if (!config || config.default_base_price === null) return 0;
   const openSlotsNeeded = Math.max(0, config.min_squad_size - squadSize(players, team.id) - 1);
-  return Math.max(0, team.purse - team.spent - openSlotsNeeded * config.default_base_price);
+  return Math.max(0, Number(team.purse) - Number(team.spent) - openSlotsNeeded * Number(config.default_base_price));
 }
 
 export function provisionalPurse(team: AuctionTeam, current: AuctionPlayer | undefined): number {
-  return team.purse - team.spent - (current?.current_bid_team_id === team.id ? current.current_bid ?? 0 : 0);
+  return Number(team.purse) - Number(team.spent) - (current?.current_bid_team_id === team.id ? Number(current.current_bid ?? 0) : 0);
 }
 
 export function canBid(team: AuctionTeam, players: AuctionPlayer[], current: AuctionPlayer | undefined, config: AuctionConfig | null): boolean {

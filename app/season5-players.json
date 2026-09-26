@@ -4,8 +4,24 @@
     "name": "Sohan Lath",
     "role": "All-rounder",
     "photo": "/season5-players/player-2.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/rGbDHN",
+    "stats": {
+      "batting": {
+        "innings": 168,
+        "runs": 2156,
+        "average": "15.85",
+        "strikeRate": "108.56"
+      },
+      "bowling": {
+        "matches": 191,
+        "wickets": 34,
+        "economy": "9.24",
+        "best": "4/30"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/17176870/Sohan-Lath/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-3",
@@ -15,29 +31,46 @@
     "cricheroesUrl": "https://chshare.link/player/hGyN8U",
     "stats": {
       "batting": {
-        "innings": 76,
-        "runs": 1166,
-        "average": "23.80",
-        "strikeRate": "110.21"
+        "innings": 77,
+        "runs": 1183,
+        "average": "23.66",
+        "strikeRate": "109.74"
       },
       "bowling": {
-        "wickets": 52,
-        "economy": "8.08",
-        "best": "5/23",
-        "matches": 88
+        "matches": 89,
+        "wickets": 53,
+        "economy": "7.98",
+        "best": "5/23"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/32729358/Aakash-Pahwa/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-4",
     "name": "Navin Jha",
     "role": "All-rounder",
     "photo": "/season5-players/player-4.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/n5ZJWu",
+    "stats": {
+      "batting": {
+        "innings": 12,
+        "runs": 108,
+        "average": "18.00",
+        "strikeRate": "111.34"
+      },
+      "bowling": {
+        "matches": 20,
+        "wickets": 11,
+        "economy": "8.09",
+        "best": "3/20"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/22463660/navin-kumar-jha/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "navin kumar jha"
   },
   {
     "id": "player-5",
@@ -47,21 +80,21 @@
     "cricheroesUrl": "https://chshare.link/player/sdCbwY",
     "stats": {
       "batting": {
-        "innings": 43,
-        "runs": 442,
-        "average": "11.33",
-        "strikeRate": "84.35"
+        "innings": 44,
+        "runs": 474,
+        "average": "11.85",
+        "strikeRate": "84.79"
       },
       "bowling": {
+        "matches": 51,
         "wickets": 2,
         "economy": "7.50",
-        "best": "2/7",
-        "matches": 50
+        "best": "2/7"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/14946017/Bhavya-Bansal/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-6",
@@ -71,21 +104,21 @@
     "cricheroesUrl": "https://chshare.link/player/pWxriH",
     "stats": {
       "batting": {
-        "innings": 41,
-        "runs": 473,
-        "average": "13.51",
-        "strikeRate": "101.28"
+        "innings": 42,
+        "runs": 478,
+        "average": "13.28",
+        "strikeRate": "101.27"
       },
       "bowling": {
-        "wickets": 15,
+        "matches": 46,
+        "wickets": 17,
         "economy": "6.94",
-        "best": "4/18",
-        "matches": 45
+        "best": "4/18"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/33331571/Himanshu-Giri/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-7",
@@ -95,21 +128,21 @@
     "cricheroesUrl": "https://chshare.link/player/e6Ok0d",
     "stats": {
       "batting": {
-        "innings": 135,
-        "runs": 1859,
-        "average": "16.60",
-        "strikeRate": "114.82"
+        "innings": 137,
+        "runs": 1872,
+        "average": "16.42",
+        "strikeRate": "114.36"
       },
       "bowling": {
+        "matches": 152,
         "wickets": 40,
         "economy": "8.41",
-        "best": "2/5",
-        "matches": 150
+        "best": "2/5"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/1954566/Saurabh-Gupta/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-8",
@@ -119,21 +152,21 @@
     "cricheroesUrl": "https://chshare.link/player/4rMv6G",
     "stats": {
       "batting": {
-        "innings": 6,
-        "runs": 149,
-        "average": "24.83",
-        "strikeRate": "96.13"
+        "innings": 7,
+        "runs": 167,
+        "average": "23.86",
+        "strikeRate": "95.43"
       },
       "bowling": {
+        "matches": 7,
         "wickets": null,
         "economy": null,
-        "best": null,
-        "matches": 6
+        "best": null
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/31688419/Krishna-Devaraj/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-9",
@@ -149,15 +182,15 @@
         "strikeRate": "57.14"
       },
       "bowling": {
+        "matches": 12,
         "wickets": 6,
-        "economy": "7.06",
-        "best": "2/28",
-        "matches": 11
+        "economy": "7.12",
+        "best": "2/28"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/9693226/Sandeep-Ram/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-10",
@@ -173,15 +206,15 @@
         "strikeRate": "60.00"
       },
       "bowling": {
+        "matches": 4,
         "wickets": 3,
         "economy": "6.00",
-        "best": "2/10",
-        "matches": 4
+        "best": "2/10"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/49147853/Bharat-Arora-PHF-Cricket/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-11",
@@ -191,21 +224,21 @@
     "cricheroesUrl": "https://chshare.link/player/ovbySS",
     "stats": {
       "batting": {
-        "innings": 106,
-        "runs": 1397,
-        "average": "17.04",
-        "strikeRate": "114.32"
+        "innings": 108,
+        "runs": 1447,
+        "average": "17.43",
+        "strikeRate": "114.75"
       },
       "bowling": {
+        "matches": 148,
         "wickets": 90,
-        "economy": "8.18",
-        "best": "3/12",
-        "matches": 146
+        "economy": "8.20",
+        "best": "3/12"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17251390/Nikhil-Miryala/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-12",
@@ -215,21 +248,21 @@
     "cricheroesUrl": "https://chshare.link/player/r6pVxH",
     "stats": {
       "batting": {
-        "innings": 55,
-        "runs": 340,
-        "average": "10.97",
-        "strikeRate": "100.00"
+        "innings": 56,
+        "runs": 343,
+        "average": "11.06",
+        "strikeRate": "99.13"
       },
       "bowling": {
-        "wickets": 54,
-        "economy": "7.59",
-        "best": "3/13",
-        "matches": 89
+        "matches": 90,
+        "wickets": 55,
+        "economy": "7.48",
+        "best": "3/13"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/23504852/Akki-Thadani/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Akki Thadani"
   },
   {
@@ -237,8 +270,24 @@
     "name": "Satish Dhanekula",
     "role": "All-rounder",
     "photo": "/season5-players/player-13.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/n59vBQ",
+    "stats": {
+      "batting": {
+        "innings": 37,
+        "runs": 485,
+        "average": "22.05",
+        "strikeRate": "118.29"
+      },
+      "bowling": {
+        "matches": 52,
+        "wickets": 30,
+        "economy": "7.00",
+        "best": "2/8"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/14046832/Satish-Dhanekula/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-14",
@@ -248,21 +297,21 @@
     "cricheroesUrl": "https://chshare.link/player/dbaKr2",
     "stats": {
       "batting": {
-        "innings": 341,
-        "runs": 8459,
-        "average": "30.65",
-        "strikeRate": "137.57"
+        "innings": 344,
+        "runs": 8502,
+        "average": "30.58",
+        "strikeRate": "137.71"
       },
       "bowling": {
-        "wickets": 223,
-        "economy": "7.09",
-        "best": "5/8",
-        "matches": 375
+        "matches": 378,
+        "wickets": 225,
+        "economy": "7.05",
+        "best": "5/8"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3862287/Diptiranjan-Samantaray/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Diptiranjan Samantaray"
   },
   {
@@ -270,8 +319,25 @@
     "name": "Srikanth Kavuri",
     "role": "All-rounder",
     "photo": "/season5-players/player-15.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/kfkCIq",
+    "stats": {
+      "batting": {
+        "innings": 50,
+        "runs": 1007,
+        "average": "27.22",
+        "strikeRate": "129.94"
+      },
+      "bowling": {
+        "matches": 52,
+        "wickets": 59,
+        "economy": "6.54",
+        "best": "5/14"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/33453377/Srikanth-K/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Srikanth K"
   },
   {
     "id": "player-16",
@@ -287,15 +353,15 @@
         "strikeRate": "100.00"
       },
       "bowling": {
+        "matches": 116,
         "wickets": 117,
         "economy": "6.78",
-        "best": "4/14",
-        "matches": 116
+        "best": "4/14"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2405122/Aakash-MEHTA/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-17",
@@ -305,21 +371,21 @@
     "cricheroesUrl": "https://chshare.link/player/pGrUxs",
     "stats": {
       "batting": {
-        "innings": 38,
-        "runs": 244,
-        "average": "7.63",
-        "strikeRate": "71.55"
+        "innings": 39,
+        "runs": 255,
+        "average": "7.73",
+        "strikeRate": "71.63"
       },
       "bowling": {
+        "matches": 46,
         "wickets": 2,
         "economy": "7.95",
-        "best": "1/2",
-        "matches": 45
+        "best": "1/2"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/22463628/Aditya-Ambikesh/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-18",
@@ -335,15 +401,15 @@
         "strikeRate": "107.45"
       },
       "bowling": {
+        "matches": 19,
         "wickets": 11,
         "economy": "8.06",
-        "best": "2/10",
-        "matches": 18
+        "best": "2/10"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/31280346/Mani/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Mani"
   },
   {
@@ -360,15 +426,15 @@
         "strikeRate": "94.44"
       },
       "bowling": {
+        "matches": 11,
         "wickets": 3,
         "economy": "9.00",
-        "best": "1/16",
-        "matches": 11
+        "best": "1/16"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/23808488/Mithun-Bhaskar/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-20",
@@ -378,21 +444,21 @@
     "cricheroesUrl": "https://cricheroes.com/player-profile/23679397/Rahul%20Gome/profile",
     "stats": {
       "batting": {
-        "innings": 34,
-        "runs": 709,
-        "average": "28.36",
-        "strikeRate": "146.79"
+        "innings": 35,
+        "runs": 719,
+        "average": "27.65",
+        "strikeRate": "147.34"
       },
       "bowling": {
+        "matches": 40,
         "wickets": 10,
         "economy": "7.22",
-        "best": "2/28",
-        "matches": 39
+        "best": "2/28"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/23679397/Rahul%20Gome/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-21",
@@ -408,15 +474,15 @@
         "strikeRate": "101.60"
       },
       "bowling": {
+        "matches": 364,
         "wickets": 38,
         "economy": "9.18",
-        "best": "3/19",
-        "matches": 364
+        "best": "3/19"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3617155/Saurabh-mathur/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-22",
@@ -440,23 +506,40 @@
         "strikeRate": "80.00"
       },
       "bowling": {
+        "matches": 56,
         "wickets": 39,
         "economy": "8.25",
-        "best": "3/15",
-        "matches": 56
+        "best": "3/15"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/21977435/Dhritiman-Sinha/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-24",
     "name": "Abhishek S",
     "role": "All-rounder",
     "photo": "/season5-players/player-24.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/bjYBDL",
+    "stats": {
+      "batting": {
+        "innings": 20,
+        "runs": 184,
+        "average": "26.29",
+        "strikeRate": "115.72"
+      },
+      "bowling": {
+        "matches": 28,
+        "wickets": 29,
+        "economy": "7.29",
+        "best": "3/11"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/32937486/Abhishek-Srivastava-PHF-Dabangg/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Abhishek S - PHF"
   },
   {
     "id": "player-25",
@@ -472,15 +555,15 @@
         "strikeRate": "110.00"
       },
       "bowling": {
-        "wickets": 132,
-        "economy": "7.21",
-        "best": "5/8",
-        "matches": 114
+        "matches": 116,
+        "wickets": 137,
+        "economy": "7.17",
+        "best": "5/8"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/4489866/Mayank/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-26",
@@ -490,21 +573,21 @@
     "cricheroesUrl": "https://chshare.link/player/bNLjWz",
     "stats": {
       "batting": {
-        "innings": 186,
-        "runs": 2271,
-        "average": "14.94",
-        "strikeRate": "93.38"
+        "innings": 187,
+        "runs": 2282,
+        "average": "14.92",
+        "strikeRate": "93.45"
       },
       "bowling": {
+        "matches": 211,
         "wickets": 14,
         "economy": "9.22",
-        "best": "4/22",
-        "matches": 210
+        "best": "4/22"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/1734322/Sandeep-Mekala/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-27",
@@ -520,15 +603,15 @@
         "strikeRate": "40.00"
       },
       "bowling": {
+        "matches": 4,
         "wickets": 0,
         "economy": "6.57",
-        "best": "0/4",
-        "matches": 4
+        "best": "0/4"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/37376681/sumit-das/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-28",
@@ -538,29 +621,46 @@
     "cricheroesUrl": "https://chshare.link/player/g3jr38",
     "stats": {
       "batting": {
-        "innings": 15,
-        "runs": 60,
-        "average": "5.45",
-        "strikeRate": "54.05"
+        "innings": 16,
+        "runs": 70,
+        "average": "5.83",
+        "strikeRate": "58.33"
       },
       "bowling": {
+        "matches": 36,
         "wickets": 31,
-        "economy": "8.34",
-        "best": "5/18",
-        "matches": 35
+        "economy": "8.42",
+        "best": "5/18"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/49405001/Sanchay-mohan-shrivastava/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-29",
     "name": "Rai Sumit Kumar Sinha",
     "role": "All-rounder",
     "photo": "/season5-players/player-29.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/dsNum0",
+    "stats": {
+      "batting": {
+        "innings": 9,
+        "runs": 68,
+        "average": "17.00",
+        "strikeRate": "93.15"
+      },
+      "bowling": {
+        "matches": 17,
+        "wickets": 10,
+        "economy": "7.77",
+        "best": "4/16"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/17253048/Sumit-Sinha/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Sumit Sinha"
   },
   {
     "id": "player-30",
@@ -584,15 +684,15 @@
         "strikeRate": "80.76"
       },
       "bowling": {
+        "matches": 67,
         "wickets": 49,
         "economy": "7.19",
-        "best": "4/7",
-        "matches": 67
+        "best": "4/7"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/19604708/Kowshik/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Kowshik"
   },
   {
@@ -611,21 +711,21 @@
     "cricheroesUrl": "https://chshare.link/player/f8rWfQ",
     "stats": {
       "batting": {
-        "innings": 118,
-        "runs": 1921,
-        "average": "20.88",
-        "strikeRate": "127.90"
+        "innings": 120,
+        "runs": 1967,
+        "average": "21.15",
+        "strikeRate": "128.23"
       },
       "bowling": {
+        "matches": 129,
         "wickets": 23,
         "economy": "9.15",
-        "best": "2/1",
-        "matches": 127
+        "best": "2/1"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/1898304/Chandan/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Chandan"
   },
   {
@@ -636,21 +736,21 @@
     "cricheroesUrl": "https://chshare.link/player/nJ38wb",
     "stats": {
       "batting": {
-        "innings": 27,
-        "runs": 228,
-        "average": "12.00",
-        "strikeRate": "115.15"
+        "innings": 28,
+        "runs": 229,
+        "average": "11.45",
+        "strikeRate": "114.50"
       },
       "bowling": {
-        "wickets": 39,
-        "economy": "7.99",
-        "best": "3/8",
-        "matches": 54
+        "matches": 56,
+        "wickets": 41,
+        "economy": "7.97",
+        "best": "3/8"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/14718162/Saket/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Saket"
   },
   {
@@ -667,15 +767,15 @@
         "strikeRate": "123.61"
       },
       "bowling": {
+        "matches": 143,
         "wickets": 60,
         "economy": "7.68",
-        "best": "6/26",
-        "matches": 143
+        "best": "6/26"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/24048565/Tushar-Chatterji/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-36",
@@ -691,15 +791,15 @@
         "strikeRate": "126.16"
       },
       "bowling": {
+        "matches": 196,
         "wickets": 135,
         "economy": "7.49",
-        "best": "5/8",
-        "matches": 196
+        "best": "5/8"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17356329/Shobhit-K/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Shobhit K"
   },
   {
@@ -716,15 +816,15 @@
         "strikeRate": "71.65"
       },
       "bowling": {
+        "matches": 53,
         "wickets": 11,
         "economy": "9.37",
-        "best": "2/10",
-        "matches": 53
+        "best": "2/10"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17112868/Nishank-singh/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-38",
@@ -740,23 +840,40 @@
         "strikeRate": "125.42"
       },
       "bowling": {
+        "matches": 60,
         "wickets": 35,
         "economy": "7.12",
-        "best": "3/10",
-        "matches": 60
+        "best": "3/10"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3552603/Vinay-Dwivedi/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-39",
     "name": "Romit Kumar",
     "role": "All-rounder",
     "photo": "/season5-players/player-39.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/idC3Fc",
+    "stats": {
+      "batting": {
+        "innings": 12,
+        "runs": 54,
+        "average": "10.80",
+        "strikeRate": "96.43"
+      },
+      "bowling": {
+        "matches": 30,
+        "wickets": 24,
+        "economy": "7.45",
+        "best": "5/21"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/23990158/Romit-K/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Romit K"
   },
   {
     "id": "player-40",
@@ -772,15 +889,15 @@
         "strikeRate": "81.02"
       },
       "bowling": {
+        "matches": 31,
         "wickets": 22,
         "economy": "6.87",
-        "best": "3/17",
-        "matches": 31
+        "best": "3/17"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17725457/Sunil-B/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Sunil B"
   },
   {
@@ -788,8 +905,25 @@
     "name": "Revanth reddy",
     "role": "All-rounder",
     "photo": "/season5-players/player-41.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/ejSsvQ",
+    "stats": {
+      "batting": {
+        "innings": 31,
+        "runs": 298,
+        "average": "12.42",
+        "strikeRate": "91.41"
+      },
+      "bowling": {
+        "matches": 60,
+        "wickets": 35,
+        "economy": "8.73",
+        "best": "3/5"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/18531654/Revanth/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Revanth"
   },
   {
     "id": "player-42",
@@ -799,21 +933,21 @@
     "cricheroesUrl": "https://chshare.link/player/s2S4dN",
     "stats": {
       "batting": {
-        "innings": 29,
-        "runs": 203,
-        "average": "11.94",
-        "strikeRate": "115.34"
+        "innings": 30,
+        "runs": 216,
+        "average": "12.00",
+        "strikeRate": "116.76"
       },
       "bowling": {
+        "matches": 54,
         "wickets": 45,
         "economy": "7.72",
-        "best": "4/7",
-        "matches": 53
+        "best": "4/7"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/44278285/Abhinav-Bhardwaj/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-43",
@@ -823,21 +957,21 @@
     "cricheroesUrl": "https://chshare.link/player/kN6Ftc",
     "stats": {
       "batting": {
-        "innings": 206,
-        "runs": 4084,
+        "innings": 208,
+        "runs": 4109,
         "average": "24.75",
-        "strikeRate": "127.15"
+        "strikeRate": "127.29"
       },
       "bowling": {
-        "wickets": 143,
-        "economy": "7.56",
-        "best": "4/28",
-        "matches": 233
+        "matches": 235,
+        "wickets": 145,
+        "economy": "7.52",
+        "best": "4/28"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3268413/Amartya-Bhardwaj/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-44",
@@ -853,15 +987,15 @@
         "strikeRate": "112.53"
       },
       "bowling": {
+        "matches": 60,
         "wickets": 16,
         "economy": "7.73",
-        "best": "3/7",
-        "matches": 60
+        "best": "3/7"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2974775/amitabh-soni/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-45",
@@ -871,21 +1005,21 @@
     "cricheroesUrl": "https://cricheroes.com/player-profile/381881/praveen-mustepally/stats",
     "stats": {
       "batting": {
-        "innings": 137,
-        "runs": 2819,
-        "average": "23.69",
-        "strikeRate": "118.00"
+        "innings": 138,
+        "runs": 2838,
+        "average": "23.65",
+        "strikeRate": "118.05"
       },
       "bowling": {
-        "wickets": 30,
-        "economy": "7.40",
-        "best": "3/19",
-        "matches": 144
+        "matches": 145,
+        "wickets": 31,
+        "economy": "7.47",
+        "best": "3/19"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/381881/praveen-mustepally/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-46",
@@ -925,7 +1059,7 @@
     },
     "statsSource": "https://cricheroes.com/player-profile/17256551/Talluri-Tarun/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Talluri Tarun"
   },
   {
@@ -942,15 +1076,15 @@
         "strikeRate": "127.13"
       },
       "bowling": {
+        "matches": 194,
         "wickets": 114,
         "economy": "7.89",
-        "best": "5/22",
-        "matches": 193
+        "best": "5/22"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2339891/Pavan-kumar-E-V/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Pavan kumar E V"
   },
   {
@@ -958,16 +1092,49 @@
     "name": "Srinivas Janga",
     "role": "Batter",
     "photo": "/season5-players/player-50.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://cricheroes.com/player-profile/24002515/srinivas-gn",
+    "stats": {
+      "batting": {
+        "innings": 1,
+        "runs": 0,
+        "average": "-",
+        "strikeRate": "0.00"
+      },
+      "bowling": {
+        "matches": 2,
+        "wickets": null,
+        "economy": null,
+        "best": null
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/24002515/srinivas-gn/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "SRINIVAS GN"
   },
   {
     "id": "player-51",
     "name": "Abhishek Thakur",
     "role": "All-rounder",
     "photo": "/season5-players/player-51.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/toeqwm",
+    "stats": {
+      "batting": {
+        "innings": 19,
+        "runs": 225,
+        "average": "20.45",
+        "strikeRate": "119.05"
+      },
+      "bowling": {
+        "matches": 21,
+        "wickets": 22,
+        "economy": "6.91",
+        "best": "3/15"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/23265834/Abhishek-Thakur/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-52",
@@ -983,15 +1150,15 @@
         "strikeRate": "164.68"
       },
       "bowling": {
+        "matches": 49,
         "wickets": 18,
         "economy": "10.73",
-        "best": "3/4",
-        "matches": 49
+        "best": "3/4"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/12581205/rohit-panchal/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-53",
@@ -1007,15 +1174,15 @@
         "strikeRate": "83.23"
       },
       "bowling": {
+        "matches": 19,
         "wickets": 5,
         "economy": "7.80",
-        "best": "2/16",
-        "matches": 19
+        "best": "2/16"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17607097/Varnit-Shukla/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-54",
@@ -1039,15 +1206,15 @@
         "strikeRate": "37.50"
       },
       "bowling": {
+        "matches": 1,
         "wickets": 0,
         "economy": "6.50",
-        "best": "0/13",
-        "matches": 1
+        "best": "0/13"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/53492214/Mohit-t/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-56",
@@ -1057,21 +1224,21 @@
     "cricheroesUrl": "https://chshare.link/player/f5kW3i",
     "stats": {
       "batting": {
-        "innings": 52,
-        "runs": 1010,
-        "average": "22.44",
-        "strikeRate": "141.06"
+        "innings": 53,
+        "runs": 1017,
+        "average": "22.11",
+        "strikeRate": "141.05"
       },
       "bowling": {
+        "matches": 57,
         "wickets": 14,
         "economy": "9.48",
-        "best": "3/13",
-        "matches": 56
+        "best": "3/13"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/6973576/Hanuma/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Hanuma"
   },
   {
@@ -1079,8 +1246,24 @@
     "name": "Ankit Kurani",
     "role": "Bowler",
     "photo": "/season5-players/player-57.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://cricheroes.com/player-profile/14942241/ankit-kurani",
+    "stats": {
+      "batting": {
+        "innings": 2,
+        "runs": 3,
+        "average": "1.50",
+        "strikeRate": "27.27"
+      },
+      "bowling": {
+        "matches": 5,
+        "wickets": 3,
+        "economy": "3.00",
+        "best": "2/3"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/14942241/ankit-kurani/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-58",
@@ -1095,8 +1278,24 @@
     "name": "Chetan Barode",
     "role": "Batter",
     "photo": "/season5-players/player-59.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/blr2TU",
+    "stats": {
+      "batting": {
+        "innings": 15,
+        "runs": 103,
+        "average": "11.44",
+        "strikeRate": "99.04"
+      },
+      "bowling": {
+        "matches": 21,
+        "wickets": 5,
+        "economy": "8.37",
+        "best": "2/5"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/42629132/Chetan-Barode/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-60",
@@ -1112,15 +1311,15 @@
         "strikeRate": "95.10"
       },
       "bowling": {
+        "matches": 21,
         "wickets": 11,
         "economy": "7.64",
-        "best": "2/16",
-        "matches": 21
+        "best": "2/16"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/10116265/Meet/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Meet"
   },
   {
@@ -1128,8 +1327,24 @@
     "name": "Vinay Kushwaha",
     "role": "Batter",
     "photo": "/season5-players/player-61.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/qPsGWg",
+    "stats": {
+      "batting": {
+        "innings": 12,
+        "runs": 182,
+        "average": "15.17",
+        "strikeRate": "114.47"
+      },
+      "bowling": {
+        "matches": 17,
+        "wickets": 1,
+        "economy": "17.00",
+        "best": "1/14"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/23837523/Vinay-Kushwaha/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-62",
@@ -1145,23 +1360,39 @@
         "strikeRate": "114.18"
       },
       "bowling": {
+        "matches": 52,
         "wickets": 17,
         "economy": "9.13",
-        "best": "3/10",
-        "matches": 52
+        "best": "3/10"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17993651/Ashwin-Kumar/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-63",
     "name": "Tariq",
     "role": "Batter",
     "photo": "/season5-players/player-63.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/jmMnHG",
+    "stats": {
+      "batting": {
+        "innings": 10,
+        "runs": 89,
+        "average": "12.71",
+        "strikeRate": "96.74"
+      },
+      "bowling": {
+        "matches": 16,
+        "wickets": 3,
+        "economy": "8.86",
+        "best": "2/24"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/26850601/Tariq/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-64",
@@ -1171,21 +1402,21 @@
     "cricheroesUrl": "https://chshare.link/player/eRmBlS",
     "stats": {
       "batting": {
-        "innings": 184,
-        "runs": 2325,
-        "average": "16.37",
-        "strikeRate": "108.70"
+        "innings": 185,
+        "runs": 2329,
+        "average": "16.29",
+        "strikeRate": "108.33"
       },
       "bowling": {
-        "wickets": 118,
-        "economy": "8.29",
-        "best": "5/16",
-        "matches": 229
+        "matches": 230,
+        "wickets": 119,
+        "economy": "8.31",
+        "best": "5/16"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2228477/Karthikesh/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-65",
@@ -1201,15 +1432,15 @@
         "strikeRate": "129.38"
       },
       "bowling": {
+        "matches": 34,
         "wickets": 14,
         "economy": "8.57",
-        "best": "3/16",
-        "matches": 34
+        "best": "3/16"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17252624/Shravan-Kumar/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Shravan Kumar"
   },
   {
@@ -1217,40 +1448,124 @@
     "name": "Prashanth Palipudi (KP)",
     "role": "Bowler",
     "photo": "/season5-players/player-66.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/kk45JN",
+    "stats": {
+      "batting": {
+        "innings": 10,
+        "runs": 8,
+        "average": "1.33",
+        "strikeRate": "30.77"
+      },
+      "bowling": {
+        "matches": 39,
+        "wickets": 23,
+        "economy": "7.57",
+        "best": "3/15"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/22428697/Krishna-Prashanth-(KP)/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Krishna Prashanth (KP)"
   },
   {
     "id": "player-67",
     "name": "Santosh Kumar Sriramoju",
     "role": "All-rounder",
     "photo": "/season5-players/player-67.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/oTStdg",
+    "stats": {
+      "batting": {
+        "innings": 22,
+        "runs": 224,
+        "average": "11.20",
+        "strikeRate": "112.00"
+      },
+      "bowling": {
+        "matches": 32,
+        "wickets": 19,
+        "economy": "10.54",
+        "best": "3/21"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/2212050/Santosh-Sriramoju/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Santosh Sriramoju"
   },
   {
     "id": "player-68",
     "name": "Jitendra Kumar Shukla",
     "role": "All-rounder",
     "photo": "/season5-players/player-68.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/szI6fS",
+    "stats": {
+      "batting": {
+        "innings": 144,
+        "runs": 1235,
+        "average": "10.29",
+        "strikeRate": "102.75"
+      },
+      "bowling": {
+        "matches": 171,
+        "wickets": 94,
+        "economy": "7.88",
+        "best": "3/2"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/6749905/Jeet/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Jeet"
   },
   {
     "id": "player-69",
     "name": "Praveer Kumar Kullu",
     "role": "All-rounder",
     "photo": "/season5-players/player-69.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/rU3SkF",
+    "stats": {
+      "batting": {
+        "innings": 13,
+        "runs": 47,
+        "average": "6.71",
+        "strikeRate": "87.04"
+      },
+      "bowling": {
+        "matches": 18,
+        "wickets": 2,
+        "economy": "15.08",
+        "best": "2/22"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/12734842/Praveer/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Praveer"
   },
   {
     "id": "player-70",
     "name": "Abhishek Purohit",
     "role": "Bowler",
     "photo": "/season5-players/player-70.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/j2dORb",
+    "stats": {
+      "batting": {
+        "innings": 7,
+        "runs": 17,
+        "average": "4.25",
+        "strikeRate": "60.71"
+      },
+      "bowling": {
+        "matches": 16,
+        "wickets": 8,
+        "economy": "7.30",
+        "best": "2/28"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/42665281/Abhishek-Purohit/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-71",
@@ -1266,15 +1581,15 @@
         "strikeRate": "75.00"
       },
       "bowling": {
+        "matches": 74,
         "wickets": 29,
-        "economy": "9.67",
-        "best": "3/11",
-        "matches": 73
+        "economy": "9.64",
+        "best": "3/11"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/10933448/Saptarshi-Roy/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-72",
@@ -1284,21 +1599,21 @@
     "cricheroesUrl": "https://chshare.link/player/bw6Z53",
     "stats": {
       "batting": {
-        "innings": 9,
-        "runs": 90,
-        "average": "15.00",
-        "strikeRate": "107.14"
+        "innings": 10,
+        "runs": 103,
+        "average": "14.71",
+        "strikeRate": "111.96"
       },
       "bowling": {
+        "matches": 14,
         "wickets": 10,
-        "economy": "8.61",
-        "best": "3/34",
-        "matches": 13
+        "economy": "8.53",
+        "best": "3/34"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/44768438/Rachit/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Rachit"
   },
   {
@@ -1306,16 +1621,50 @@
     "name": "Sunnihith",
     "role": "Batter",
     "photo": "/season5-players/player-73.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/20ymjS",
+    "stats": {
+      "batting": {
+        "innings": 70,
+        "runs": 882,
+        "average": "15.21",
+        "strikeRate": "104.75"
+      },
+      "bowling": {
+        "matches": 78,
+        "wickets": 8,
+        "economy": "11.86",
+        "best": "3/30"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/25606403/DSY/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "DSY"
   },
   {
     "id": "player-74",
     "name": "Rajeswar Rao",
     "role": "Bowler",
     "photo": "/season5-players/player-74.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/fAEIWP",
+    "stats": {
+      "batting": {
+        "innings": 6,
+        "runs": 18,
+        "average": "6.00",
+        "strikeRate": "85.71"
+      },
+      "bowling": {
+        "matches": 17,
+        "wickets": 13,
+        "economy": "7.59",
+        "best": "4/24"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/33160795/Raj/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Raj"
   },
   {
     "id": "player-75",
@@ -1325,21 +1674,21 @@
     "cricheroesUrl": "https://chshare.link/player/qOW5oT",
     "stats": {
       "batting": {
-        "innings": 33,
-        "runs": 210,
-        "average": "9.55",
-        "strikeRate": "75.27"
+        "innings": 34,
+        "runs": 214,
+        "average": "9.30",
+        "strikeRate": "75.89"
       },
       "bowling": {
+        "matches": 63,
         "wickets": 40,
         "economy": "6.94",
-        "best": "3/10",
-        "matches": 62
+        "best": "3/10"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/17259364/Agasthya-Bellamkonda/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-76",
@@ -1355,15 +1704,15 @@
         "strikeRate": "107.45"
       },
       "bowling": {
+        "matches": 47,
         "wickets": 45,
         "economy": "7.21",
-        "best": "5/20",
-        "matches": 47
+        "best": "5/20"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/13193079/aqib-afzal/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18"
+    "statsChecked": "2026-09-20"
   },
   {
     "id": "player-77",
@@ -1379,15 +1728,15 @@
         "strikeRate": "135.85"
       },
       "bowling": {
+        "matches": 128,
         "wickets": 101,
         "economy": "6.97",
-        "best": "4/12",
-        "matches": 128
+        "best": "4/12"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/3100605/phanidhar-raju/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Phanidhar Raju"
   },
   {
@@ -1404,15 +1753,15 @@
         "strikeRate": "114.00"
       },
       "bowling": {
+        "matches": 28,
         "wickets": 3,
         "economy": "8.49",
-        "best": "1/7",
-        "matches": 28
+        "best": "1/7"
       }
     },
     "statsSource": "https://cricheroes.com/player-profile/2969664/Subash-Reddy-K/stats",
     "statsScope": "CricHeroes career",
-    "statsChecked": "2026-09-18",
+    "statsChecked": "2026-09-20",
     "statsProfileName": "Subash Reddy K"
   },
   {
@@ -1420,16 +1769,50 @@
     "name": "Yogesh",
     "role": "All-rounder",
     "photo": "/season5-players/player-79.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/smdDT1",
+    "stats": {
+      "batting": {
+        "innings": 54,
+        "runs": 694,
+        "average": "13.35",
+        "strikeRate": "111.40"
+      },
+      "bowling": {
+        "matches": 61,
+        "wickets": 24,
+        "economy": "8.37",
+        "best": "4/5"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/13834145/Yogi/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Yogi"
   },
   {
     "id": "player-80",
     "name": "Bhupesh Jatiani",
     "role": "All-rounder",
     "photo": "/season5-players/player-80.jpg",
-    "cricheroesUrl": null,
-    "stats": null
+    "cricheroesUrl": "https://chshare.link/player/rMx1Fn",
+    "stats": {
+      "batting": {
+        "innings": 6,
+        "runs": 28,
+        "average": "9.33",
+        "strikeRate": "82.35"
+      },
+      "bowling": {
+        "matches": 10,
+        "wickets": 4,
+        "economy": "9.12",
+        "best": "3/10"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/36637650/Bhupesh/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20",
+    "statsProfileName": "Bhupesh"
   },
   {
     "id": "player-81",
@@ -1477,6 +1860,67 @@
     "role": "All-rounder",
     "photo": null,
     "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-87",
+    "name": "Madhav Jain",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-87.jpg",
+    "cricheroesUrl": "https://chshare.link/player/gIuY4i",
+    "stats": {
+      "batting": {
+        "innings": 61,
+        "runs": 673,
+        "average": "14.02",
+        "strikeRate": "86.73"
+      },
+      "bowling": {
+        "matches": 111,
+        "wickets": 136,
+        "economy": "6.56",
+        "best": "5/15"
+      }
+    },
+    "statsSource": "https://cricheroes.com/player-profile/16140295/Madhav-Jain/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-20"
+  },
+  {
+    "id": "player-88",
+    "name": "Vineet",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-88.jpg",
+    "cricheroesUrl": "https://chshare.link/player/sHKlya",
+    "stats": null,
+    "statsSource": "https://cricheroes.com/player-profile/17225390/vineet-mishra/stats",
+    "statsScope": "CricHeroes career",
+    "statsChecked": "2026-09-26",
+    "statsProfileName": "Vineet Mishra"
+  },
+  {
+    "id": "player-89",
+    "name": "Kuchipudi Nisanth",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-89.jpg",
+    "cricheroesUrl": "https://chshare.link/player/b3nUh8",
+    "stats": null,
+    "statsProfileName": "Harsha@bro"
+  },
+  {
+    "id": "player-90",
+    "name": "Shravan",
+    "role": "All-rounder",
+    "photo": "/season5-players/player-90.jpg",
+    "cricheroesUrl": null,
+    "stats": null
+  },
+  {
+    "id": "player-91",
+    "name": "Divyansh Dubey",
+    "role": "Bowler",
+    "photo": "/season5-players/player-91.jpg",
+    "cricheroesUrl": "https://chshare.link/player/sFVVX",
     "stats": null
   }
 ]

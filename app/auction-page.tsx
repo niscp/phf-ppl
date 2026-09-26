@@ -2,9 +2,9 @@
 
 /* eslint-disable react/no-unescaped-entities */
 
-import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import registeredPlayers from "./season5-players.json";
-import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSession, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
+import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionInstance, type AuctionSession, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
 import { canBid, maxBidAllowed, nextBid, provisionalPurse, squadSize } from "./auction-math";
 import { auctionExcludedPlayerIds } from "./season5-teams";
 
@@ -32,9 +32,34 @@ function localLink(path: string) {
   return typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? `/phf-ppl/${path}` : `/${path}`;
 }
 
+function selectedAuctionId() {
+  if (typeof window === "undefined") return "";
+  const params = new URLSearchParams(window.location.search);
+  return params.get("auction") || params.get("id") || "";
+}
+
 function amount(value: number | null | undefined, unit: string | null | undefined) {
   if (value === null || value === undefined) return "—";
-  return unit === "₹" || unit === "INR" ? `₹${value.toLocaleString("en-IN")}` : `${value.toLocaleString("en-IN")} ${unit || "points"}`;
+  const credits = (unit === "₹" || unit === "INR") && value >= 10_000_000 ? value / 10_000_000 : value;
+  return `${credits.toLocaleString("en-IN", { maximumFractionDigits: 2 })} CR`;
+}
+
+function SoldCelebration({ snapshot }: { snapshot: AuctionSnapshot }) {
+  const [eventId, setEventId] = useState<number | null>(null);
+  const seen = useRef<number | null>(null);
+  const sold = snapshot.events.find((event) => event.event_type === "sold");
+  useEffect(() => {
+    if (!sold) return;
+    if (seen.current === null) { seen.current = sold.id; return; }
+    if (seen.current === sold.id) return;
+    seen.current = sold.id; setEventId(sold.id);
+    const timer = window.setTimeout(() => setEventId(null), 2800);
+    return () => window.clearTimeout(timer);
+  }, [sold?.id]);
+  if (!sold || eventId !== sold.id) return null;
+  const player = roster.find((item) => item.id === sold.player_id);
+  const team = snapshot.teams.find((item) => item.id === sold.team_id);
+  return <div className="auction-sold-celebration" role="status"><span>SOLD</span><h2>{player?.name ?? "Player"}</h2><p>{team?.name ?? "Team"} · {amount(sold.amount, snapshot.config?.money_label)}</p></div>;
 }
 
 function PlayerImage({ player, className = "" }: { player: Pick<RegisteredPlayer, "name" | "photo">; className?: string }) {
@@ -75,23 +100,24 @@ function AuctionLiveBoard({ snapshot, current, admin = false, busy = false, onBi
   const config = snapshot.config;
   const leading = snapshot.teams.find((team) => team.id === state?.current_bid_team_id);
   const next = nextBid(state, config);
-  const unit = config?.money_label ?? "₹";
+  const unit = config?.money_label ?? "CR";
   return <div className={`auction-live-board${admin ? " auction-live-admin" : ""}`}>
     <div className="auction-board-player">
       {current ? <><div className="auction-board-photo"><PlayerImage player={current} /></div><div className="auction-board-player-info"><span>{current.role}</span><h3>{current.name}</h3><StatLine player={current} />{current.statsSource && <a href={current.statsSource} target="_blank" rel="noopener noreferrer">CricHeroes profile ↗</a>}</div></>
-        : <div className="auction-board-empty"><span className="auction-board-ball" aria-hidden="true"/><h3>{config?.status === "complete" ? "Squads formed" : "Next player awaits"}</h3><p>{config?.status === "preparing" || !config ? "The auction has not started yet." : "The auctioneer will call the next player."}</p></div>}
+        : <div className="auction-board-empty"><span className="auction-board-ball" aria-hidden="true"/><h3>{config?.status === "complete" ? "Squads formed" : "Next player awaits"}</h3><p>{config?.status === "complete" ? "The Season 5 squads are now complete." : config?.status === "preparing" || !config ? "The auction has not started yet." : "The auctioneer will call the next player."}</p></div>}
     </div>
     <div className="auction-board-right">
       <div className="auction-board-teams">{snapshot.teams.length ? snapshot.teams.map((team) => {
         const lead = state?.current_bid_team_id === team.id;
         const valid = canBid(team, snapshot.players, state, config);
-        const card = <><div className="auction-bid-card-head"><TeamCrest team={team} /><strong>{team.name}</strong>{lead && <em>Leading</em>}</div><dl><div><dt>Purse left</dt><dd>{amount(team.purse - team.spent, unit)}</dd></div><div><dt>Available now</dt><dd>{amount(provisionalPurse(team, state), unit)}</dd></div><div><dt>Max bid</dt><dd>{amount(maxBidAllowed(team, snapshot.players, config), unit)}</dd></div></dl><small>{squadSize(snapshot.players, team.id)} / {config?.max_squad_size ?? 15} players</small></>;
+        const captain = snapshot.players.find((player) => player.team_id === team.id && player.status === "captain");
+        const card = <><div className="auction-bid-card-head"><TeamCrest team={team} /><div><strong>{team.name}</strong><span className="auction-bid-captain">Captain · {captain?.name ?? "To be announced"}</span></div>{lead && <em>Leading</em>}</div><dl><div><dt>Purse left</dt><dd>{amount(team.purse - team.spent, unit)}</dd></div><div><dt>Available now</dt><dd>{amount(provisionalPurse(team, state), unit)}</dd></div><div><dt>Max bid</dt><dd>{amount(maxBidAllowed(team, snapshot.players, config), unit)}</dd></div></dl><small>{squadSize(snapshot.players, team.id)} / {config?.max_squad_size ?? 15} players</small></>;
         return onBid ? <button className={`auction-bid-card${lead ? " leading" : ""}`} type="button" key={team.id} disabled={busy || !admin || !current || !valid || config?.status !== "live"} onClick={() => next !== null && onBid(team.id, next)} aria-label={`Bid ${amount(next, unit)} for ${team.name}`}>{card}<span className="auction-bid-prompt">Bid {amount(next, unit)}</span></button>
           : <article className={`auction-bid-card${lead ? " leading" : ""}`} key={team.id}>{card}</article>;
       }) : <p className="auction-board-no-teams">Six teams and their logos will appear here when the captains are confirmed.</p>}</div>
       <div className="auction-board-control"><div className="auction-board-totals"><div><span>Current bid</span><strong>{amount(state?.current_bid, unit)}</strong></div><div><span>Next bid</span><strong>{amount(next, unit)}</strong></div><div><span>Leading team</span><strong>{leading?.name ?? "No bid"}</strong></div></div>
-        {admin && <div className="auction-board-buttons"><button className="auction-sold-button" type="button" disabled={busy || config?.status !== "live" || !state?.current_bid_team_id} onClick={onSell}>Sold to {leading?.name ?? "team"}</button><button type="button" disabled={busy || !current || !state?.current_bid} onClick={onReset}>Undo bids</button><button type="button" disabled={busy || config?.status !== "live" || !current} onClick={onUnsold}>Unsold</button></div>}
-        <p>Only a sale permanently deducts from the winning team. Changing the leading team releases the previous provisional hold.</p>
+        {admin && <div className="auction-board-buttons"><button className="auction-sold-button" type="button" disabled={busy || config?.status !== "live" || !state?.current_bid_team_id} onClick={onSell}>Sold to {leading?.name ?? "team"}</button><button type="button" disabled={busy || !current || !state?.current_bid} onClick={onReset}>Undo last bid</button><button type="button" disabled={busy || config?.status !== "live" || !current} onClick={onUnsold}>Unsold</button></div>}
+        <p>Max bid always reserves enough purse to complete a 14-player squad at the base price. Only a sale permanently deducts from the winner; changing the leader releases the previous hold.</p>
       </div>
     </div>
   </div>;
@@ -114,15 +140,31 @@ function PublicAuction({ snapshot, loading, error }: { snapshot: AuctionSnapshot
       && (status === "All players" || playerStatus === status.toLowerCase());
   });
   const teamById = new Map(snapshot.teams.map((team) => [team.id, team]));
+  const [presentation, setPresentation] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("presentation") === "1");
+  const [copied, setCopied] = useState(false);
 
-  return <main className="auction-page">
-    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><a href={localLink("teams.html")}>Teams</a><span>Season 5 auction</span></nav></header>
+  async function togglePresentation() {
+    const next = !presentation;
+    setPresentation(next);
+    if (next) await document.documentElement.requestFullscreen?.().catch(() => undefined);
+    else if (document.fullscreenElement) await document.exitFullscreen().catch(() => undefined);
+  }
+
+  async function shareBoard() {
+    const url = window.location.href;
+    if (navigator.share) await navigator.share({ title: snapshot.auction?.name ?? "PHF auction", text: "Follow the PHF player auction live", url }).catch(() => undefined);
+    else { await navigator.clipboard.writeText(url); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
+  }
+
+  return <main className={`auction-page${presentation ? " auction-presentation" : ""}`}>
+    <SoldCelebration snapshot={snapshot} />
+    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><a href={`${localLink("teams.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Teams</a><span>Season 5 auction</span></nav></header>
     <section className="auction-hero">
       <div className="auction-hero-copy">
-        <p className="auction-overline">PHF Premier League · Season 5</p>
+        <p className="auction-overline">PHF Premier League · {snapshot.auction?.name ?? "Season 5"}</p>
         <h1>The<br/><span>auction.</span></h1>
         <div className={`auction-phase ${state}`}><i aria-hidden="true" />{state === "preparing" ? "Invitations closed · Auction preparation" : state === "live" ? "Live auction" : state === "paused" ? "Auction paused" : "Auction complete"}</div>
-        <p className="auction-hero-deck">Six captains. One player pool. The teams that will shape the next season are about to be made.</p><p className="auction-value-note">All ₹ bids shown here are virtual auction values, not payments.</p>
+        <p className="auction-hero-deck">Six captains. One player pool. The teams that will shape the next season are about to be made.</p><p className="auction-value-note">All CR bids shown here are virtual auction credits, not payments.</p>
       </div>
       <div className="auction-hero-montage" aria-label="Season 5 registered players">{roster.filter((player) => player.photo).slice(7, 10).map((player) => <PlayerImage key={player.id} player={player} />)}<strong>05</strong></div>
       <div className="auction-hero-bottom"><span><b>{playerPool.length}</b> auction players</span><span><b>06</b> captain-led teams</span><span><b>{sold}</b> sold so far</span></div>
@@ -130,7 +172,7 @@ function PublicAuction({ snapshot, loading, error }: { snapshot: AuctionSnapshot
 
     {error && <p className="auction-alert" role="status">Live updates are unavailable right now. Showing the registered player pool. {error}</p>}
     <section className="auction-stage-main" aria-label="Auction room">
-      <div className="auction-section-heading"><div><p className="auction-overline">Auction room</p><h2>{current ? "On the block" : state === "complete" ? "The hammer has fallen" : "The room is getting ready"}</h2></div><span>{loading ? "Checking live status…" : state === "live" ? "Live now" : "Awaiting auction"}</span></div>
+      <div className="auction-section-heading"><div><p className="auction-overline">Auction room</p><h2>{current ? "On the block" : state === "complete" ? "The hammer has fallen" : "The room is getting ready"}</h2></div><span className={`auction-sync-state ${error ? "offline" : "online"}`}><i/>{loading ? "Syncing…" : error ? "Reconnect pending" : "Live data connected"}</span><div className="auction-board-tools"><button type="button" onClick={() => void shareBoard()}>{copied ? "Link copied" : "Share live link"}</button><button className="auction-presentation-button" type="button" onClick={() => void togglePresentation()}>{presentation ? "Exit presentation" : "Presentation mode"}</button></div></div>
       <AuctionLiveBoard snapshot={snapshot} current={current} />
     </section>
 
@@ -152,6 +194,8 @@ function PublicAuction({ snapshot, loading, error }: { snapshot: AuctionSnapshot
 }
 
 function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refresh: () => Promise<void> }) {
+  const roomId = typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("auction") ?? "";
+  const inRoom = Boolean(roomId);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [session, setSession] = useState<AuctionSession | null>(null);
@@ -159,13 +203,18 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [teamName, setTeamName] = useState("");
-  const [teamPurse, setTeamPurse] = useState("100000");
+  const [teamPurse, setTeamPurse] = useState("28");
   const [captainPlayer, setCaptainPlayer] = useState("");
   const [captainTeam, setCaptainTeam] = useState("");
   const [logoTeam, setLogoTeam] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [nextPlayer, setNextPlayer] = useState("");
-  const [rules, setRules] = useState({ base: "2000", increment: "1000", minSquad: "14", squad: "15", unit: "₹" });
+  const [rules, setRules] = useState({ base: "1", increment: "0.20", threshold: "5", incrementAbove: "0.50", minSquad: "14", squad: "15", unit: "CR" });
+  const [auctions, setAuctions] = useState<AuctionInstance[]>([]);
+  const [newAuction, setNewAuction] = useState({ name: "Season 5 rehearsal", kind: "demo", purse: "28", base: "1", increment: "0.20", threshold: "5", incrementAbove: "0.50", minSquad: "14", maxSquad: "15" });
+  const [editingAuction, setEditingAuction] = useState("");
+  const [adminTab, setAdminTab] = useState(inRoom ? "live" : "auctions");
+  const [editAuction, setEditAuction] = useState({ name: "", kind: "demo" });
 
   useEffect(() => {
     if (!auctionClient) return;
@@ -180,20 +229,29 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
     auctionClient.rpc("is_auction_admin").then(({ data }) => setIsAdmin(data === true));
   }, [session]);
 
+  async function loadAuctions() {
+    if (!auctionClient) return;
+    const { data, error } = await auctionClient.listAuctions();
+    if (error) setFeedback(error.message); else setAuctions(data);
+  }
+
+  useEffect(() => { if (isAdmin) void loadAuctions(); }, [isAdmin]);
+
   useEffect(() => {
     // This form intentionally follows the authoritative rules loaded from the database.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (snapshot.config) setRules({ base: String(snapshot.config.default_base_price ?? 2000), increment: String(snapshot.config.minimum_increment ?? 1000), minSquad: String(snapshot.config.min_squad_size ?? 14), squad: String(snapshot.config.max_squad_size ?? 15), unit: snapshot.config.money_label ?? "₹" });
-  }, [snapshot.config?.default_base_price, snapshot.config?.minimum_increment, snapshot.config?.min_squad_size, snapshot.config?.max_squad_size, snapshot.config?.money_label]);
+    if (snapshot.config) setRules({ base: String(snapshot.config.default_base_price ?? 1), increment: String(snapshot.config.minimum_increment ?? 1), threshold: String(snapshot.config.increment_threshold ?? 28), incrementAbove: String(snapshot.config.increment_above_threshold ?? 1), minSquad: String(snapshot.config.min_squad_size ?? 14), squad: String(snapshot.config.max_squad_size ?? 15), unit: snapshot.config.money_label ?? "CR" });
+  }, [snapshot.config?.default_base_price, snapshot.config?.minimum_increment, snapshot.config?.increment_threshold, snapshot.config?.increment_above_threshold, snapshot.config?.min_squad_size, snapshot.config?.max_squad_size, snapshot.config?.money_label]);
 
   async function action(name: string, args: Record<string, unknown>): Promise<boolean> {
     if (!auctionClient || busy) return false;
     setBusy(true); setFeedback("");
     try {
-      const { error } = await auctionClient.rpc(name, args);
+      const { error } = await auctionClient.rpc(name, args, inRoom ? roomId : undefined);
       if (error) { setFeedback(error.message); return false; }
       setFeedback("Saved. The public board is updating.");
       await refresh();
+      await loadAuctions();
       return true;
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "The action could not be saved.");
@@ -208,11 +266,26 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
     setFeedback(error ? error.message : "Signed in. Checking auctioneer access…");
   }
 
+  async function sellAndAdvance() {
+    if (!window.confirm(`Sell ${current?.name} to ${snapshot.teams.find((team) => team.id === currentState?.current_bid_team_id)?.name ?? "the leading team"} for ${amount(currentState?.current_bid, snapshot.config?.money_label)}?`)) return;
+    if (await action("auction_sell_current", {}) && queued.length > 1) window.setTimeout(() => { void action("auction_start_random_player", {}); }, 3000);
+  }
+
+  async function markUnsoldAndAdvance() {
+    if (!window.confirm(`Mark ${current?.name} unsold?`)) return;
+    if (await action("auction_mark_unsold", {}) && queued.length > 1) window.setTimeout(() => { void action("auction_start_random_player", {}); }, 3000);
+  }
+
   const current = roster.find((player) => player.id === snapshot.config?.current_player_id);
   const currentState = snapshot.players.find((player) => player.id === current?.id);
   const queued = snapshot.players.filter((player) => player.status === "queued");
+  const roleKey = (role: string) => { const value = role.toLowerCase().replace(/[ _-]/g, ""); if (["batter", "batsman", "batsmen", "batswoman"].includes(value)) return "batter"; if (["bowler", "bowlers"].includes(value)) return "bowler"; if (value === "allrounder") return "all-rounder"; if (["wicketkeeper", "wk", "keeper"].includes(value)) return "wicketkeeper"; return "other"; };
+  const roundOrder = [{ key: "batter", label: "Batters" }, { key: "bowler", label: "Bowlers" }, { key: "all-rounder", label: "All-rounders" }, { key: "wicketkeeper", label: "Wicketkeepers" }, { key: "other", label: "Other players" }];
+  const openingPlayer = queued.find((player) => player.id === "player-79");
+  const activeRound = openingPlayer ? { key: "opening", label: "Opening player · Yogesh" } : roundOrder.find((round) => queued.some((player) => roleKey(player.role) === round.key));
+  const roundPool = openingPlayer ? [openingPlayer] : activeRound ? queued.filter((player) => roleKey(player.role) === activeRound.key) : [];
   const live = snapshot.config?.status === "live";
-  const unit = snapshot.config?.money_label ?? "₹";
+  const unit = snapshot.config?.money_label ?? "CR";
   const captainCount = snapshot.players.filter((player) => player.status === "captain").length;
   const assignedCaptainTeams = new Set(snapshot.players.filter((player) => player.status === "captain").map((player) => player.team_id));
   const unassignedCaptainCandidates = snapshot.players.filter((player) => player.status === "queued");
@@ -220,20 +293,42 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
   const squadCounts = snapshot.teams.map((team) => snapshot.players.filter((player) => player.team_id === team.id && (player.status === "captain" || player.status === "sold")).length);
   const squadGap = squadCounts.length ? Math.max(...squadCounts) - Math.min(...squadCounts) : 0;
 
-  return <main className="auction-page auction-admin-page"><header className="auction-header"><a className="auction-brand" href={localLink("auction.html")}><b>PHF</b><span>Auctioneer</span></a><nav><a href={localLink("auction.html")}>Public board</a><span>Private console</span></nav></header>
-    <div className="auction-admin-wrap"><p className="auction-overline">Season 5 · Auction operations</p><h1>Auctioneer console</h1>
+  return <main className={`auction-page auction-admin-page auction-admin-mode-${inRoom ? "room" : "lobby"} auction-admin-tab-${adminTab}`}><header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Auctioneer</span></a><nav>{inRoom && <a href={localLink("auction-admin.html")}>← All rooms</a>}<a href={localLink("")}>Home</a><span>Private console</span></nav></header>
+    <div className="auction-admin-wrap">{inRoom && <a className="auction-room-back" href={localLink("auction-admin.html")}>← Back to auction rooms</a>}<p className="auction-overline">Season 5 · Auction operations</p><h1>{inRoom ? snapshot.auction?.name ?? "Auction room" : "Auctioneer console"}</h1>
       {!auctionClient ? <div className="auction-admin-notice"><h2>Auction API connection needed</h2><p>The public auction preparation page is ready. Add the self-hosted auction API URL to the website build as <code>VITE_AUCTION_API_URL</code>.</p></div>
-        : !session ? <form className="auction-admin-form" onSubmit={signIn}><h2>Sign in</h2><p>Only approved auctioneers can change the live board.</p><label>Email<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>Password<input type="password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label><button>Sign in</button></form>
+        : !session ? <form className="auction-admin-form" onSubmit={signIn}><h2>Sign in</h2><p>Only approved auctioneers can change the live board.</p><label>Username<input type="text" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>Password<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label><button>Sign in</button></form>
           : !isAdmin ? <div className="auction-admin-notice"><h2>Access not granted</h2><p>Your account is signed in, but it is not an active auctioneer account.</p><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
             : <><div className="auction-admin-top"><span>Board: <b>{snapshot.config?.status ?? "not initialized"}</b></span><span>Teams: <b>{snapshot.teams.length} / 6</b></span><span>Captains: <b>{captainCount} / 6</b></span><span>Auction pool: <b>{snapshot.players.filter((player) => player.status !== "captain").length} / {playerPool.length}</b></span><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
               {feedback && <p className="auction-feedback" role="status">{feedback}</p>}
+              <nav className="auction-admin-tabs" aria-label="Auctioneer sections">{(inRoom ? [["live","Auction desk"],["squads","Squads"],["activity","Activity"]] : [["auctions","Auction rooms"],["setup","Master setup"]]).map(([id,label]) => <button key={id} className={adminTab === id ? "selected" : ""} onClick={() => setAdminTab(id)}>{label}</button>)}</nav>
+              <section className="auction-manager admin-panel admin-panel-auctions" aria-labelledby="auction-manager-title">
+                <div className="auction-manager-head"><div><p>Season control</p><h2 id="auction-manager-title">Auction manager</h2></div><span>{auctions.filter((item) => !item.archived).length} available</span></div>
+                <div className="auction-manager-body">
+                  <form className="auction-create" onSubmit={(event) => { event.preventDefault(); void action("auction_create_instance", { p_name: newAuction.name, p_kind: newAuction.kind, p_purse: Number(newAuction.purse), p_base_price: Number(newAuction.base), p_increment: Number(newAuction.increment), p_increment_threshold: Number(newAuction.threshold), p_increment_above_threshold: Number(newAuction.incrementAbove), p_min_squad_size: Number(newAuction.minSquad), p_max_squad_size: Number(newAuction.maxSquad), p_money_label: "CR", p_players: playerPool.map((player) => ({ id: player.id, name: player.name, role: player.role, photo: player.photo })) }); }}>
+                    <h3>Create an auction</h3><p>Create a separate rehearsal or official room using the registered players and six teams.</p>
+                    <label>Name<input required minLength={3} value={newAuction.name} onChange={(event) => setNewAuction({ ...newAuction, name: event.target.value })}/></label>
+                    <label>Type<select value={newAuction.kind} onChange={(event) => setNewAuction({ ...newAuction, kind: event.target.value })}><option value="demo">Demo</option><option value="official">Official</option></select></label>
+                    <div className="auction-create-grid"><label>Team purse<input type="number" min="1" value={newAuction.purse} onChange={(event) => setNewAuction({ ...newAuction, purse: event.target.value })}/></label><label>Base price<input type="number" min="1" value={newAuction.base} onChange={(event) => setNewAuction({ ...newAuction, base: event.target.value })}/></label><label>Bid step up to threshold<input type="number" min="0.01" step="0.01" value={newAuction.increment} onChange={(event) => setNewAuction({ ...newAuction, increment: event.target.value })}/></label><label>Bid threshold<input type="number" min="0" value={newAuction.threshold} onChange={(event) => setNewAuction({ ...newAuction, threshold: event.target.value })}/></label><label>Bid step above threshold<input type="number" min="0.01" step="0.01" value={newAuction.incrementAbove} onChange={(event) => setNewAuction({ ...newAuction, incrementAbove: event.target.value })}/></label><label>Squad range<input aria-label="Minimum squad size" type="number" min="1" value={newAuction.minSquad} onChange={(event) => setNewAuction({ ...newAuction, minSquad: event.target.value })}/><input aria-label="Maximum squad size" type="number" min={newAuction.minSquad} value={newAuction.maxSquad} onChange={(event) => setNewAuction({ ...newAuction, maxSquad: event.target.value })}/></label></div>
+                    <button disabled={busy}>Create auction</button>
+                  </form>
+                  <div className="auction-ledger">
+                    {auctions.length === 0 && <div className="auction-empty-rooms"><strong>No auction rooms yet.</strong><span>Create one when you are ready to rehearse or go live.</span></div>}
+                    {auctions.map((item) => <article className={`auction-instance ${item.active ? "active" : ""} ${item.archived ? "archived" : ""}`} key={item.id}>
+                      <div className="auction-instance-signal"><i/><span>{item.active ? "On air" : item.archived ? "Archived" : item.status}</span></div>
+                      {editingAuction === item.id ? <form className="auction-instance-edit" onSubmit={async (event) => { event.preventDefault(); if (await action("auction_update_instance", { p_id: item.id, p_name: editAuction.name, p_kind: editAuction.kind })) setEditingAuction(""); }}><input required value={editAuction.name} onChange={(event) => setEditAuction({ ...editAuction, name: event.target.value })}/><select value={editAuction.kind} onChange={(event) => setEditAuction({ ...editAuction, kind: event.target.value })}><option value="demo">Demo</option><option value="official">Official</option></select><button disabled={busy}>Save</button><button type="button" onClick={() => setEditingAuction("")}>Cancel</button></form> : <><div className="auction-instance-title"><h3>{item.name}</h3><b>{item.kind}</b></div><dl><div><dt>Players</dt><dd>{item.player_count}</dd></div><div><dt>Status</dt><dd>{item.status}</dd></div></dl><div className="auction-instance-actions"><a className="auction-room-enter" href={`${localLink("auction-admin.html")}?auction=${item.id}`}>Enter room</a><a className="auction-public-link" href={`${localLink("auction.html")}?auction=${item.id}`} target="_blank" rel="noopener noreferrer">Public board</a><a className="auction-public-link" href={`${localLink("teams.html")}?auction=${item.id}`} target="_blank" rel="noopener noreferrer">Teams</a><button disabled={busy || item.archived} onClick={() => void action("auction_duplicate_instance", { p_id: item.id, p_name: `${item.name} copy` })}>Duplicate</button><button disabled={busy || item.archived} onClick={() => { setEditingAuction(item.id); setEditAuction({ name: item.name, kind: item.kind }); }}>Edit</button>{!item.active && !item.archived && <button disabled={busy} onClick={() => { if (window.confirm(`Archive ${item.name}?`)) void action("auction_archive_instance", { p_id: item.id }); }}>Archive</button>}{!item.active && item.kind === "demo" && <button className="danger" disabled={busy} onClick={() => { if (window.confirm(`Permanently delete ${item.name}? This cannot be undone.`)) void action("auction_delete_instance", { p_id: item.id }); }}>Delete</button>}</div></>}
+                    </article>)}
+                  </div>
+                </div>
+                <p className="auction-manager-note">Each room has an isolated control desk, public board and team page. Multiple rooms can run independently. Official auctions cannot be deleted.</p>
+              </section>
               <section className="auction-admin-panel"><h2>1. Prepare the room</h2><p>Import the frozen Season 5 auction pool, then add all six teams. Captains are assigned directly to squads and are not auctioned.</p><button disabled={busy || snapshot.config?.status !== "preparing"} onClick={() => action("auction_import_players", { p_players: playerPool.map((player) => ({ id: player.id, name: player.name, role: player.role, photo: player.photo })) })}>Import {playerPool.length} auction players</button><form onSubmit={(event) => { event.preventDefault(); action("auction_add_team", { p_name: teamName.trim(), p_purse: Number(teamPurse) }).then(() => setTeamName("")); }}><label>Team name<input required value={teamName} onChange={(event) => setTeamName(event.target.value)} /></label><label>Starting purse<input type="number" min="1" required value={teamPurse} onChange={(event) => setTeamPurse(event.target.value)} /></label><button disabled={busy || snapshot.teams.length >= 6 || snapshot.config?.status !== "preparing"}>Add team</button></form><ul>{snapshot.teams.map((team) => <li key={team.id}>{team.name} · {amount(team.purse, unit)}</li>)}</ul></section>
               <section className="auction-admin-panel"><h2>Team logos</h2><p>Use each team's official HTTPS image URL or an uploaded site-local path. Until then, the team-name crest is shown.</p><form onSubmit={async (event) => { event.preventDefault(); if (await action("auction_set_team_logo", { p_team_id: logoTeam, p_logo_url: logoUrl.trim() })) setLogoUrl(""); }}><label>Team<select required value={logoTeam} onChange={(event) => setLogoTeam(event.target.value)}><option value="">Select team</option>{snapshot.teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></label><label>Logo URL<input value={logoUrl} onChange={(event) => setLogoUrl(event.target.value)} placeholder="https://…/team-logo.png" /></label><button disabled={busy || !logoTeam}>Save logo</button></form></section>
               <section className="auction-admin-panel"><h2>2. Assign six playing captains</h2><p>Each captain occupies one squad slot. Assign exactly one registered player to each team before opening the auction.</p><form onSubmit={(event) => { event.preventDefault(); void action("auction_assign_captain", { p_player_id: captainPlayer, p_team_id: captainTeam }); }}><label>Captain<select required value={captainPlayer} onChange={(event) => setCaptainPlayer(event.target.value)}><option value="">Select registered player</option>{unassignedCaptainCandidates.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}</select></label><label>Team<select required value={captainTeam} onChange={(event) => setCaptainTeam(event.target.value)}><option value="">Select team</option>{snapshot.teams.filter((team) => !assignedCaptainTeams.has(team.id)).map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}</select></label><button disabled={busy || snapshot.config?.status !== "preparing" || captainCount >= 6}>Assign captain</button></form><ul>{snapshot.players.filter((player) => player.status === "captain").map((player) => <li key={player.id}>{snapshot.teams.find((team) => team.id === player.team_id)?.name} · {player.name} <button disabled={busy || snapshot.config?.status !== "preparing"} onClick={() => { if (window.confirm(`Remove ${player.name} as captain?`)) void action("auction_unassign_captain", { p_player_id: player.id }); }}>Remove</button></li>)}</ul></section>
-              <section className="auction-admin-panel"><h2>3. Set the official rules</h2><p>Suggested values are drafts. Confirm them with the captains. Bids are virtual INR, not payments.</p><form onSubmit={(event) => { event.preventDefault(); void action("auction_set_rules", { p_base_price: Number(rules.base), p_increment: Number(rules.increment), p_min_squad_size: Number(rules.minSquad), p_max_squad_size: Number(rules.squad), p_money_label: rules.unit.trim() }); }}><label>Player base price<input type="number" min="0" value={rules.base} onChange={(event) => setRules({ ...rules, base: event.target.value })} /></label><label>Minimum increment<input type="number" min="1" value={rules.increment} onChange={(event) => setRules({ ...rules, increment: event.target.value })} /></label><label>Minimum squad<input type="number" min="1" value={rules.minSquad} onChange={(event) => setRules({ ...rules, minSquad: event.target.value })} /></label><label>Maximum squad<input type="number" min="1" value={rules.squad} onChange={(event) => setRules({ ...rules, squad: event.target.value })} /></label><label>Bid unit<input value={rules.unit} onChange={(event) => setRules({ ...rules, unit: event.target.value })} /></label><button disabled={busy || snapshot.config?.status !== "preparing"}>Save rules</button></form><p>Final squads must each have at least {snapshot.config?.min_squad_size ?? 14} players and differ by no more than one player.</p><div className="auction-admin-actions"><button disabled={busy || snapshot.config?.status !== "preparing" || snapshot.teams.length !== 6 || captainCount !== 6 || snapshot.players.filter((player) => player.status !== "captain").length !== playerPool.length || !snapshot.config?.minimum_increment || snapshot.config?.default_base_price === null} onClick={() => { if (window.confirm("Start the live auction? Public viewers will see live bids and sales.")) void action("auction_set_status", { p_status: "live" }); }}>Open live auction</button>{(live || snapshot.config?.status === "paused") && <button disabled={busy} onClick={() => void action("auction_set_status", { p_status: live ? "paused" : "live" })}>{live ? "Pause bidding" : "Resume bidding"}</button>}{snapshot.config?.status === "paused" && <button disabled={busy} onClick={() => { if (window.confirm("Complete the auction? This cannot be resumed from the console.")) void action("auction_set_status", { p_status: "complete" }); }}>Complete auction</button>}</div></section>
-              <section className="auction-admin-panel auction-admin-room"><h2>4. Run the auction</h2><p>Tap a team card to place the next valid bid. A leading team's displayed available purse is provisional until Sold.</p><form onSubmit={async (event) => { event.preventDefault(); if (await action("auction_start_player", { p_player_id: nextPlayer })) setNextPlayer(""); }}><label>Next player<select value={nextPlayer} onChange={(event) => setNextPlayer(event.target.value)} required><option value="">Select a player</option>{queued.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}</select></label><button disabled={busy || !live || !!current}>Call player</button></form><AuctionLiveBoard snapshot={snapshot} current={current} admin busy={busy} onBid={(teamId, value) => void action("auction_place_bid", { p_team_id: teamId, p_amount: value })} onSell={() => { if (window.confirm(`Sell ${current?.name} to ${snapshot.teams.find((team) => team.id === currentState?.current_bid_team_id)?.name ?? "the leading team"} for ${amount(currentState?.current_bid, unit)}?`)) void action("auction_sell_current", {}); }} onReset={() => { if (window.confirm(`Clear all bids for ${current?.name} and start bidding again?`)) void action("auction_reset_current_bids", {}); }} onUnsold={() => { if (window.confirm(`Mark ${current?.name} unsold?`)) void action("auction_mark_unsold", {}); }} /></section>
+              <section className="auction-admin-panel"><h2>3. Set the official rules</h2><p>Max bid automatically reserves enough purse to finish the minimum squad at base price. Captains can see that limit on every team card.</p><form onSubmit={(event) => { event.preventDefault(); void action("auction_set_rules", { p_base_price: Number(rules.base), p_increment: Number(rules.increment), p_increment_threshold: Number(rules.threshold), p_increment_above_threshold: Number(rules.incrementAbove), p_min_squad_size: Number(rules.minSquad), p_max_squad_size: Number(rules.squad), p_money_label: rules.unit.trim() }); }}><label>Player base price<input type="number" min="1" value={rules.base} onChange={(event) => setRules({ ...rules, base: event.target.value })} /></label><label>Increment up to threshold<input type="number" min="0.01" step="0.01" value={rules.increment} onChange={(event) => setRules({ ...rules, increment: event.target.value })} /></label><label>Bid threshold<input type="number" min="0" value={rules.threshold} onChange={(event) => setRules({ ...rules, threshold: event.target.value })} /></label><label>Increment above threshold<input type="number" min="0.01" step="0.01" value={rules.incrementAbove} onChange={(event) => setRules({ ...rules, incrementAbove: event.target.value })} /></label><label>Minimum squad<input type="number" min="1" value={rules.minSquad} onChange={(event) => setRules({ ...rules, minSquad: event.target.value })} /></label><label>Maximum squad<input type="number" min="1" value={rules.squad} onChange={(event) => setRules({ ...rules, squad: event.target.value })} /></label><label>Bid unit<input value={rules.unit} onChange={(event) => setRules({ ...rules, unit: event.target.value })} /></label><button disabled={busy || snapshot.config?.status !== "preparing"}>Save rules</button></form><p>Final Season 5 rules: 28 CR purse, 1 CR base price and 14–15 players including the captain. Bid increments remain configurable by the Organizing Committee. Every registered player must be allocated before completion.</p><div className="auction-admin-actions"><button disabled={busy || snapshot.config?.status !== "preparing" || snapshot.teams.length !== 6 || captainCount !== 6 || snapshot.players.filter((player) => player.status !== "captain").length !== playerPool.length || !snapshot.config?.minimum_increment || snapshot.config?.default_base_price === null} onClick={() => { if (window.confirm("Start the live auction? Public viewers will see live bids and sales.")) void action("auction_set_status", { p_status: "live" }); }}>Open live auction</button>{(live || snapshot.config?.status === "paused") && <button disabled={busy} onClick={() => void action("auction_set_status", { p_status: live ? "paused" : "live" })}>{live ? "Pause bidding" : "Resume bidding"}</button>}{snapshot.config?.status === "paused" && <button disabled={busy} onClick={() => { if (window.confirm("Complete the auction? This cannot be resumed from the console.")) void action("auction_set_status", { p_status: "complete" }); }}>Complete auction</button>}</div></section>
+              <section className="auction-admin-panel auction-admin-room"><h2>4. Run the auction</h2><p>Yogesh opens the auction. Thereafter: Batters → Bowlers → All-rounders → Wicketkeepers, randomly selected within each round. The next player appears automatically three seconds after Sold or Unsold.</p><div className="auction-round-status"><span>Current round</span><strong>{activeRound?.label ?? "All rounds complete"}</strong><b>{roundPool.length} remaining</b></div><form onSubmit={async (event) => { event.preventDefault(); if (await action("auction_start_player", { p_player_id: nextPlayer })) setNextPlayer(""); }}><label>Manual selection from current round<select value={nextPlayer} onChange={(event) => setNextPlayer(event.target.value)} required><option value="">Select a player</option>{roundPool.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}</select></label><button disabled={busy || !live || !!current}>Call selected player</button><button className="auction-random-button" type="button" disabled={busy || !live || !!current || !activeRound} onClick={() => void action("auction_start_random_player", {})}>🎲 Random {activeRound?.label ?? "player"}</button></form><AuctionLiveBoard snapshot={snapshot} current={current} admin busy={busy} onBid={(teamId, value) => void action("auction_place_bid", { p_team_id: teamId, p_amount: value })} onSell={() => void sellAndAdvance()} onReset={() => void action("auction_undo_last_bid", {})} onUnsold={() => void markUnsoldAndAdvance()} /></section>
               <section className="auction-admin-panel"><h2>Squad balance</h2><p>Current spread: {squadGap} player{squadGap === 1 ? "" : "s"}. Final squads must differ by at most one.</p><ul>{snapshot.teams.map((team, index) => <li key={team.id}>{team.name}: {squadCounts[index]} / {snapshot.config?.max_squad_size ?? 15} players · {amount(team.purse - team.spent, unit)} remaining</li>)}</ul>{unsoldPlayers.length > 0 && <><p>Return an unsold player to the pool if more players are needed to complete balanced squads.</p><div className="auction-admin-actions">{unsoldPlayers.map((player) => <button key={player.id} disabled={busy || !(live || snapshot.config?.status === "paused")} onClick={() => void action("auction_requeue_unsold", { p_player_id: player.id })}>Requeue {player.name}</button>)}</div></>}</section>
               <section className="auction-admin-panel"><h2>Recent activity</h2><ul>{snapshot.events.map((event) => <li key={event.id}>{event.event_type} · {roster.find((player) => player.id === event.player_id)?.name ?? event.player_id} · {amount(event.amount, unit)}</li>)}</ul></section>
+              {inRoom && <div className="auction-room-statusbar"><span>Auction status <strong>{snapshot.config?.status ?? "loading"}</strong></span><div>{snapshot.config?.status === "preparing" && <button disabled={busy} onClick={() => { if (window.confirm("Start this live auction? Public viewers will see live bids and sales.")) void action("auction_set_status", { p_status: "live" }); }}>Start auction</button>}{live && <button disabled={busy} onClick={() => void action("auction_set_status", { p_status: "paused" })}>Pause</button>}{snapshot.config?.status === "paused" && <><button disabled={busy} onClick={() => void action("auction_set_status", { p_status: "live" })}>Resume</button><button className="auction-danger-button" disabled={busy} onClick={() => { if (window.confirm("Complete this auction? This cannot be resumed from the console.")) void action("auction_set_status", { p_status: "complete" }); }}>Complete</button></>}</div></div>}
             </>}
     </div></main>;
 }
@@ -255,7 +350,7 @@ function useAuctionLive() {
     // Fetch once when the live data source becomes available, then subscribe.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void refresh();
-    const timer = window.setInterval(() => { void refresh(); }, 15000);
+    const timer = window.setInterval(() => { void refresh(); }, 5000);
     const channel = client.channel("auction-room").on("postgres_changes", { event: "*", schema: "public", table: "auction_config" }, () => { void refresh(); }).on("postgres_changes", { event: "*", schema: "public", table: "auction_players" }, () => { void refresh(); }).on("postgres_changes", { event: "*", schema: "public", table: "auction_teams" }, () => { void refresh(); }).subscribe();
     return () => { window.clearInterval(timer); void client.removeChannel(channel); };
   }, [refresh]);
@@ -265,16 +360,17 @@ function useAuctionLive() {
 
 export function TeamsPage() {
   const { snapshot, loading, error } = useAuctionLive();
-  const [selectedId, setSelectedId] = useState(() => typeof window === "undefined" ? "" : window.location.hash.slice(1));
+  const [selectedId] = useState(() => typeof window === "undefined" ? "" : new URLSearchParams(window.location.search).get("team") || window.location.hash.slice(1));
+  const auctionId = selectedAuctionId();
   const selected = snapshot.teams.find((team) => team.id === selectedId) ?? snapshot.teams[0];
   const squad = selected ? snapshot.players.filter((player) => player.team_id === selected.id && (player.status === "captain" || player.status === "sold")).sort((a, b) => a.status === "captain" ? -1 : b.status === "captain" ? 1 : a.name.localeCompare(b.name)) : [];
-  return <main className="auction-page auction-squads-page"><header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("auction.html")}>Auction room</a><span>Teams</span></nav></header>
+  return <main className="auction-page auction-squads-page"><header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><span>Teams</span></nav></header>
     <div className="auction-squads-wrap"><div className="auction-section-heading"><div><p className="auction-overline">Season 5 · Live squads</p><h1>Six teams. One trophy.</h1></div><span>{loading ? "Loading…" : "Updates live"}</span></div>
       {error && <p className="auction-alert" role="status">Team updates are unavailable. {error}</p>}
-      {snapshot.teams.length ? <><div className="auction-squad-selector" aria-label="Choose a team">{snapshot.teams.map((team) => <button key={team.id} type="button" className={selected?.id === team.id ? "selected" : ""} onClick={() => { setSelectedId(team.id); window.history.replaceState(null, "", `#${team.id}`); }}><TeamCrest team={team} /><strong>{team.name}</strong><span>{squadSize(snapshot.players, team.id)} players</span></button>)}</div>
-        {selected && <section className="auction-squad-detail" aria-label={`${selected.name} squad`}><div className="auction-squad-title"><TeamCrest team={selected} /><div><span>Current squad</span><h2>{selected.name}</h2></div><div><span>Players</span><b>{squad.length} / {snapshot.config?.max_squad_size ?? 15}</b></div><div><span>Purse left</span><b>{amount(selected.purse - selected.spent, snapshot.config?.money_label)}</b></div></div><div className="auction-squad-grid">{squad.length ? squad.map((player) => { const profile = roster.find((item) => item.id === player.id) ?? { id: player.id, name: player.name, role: player.role, photo: player.photo, stats: null }; return <article key={player.id}><PlayerImage player={profile} /><div><span>{player.status === "captain" ? "Captain" : profile.role}</span><h3>{player.name}</h3><b>{player.status === "captain" ? "Playing captain" : amount(player.sold_price, snapshot.config?.money_label)}</b></div></article>; }) : <p>The captain and players will appear here as the auction progresses.</p>}</div></section>}</>
+      {snapshot.teams.length ? <><div className="auction-squad-selector" aria-label="Choose a team">{snapshot.teams.map((team) => <a key={team.id} href={`${localLink("teams.html")}?team=${team.id}${auctionId ? `&auction=${encodeURIComponent(auctionId)}` : ""}`} className={selected?.id === team.id ? "selected" : ""}><TeamCrest team={team} /><strong>{team.name}</strong><span>{squadSize(snapshot.players, team.id)} players</span></a>)}</div>
+        {selected && <section className="auction-squad-detail" aria-label={`${selected.name} squad`}><div className="auction-squad-title"><TeamCrest team={selected} /><div><span>Current squad</span><h2>{selected.name}</h2></div><div><span>Players</span><b>{squad.length} / {snapshot.config?.max_squad_size ?? 15}</b></div></div><div className="auction-squad-grid">{squad.length ? squad.map((player) => { const profile = roster.find((item) => item.id === player.id) ?? { id: player.id, name: player.name, role: player.role, photo: player.photo, stats: null }; return <article className={player.status === "captain" ? "captain-card" : ""} key={player.id}><PlayerImage player={profile} /><div><span>{player.status === "captain" ? "Captain" : profile.role}</span><h3>{player.name}</h3><b>{player.status === "captain" ? "Playing captain" : amount(player.sold_price, snapshot.config?.money_label)}</b>{profile.statsSource && <div className="auction-squad-stats"><StatLine player={profile} /><a href={profile.statsSource} target="_blank" rel="noopener noreferrer">CricHeroes profile ↗</a></div>}</div></article>; }) : <p>The captain and players will appear here as the auction progresses.</p>}</div></section>}</>
         : <div className="auction-team-placeholder">Team names and official logos have not been announced yet. This screen will update once the auctioneer adds them.</div>}
-    </div><footer className="auction-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={localLink("auction.html")}>Auction room</a></footer>
+    </div><footer className="auction-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={localLink("players.html")}>Players</a></footer>
   </main>;
 }
 

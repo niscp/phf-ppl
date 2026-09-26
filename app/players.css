@@ -32,7 +32,8 @@
 .roster-role{width:220px}
 .roster-result-count{margin-left:auto;margin-bottom:11px;font:600 11px 'IBM Plex Mono',monospace;text-transform:uppercase;color:#c6c0b6;white-space:nowrap}
 .roster-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
-.roster-card{min-width:0;background:#111317;border:1px solid var(--roster-line);display:flex;flex-direction:column}
+.roster-card{min-width:0;background:#111317;border:1px solid var(--roster-line);display:flex;flex-direction:column;cursor:pointer;transition:border-color .2s,transform .2s}
+.roster-card:hover,.roster-card:focus-visible{border-color:var(--roster-gold);transform:translateY(-3px);outline:none}
 .roster-photo{height:275px;position:relative;overflow:hidden;background:#242323}
 .roster-photo:after{content:"";position:absolute;inset:42% 0 0;background:linear-gradient(transparent,rgba(0,0,0,.42));pointer-events:none}
 .roster-photo img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 30%;transition:transform .35s}
@@ -54,6 +55,13 @@
 .roster-profile-link,.roster-no-profile{min-height:38px;margin-top:auto;padding-top:17px;font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em}
 .roster-profile-link{color:var(--roster-gold);display:flex;justify-content:space-between;gap:10px}
 .roster-profile-link:hover{text-decoration:underline}
+.roster-open-profile{border:0;background:transparent;color:var(--roster-gold);display:flex;justify-content:space-between;gap:10px;width:100%;min-height:38px;margin-top:auto;padding:17px 0 0;font:600 10px 'IBM Plex Mono',monospace;text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.player-drawer-shell{position:fixed;z-index:100;inset:0;padding:34px;display:flex;justify-content:flex-end;background:rgba(2,5,7,.82);backdrop-filter:blur(9px)}
+.player-drawer{width:min(920px,100%);height:100%;display:grid;grid-template-columns:minmax(290px,.78fr) 1.22fr;position:relative;background:#0e151b;border:1px solid #7b6840;box-shadow:-30px 0 80px #000b;animation:drawer-in .28s ease-out}
+.player-drawer-close{position:absolute;z-index:3;right:18px;top:18px;width:44px;height:44px;border:1px solid rgba(255,255,255,.3);background:#071016;color:#fff;font-size:28px;cursor:pointer}
+.player-drawer-photo{position:relative;min-height:0;background:#171b1e;overflow:hidden}.player-drawer-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}.player-drawer-photo>span{position:absolute;left:20px;bottom:20px;padding:7px 10px 5px;background:var(--roster-gold);color:#080b0d;font:700 10px 'IBM Plex Mono',monospace;text-transform:uppercase}
+.player-drawer-body{padding:clamp(45px,6vw,85px) clamp(28px,5vw,72px);overflow:auto}.player-drawer-body h2{margin:24px 0 35px;font:600 clamp(64px,7vw,108px)/.75 'Teko',sans-serif;text-transform:uppercase}.player-drawer-body .roster-stat-pair{margin:20px 0}.player-drawer-link{display:inline-flex;margin:22px 0;color:var(--roster-gold);font:600 11px 'IBM Plex Mono',monospace;text-transform:uppercase}.player-drawer-body>small{display:block;max-width:510px;color:#9fa8aa;line-height:1.5}
+@keyframes drawer-in{from{opacity:.4;transform:translateX(80px)}to{opacity:1;transform:none}}
 .roster-no-profile{color:#93918c}
 .roster-empty{padding:80px 20px;text-align:center;border:1px solid var(--roster-line);color:#c6c0b6}
 .roster-pages{display:flex;align-items:center;justify-content:center;gap:20px;margin:42px 0 0;font:600 11px 'IBM Plex Mono',monospace;text-transform:uppercase}
@@ -65,6 +73,6 @@
 .roster-footer a{color:var(--roster-gold)}
 .roster-page a:focus-visible,.roster-page button:focus-visible{outline:3px solid var(--roster-gold);outline-offset:3px}
 @media(max-width:1050px){.roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.roster-hero{grid-template-columns:1fr 37%;gap:25px}.roster-hero-portraits{height:300px}.roster-hero h1{font-size:12vw}}
-@media(max-width:700px){.roster-header{height:70px;padding:0 20px}.roster-header nav span{display:none}.roster-hero{min-height:680px;display:flex;align-items:flex-start;padding:75px 20px 250px}.roster-hero h1{font-size:24vw}.roster-hero-copy>p:last-child{font-size:17px}.roster-hero-portraits{position:absolute;right:20px;left:20px;bottom:35px;height:210px;transform:rotate(-2deg)}.roster-hero-count{right:20px;bottom:22px}.roster-directory{padding:75px 20px}.roster-intro{display:block;margin-bottom:32px}.roster-intro h2{font-size:72px}.roster-intro>p{margin-top:18px}.roster-controls{flex-wrap:wrap}.roster-search{min-width:100%;max-width:none}.roster-role{width:calc(100% - 120px)}.roster-result-count{width:100px;margin-bottom:12px;text-align:right}.roster-grid{grid-template-columns:1fr}.roster-photo{height:340px}.roster-card-body>h3{font-size:43px}.roster-footer{padding:25px 20px}}
+@media(max-width:700px){.roster-header{height:70px;padding:0 20px}.roster-header nav span{display:none}.roster-hero{min-height:680px;display:flex;align-items:flex-start;padding:75px 20px 250px}.roster-hero h1{font-size:24vw}.roster-hero-copy>p:last-child{font-size:17px}.roster-hero-portraits{position:absolute;right:20px;left:20px;bottom:35px;height:210px;transform:rotate(-2deg)}.roster-hero-count{right:20px;bottom:22px}.roster-directory{padding:75px 20px}.roster-intro{display:block;margin-bottom:32px}.roster-intro h2{font-size:72px}.roster-intro>p{margin-top:18px}.roster-controls{flex-wrap:wrap}.roster-search{min-width:100%;max-width:none}.roster-role{width:calc(100% - 120px)}.roster-result-count{width:100px;margin-bottom:12px;text-align:right}.roster-grid{grid-template-columns:1fr}.roster-photo{height:340px}.roster-card-body>h3{font-size:43px}.roster-footer{padding:25px 20px}.player-drawer-shell{padding:0}.player-drawer{display:block;overflow:auto}.player-drawer-photo{height:46vh}.player-drawer-body{padding:38px 22px 70px}.player-drawer-body h2{font-size:68px}.player-drawer-close{position:fixed;right:14px;top:14px}}
 @media(max-width:390px){.roster-logo span{display:none}.roster-hero{min-height:640px}.roster-hero h1{font-size:26vw}.roster-photo{height:280px}.roster-card-body{padding:17px}.roster-role{width:calc(100% - 100px)}.roster-result-count{width:85px;font-size:9px}}
 @media(prefers-reduced-motion:reduce){.roster-photo img{transition:none}}
