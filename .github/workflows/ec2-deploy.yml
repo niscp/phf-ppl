@@ -8,6 +8,9 @@ on:
       - 'app/**'
       - 'public/**'
       - 'src/**'
+      - 'server/**'
+      - 'Dockerfile.auction'
+      - 'deploy/docker-compose.yml'
       - '*.html'
       - 'package.json'
       - 'package-lock.json'
@@ -72,6 +75,11 @@ jobs:
           aws s3 cp "/tmp/phfppl-${GITHUB_SHA}.tgz" \
             "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" \
             --only-show-errors
+          tar -czf "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
+            package.json package-lock.json Dockerfile.auction server deploy/docker-compose.yml
+          aws s3 cp "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
+            "s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz" \
+            --only-show-errors
 
       - name: Deploy through Systems Manager
         id: ssm
@@ -131,6 +139,57 @@ jobs:
           curl -fsS --retry 8 --retry-delay 3 https://phfppl.dwemory.com/ > /tmp/phfppl-home.html
           grep -q 'root' /tmp/phfppl-home.html
 
+      - name: Deploy auction API through Systems Manager
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          artifact="s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz"
+          download_url="$(aws s3 presign "$artifact" --expires-in 900)"
+
+          jq -n \
+            --arg sha "$GITHUB_SHA" \
+            --arg url "$download_url" \
+            '{commands:[
+              "set -eu",
+              ("release_sha=" + ($sha|@sh)),
+              ("download_url=" + ($url|@sh)),
+              "api_id=$(docker ps --filter label=com.docker.compose.service=api --format {{.ID}} | head -n 1)",
+              "test -n \"$api_id\"",
+              "project=$(docker inspect \"$api_id\" --format \"{{index .Config.Labels \\\"com.docker.compose.project\\\"}}\")",
+              "old_workdir=$(docker inspect \"$api_id\" --format \"{{index .Config.Labels \\\"com.docker.compose.project.working_dir\\\"}}\")",
+              "old_config=$(docker inspect \"$api_id\" --format \"{{index .Config.Labels \\\"com.docker.compose.project.config_files\\\"}}\" | cut -d, -f1)",
+              "test -n \"$project\" && test -d \"$old_workdir\" && test -f \"$old_config\" && test -f \"$old_workdir/.env\"",
+              "archive=/tmp/phfppl-api-${release_sha}.tgz",
+              "releases=/opt/phfppl-auction-releases",
+              "release=${releases}/${release_sha}",
+              "mkdir -p \"$release\"",
+              "curl -fsSL \"$download_url\" -o \"$archive\"",
+              "tar -xzf \"$archive\" -C \"$release\"",
+              "cp \"$old_workdir/.env\" \"$release/deploy/.env\"",
+              "if ! docker compose --project-name \"$project\" --project-directory \"$release/deploy\" --env-file \"$release/deploy/.env\" -f \"$release/deploy/docker-compose.yml\" up -d --build api; then docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d --build api; exit 1; fi",
+              "if ! curl -fsS --retry 10 --retry-delay 3 http://127.0.0.1:8280/health >/dev/null; then docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d --build api; exit 1; fi",
+              "rm -f \"$archive\"",
+              "find \"$releases\" -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf -- {} +"
+            ]}' > /tmp/ssm-api-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "PHFPL API ${GITHUB_SHA}" \
+            --parameters file:///tmp/ssm-api-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result"
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
+
       - name: Sync live auction players and 30 CR purse
         env:
           EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
@@ -170,4 +229,6 @@ jobs:
         if: always()
         env:
           DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
-        run: aws s3 rm "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" --only-show-errors || true
+        run: |
+          aws s3 rm "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" --only-show-errors || true
+          aws s3 rm "s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz" --only-show-errors || true

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'auction_api.dart';
+import 'auctioneer_page.dart';
 import 'auction_live_feed.dart';
 import 'models.dart';
 
@@ -80,7 +81,7 @@ class AuctionArenaApp extends StatelessWidget {
             iconTheme: WidgetStateProperty.resolveWith((s) => IconThemeData(
                 color: s.contains(WidgetState.selected) ? midnight : mist)),
           ),
-          cardTheme: CardTheme(
+          cardTheme: CardThemeData(
             color: scoreboard,
             elevation: 0,
             margin: const EdgeInsets.only(bottom: 10),
@@ -125,7 +126,12 @@ class _AuctionHomeState extends State<AuctionHome> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _startLiveFeed();
+    _initializeConnection();
+  }
+
+  Future<void> _initializeConnection() async {
+    await api.restoreServer();
+    if (mounted) await _startLiveFeed();
   }
 
   Future<void> _startLiveFeed() async {
@@ -172,6 +178,66 @@ class _AuctionHomeState extends State<AuctionHome> with WidgetsBindingObserver {
     if (refreshing) return;
     setState(() => refreshing = true);
     await liveFeed?.refresh();
+  }
+
+  Future<void> _connectionSettings() async {
+    final controller = TextEditingController(text: api.baseUrl);
+    final selected = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Auction connection'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+                'For venue offline mode, enter the hub address shown on the auction laptop. Every device must use the same Wi-Fi.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              keyboardType: TextInputType.url,
+              decoration: const InputDecoration(
+                labelText: 'Auction server',
+                hintText: 'http://192.168.1.10:8088',
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text('Projector: ${api.projectorUrl(auctionId)}',
+                style: const TextStyle(color: mist, fontSize: 12)),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, AuctionApi.defaultBaseUrl),
+              child: const Text('Use cloud')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, controller.text.trim()),
+              child: const Text('Connect')),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (selected == null || selected.isEmpty) return;
+    try {
+      await api.setServer(selected);
+      setState(() {
+        snapshot = null;
+        loading = true;
+        error = null;
+      });
+      await _startLiveFeed();
+    } on AuctionApiException catch (connectionError) {
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(connectionError.message)));
+      }
+    }
   }
 
   Future<void> _join() async {
@@ -266,31 +332,55 @@ class _AuctionHomeState extends State<AuctionHome> with WidgetsBindingObserver {
                 onPressed: refreshing ? null : _refresh,
                 icon: const Icon(Icons.refresh_rounded),
                 tooltip: 'Refresh live data'),
+            IconButton(
+                onPressed: _connectionSettings,
+                icon: Icon(api.usingCachedData
+                    ? Icons.cloud_off_rounded
+                    : api.baseUrl == AuctionApi.defaultBaseUrl
+                        ? Icons.cloud_done_outlined
+                        : Icons.router_outlined),
+                tooltip: 'Cloud or venue connection'),
+            IconButton(
+                onPressed: () async {
+                  await Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => AuctioneerPage(api: api)));
+                  if (mounted) await _startLiveFeed();
+                },
+                icon: const Icon(Icons.admin_panel_settings_outlined),
+                tooltip: 'Auctioneer console'),
             const SizedBox(width: 6),
           ],
         ),
-        body: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
-          child: loading && snapshot == null
-              ? const _LoadingView()
-              : snapshot == null
-                  ? _ErrorView(message: error, onRetry: _refresh)
-                  : _PageWidth(
-                      key: ValueKey(tab),
-                      child: switch (tab) {
-                        0 =>
-                          HomePanel(snapshot!, onJoin: _join, onFeatured: () {
-                            setState(() {
-                              auctionId = null;
-                              loading = true;
-                            });
-                            unawaited(_startLiveFeed());
-                          }, api: api),
-                        1 => PlayersPanel(snapshot!, api),
-                        2 => LivePanel(snapshot!, api),
-                        _ => TeamsPanel(snapshot!, api),
-                      }),
-        ),
+        body: Column(children: [
+          _ConnectionStrip(
+              local: api.localHub || api.baseUrl != AuctionApi.defaultBaseUrl,
+              cached: api.usingCachedData,
+              pending: api.pendingSync,
+              syncError: api.syncError,
+              server: api.baseUrl),
+          Expanded(
+              child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 180),
+                  child: loading && snapshot == null
+                      ? const _LoadingView()
+                      : snapshot == null
+                          ? _ErrorView(message: error, onRetry: _refresh)
+                          : _PageWidth(
+                              key: ValueKey(tab),
+                              child: switch (tab) {
+                                0 => HomePanel(snapshot!, onJoin: _join,
+                                      onFeatured: () {
+                                    setState(() {
+                                      auctionId = null;
+                                      loading = true;
+                                    });
+                                    unawaited(_startLiveFeed());
+                                  }, api: api),
+                                1 => PlayersPanel(snapshot!, api),
+                                2 => LivePanel(snapshot!, api),
+                                _ => TeamsPanel(snapshot!, api),
+                              }))),
+        ]),
         bottomNavigationBar: NavigationBar(
           selectedIndex: tab,
           onDestinationSelected: (value) => setState(() => tab = value),
@@ -539,6 +629,67 @@ class _BrandMark extends StatelessWidget {
           color: floodlight, size: 23));
 }
 
+class _ConnectionStrip extends StatelessWidget {
+  const _ConnectionStrip(
+      {required this.local,
+      required this.cached,
+      required this.pending,
+      required this.syncError,
+      required this.server});
+  final bool local;
+  final bool cached;
+  final int pending;
+  final String? syncError;
+  final String server;
+
+  @override
+  Widget build(BuildContext context) {
+    final cloudPending = local && (pending > 0 || syncError != null);
+    final color = cached
+        ? const Color(0xFFFFA65A)
+        : cloudPending
+            ? const Color(0xFFFFA65A)
+            : local
+                ? const Color(0xFF56D39B)
+                : mist;
+    final label = cached
+        ? 'Server unavailable · showing saved data'
+        : cloudPending
+            ? 'Internet offline · auction safe locally · $pending pending'
+            : local
+                ? 'Venue hub connected · cloud synchronized'
+                : 'Cloud connected';
+    return Semantics(
+      liveRegion: true,
+      label: label,
+      child: Container(
+        width: double.infinity,
+        color: const Color(0xFF0C202B),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+        child: Row(children: [
+          Icon(
+              cached || cloudPending
+                  ? Icons.cloud_off
+                  : local
+                      ? Icons.router
+                      : Icons.cloud_done,
+              size: 16,
+              color: color),
+          const SizedBox(width: 8),
+          Expanded(
+              child: Text(label,
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800))),
+          Text(Uri.tryParse(server)?.host ?? server,
+              style: const TextStyle(color: mist, fontSize: 10)),
+        ]),
+      ),
+    );
+  }
+}
+
 class _PageWidth extends StatelessWidget {
   const _PageWidth({required this.child, super.key});
   final Widget child;
@@ -584,10 +735,10 @@ class _StadiumHero extends StatelessWidget {
 class _FloodlightPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = trophyGold.withOpacity(.11);
+    final paint = Paint()..color = trophyGold.withValues(alpha: .11);
     canvas.drawCircle(
         Offset(size.width * .82, size.height * .18), size.width * .33, paint);
-    paint.color = floodlight.withOpacity(.07);
+    paint.color = floodlight.withValues(alpha: .07);
     for (var i = 0; i < 5; i++) {
       canvas.drawCircle(
           Offset(size.width * (.72 + i * .045), size.height * .12), 4, paint);

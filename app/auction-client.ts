@@ -60,17 +60,36 @@ export const auctionClient = apiUrl ? {
   },
   channel(_name?: string) {
     let callback: (() => void) | null = null;
-    return {
+    let socket: WebSocket | undefined;
+    let retryTimer: number | undefined;
+    let stopped = false;
+    const channel = {
+      socket,
       on(_event: string, _filter: unknown, listener: () => void) { callback = listener; return this; },
       subscribe() {
         const wsUrl = apiUrl.replace(/^http/, "ws");
-        const socket = new WebSocket(`${wsUrl}/ws`);
-        socket.onmessage = () => callback?.();
-        return { socket };
+        const connect = () => {
+          if (stopped) return;
+          socket = new WebSocket(`${wsUrl}/ws`);
+          channel.socket = socket;
+          socket.onmessage = () => callback?.();
+          socket.onclose = () => {
+            if (!stopped) retryTimer = window.setTimeout(connect, 2000);
+          };
+        };
+        connect();
+        return channel;
+      },
+      close() {
+        stopped = true;
+        if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+        socket?.close();
       },
     };
   },
-  async removeChannel(channel: { socket?: WebSocket }) { channel.socket?.close(); },
+  async removeChannel(channel: { close?: () => void; socket?: WebSocket }) {
+    if (channel.close) channel.close(); else channel.socket?.close();
+  },
 } : null;
 
 export type AuctionStatus = "preparing" | "live" | "paused" | "complete";

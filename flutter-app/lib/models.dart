@@ -171,3 +171,25 @@ class AuctionEvent {
         amount(json['amount']),
       );
 }
+
+class AuctionInstance {
+  const AuctionInstance(this.id, this.name, this.kind, this.status, this.active,
+      this.archived, this.playerCount);
+  final String id;
+  final String name;
+  final String kind;
+  final String status;
+  final bool active;
+  final bool archived;
+  final int playerCount;
+  factory AuctionInstance.fromJson(Map<String, dynamic> json) =>
+      AuctionInstance(
+        '${json['id'] ?? ''}',
+        '${json['name'] ?? 'Auction'}',
+        '${json['kind'] ?? 'demo'}',
+        '${json['status'] ?? 'preparing'}',
+        json['active'] == true,
+        json['archived'] == true,
+        integer(json['player_count']),
+      );
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { announcedTeams } from "./season5-teams";
-import { getAuctionSnapshot, preAuctionSnapshot, type AuctionSnapshot } from "./auction-client";
+import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSnapshot } from "./auction-client";
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
 const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
@@ -98,8 +98,10 @@ export default function Home() {
       } catch { if (active) setAuctionOnline(false); }
     };
     void refresh();
-    const timer = window.setInterval(refresh, 15000);
-    return () => { active = false; window.clearInterval(timer); };
+    const timer = window.setInterval(refresh, 5000);
+    const client = auctionClient;
+    const channel = client?.channel("home-auction-live").on("auction_updated", {}, () => { void refresh(); }).subscribe();
+    return () => { active = false; window.clearInterval(timer); if (client && channel) void client.removeChannel(channel); };
   }, []);
 
   const command = useMemo(() => {
