@@ -119,11 +119,12 @@ jobs:
           echo "command_id=$command_id" >> "$GITHUB_OUTPUT"
           aws ssm wait command-executed \
             --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID"
-          aws ssm get-command-invocation \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
             --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID" \
-            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result"
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
 
       - name: Verify public website
         run: |
@@ -158,11 +159,12 @@ jobs:
 
           aws ssm wait command-executed \
             --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID"
-          aws ssm get-command-invocation \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
             --command-id "$command_id" \
-            --instance-id "$EC2_INSTANCE_ID" \
-            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result"
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
 
       - name: Remove deployment artifact
         if: always()
