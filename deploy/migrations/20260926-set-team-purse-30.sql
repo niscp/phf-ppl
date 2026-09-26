@@ -24,10 +24,41 @@ set state_data = jsonb_set(
 where archived = false
   and jsonb_typeof(state_data->'teams') = 'array';
 
+create or replace function enforce_phf_team_purse_30()
+returns trigger
+language plpgsql
+as $$
+begin
+  if jsonb_typeof(new.state_data->'teams') = 'array' then
+    new.state_data = jsonb_set(
+      new.state_data,
+      '{teams}',
+      (
+        select jsonb_agg(team || jsonb_build_object('purse', 30) order by position)
+        from jsonb_array_elements(new.state_data->'teams') with ordinality as current_team(team, position)
+      )
+    );
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists auction_instances_enforce_purse_30 on auction_instances;
+create trigger auction_instances_enforce_purse_30
+before insert or update of state_data on auction_instances
+for each row execute function enforce_phf_team_purse_30();
+
 do $$
 begin
   if (select count(*) from auction_teams where purse = 30) <> 6 then
     raise exception 'Expected all six PHF teams to have a 30 CR purse';
+  end if;
+  if not exists (
+    select 1 from pg_trigger
+    where tgname = 'auction_instances_enforce_purse_30'
+      and not tgisinternal
+  ) then
+    raise exception 'Expected the 30 CR room-purse trigger to exist';
   end if;
 end $$;
 
