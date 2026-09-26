@@ -86,6 +86,7 @@ export const auctionClient = apiUrl ? {
         socket?.close();
       },
     };
+    return channel;
   },
   async removeChannel(channel: { close?: () => void; socket?: WebSocket }) {
     if (channel.close) channel.close(); else channel.socket?.close();
