@@ -130,6 +130,40 @@ jobs:
           curl -fsS --retry 8 --retry-delay 3 https://phfppl.dwemory.com/ > /tmp/phfppl-home.html
           grep -q 'root' /tmp/phfppl-home.html
 
+      - name: Sync new players into live auction rooms
+        env:
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          sql_payload="$(base64 -w 0 deploy/migrations/20260926-add-season5-players.sql)"
+
+          jq -n \
+            --arg sql "$sql_payload" \
+            '{commands:[
+              "set -eu",
+              ("printf %s " + ($sql|@sh) + " | base64 -d > /tmp/phfppl-add-players.sql"),
+              "postgres_id=$(docker ps --filter label=com.docker.compose.service=postgres --format {{.ID}} | head -n 1)",
+              "test -n \"$postgres_id\"",
+              "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < /tmp/phfppl-add-players.sql",
+              "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction -Atc \"select count(*) from auction_players where id = any (array['player-88','player-89','player-90','player-91'])\"",
+              "rm -f /tmp/phfppl-add-players.sql"
+            ]}' > /tmp/ssm-player-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "Sync PHFPL Season 5 players" \
+            --parameters file:///tmp/ssm-player-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID"
+          aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" \
+            --query '{Status:Status,Output:StandardOutputContent,Error:StandardErrorContent}'
+
       - name: Remove deployment artifact
         if: always()
         env:
