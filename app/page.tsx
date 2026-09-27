@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { announcedTeams } from "./season5-teams";
+import { officialSeasonFiveAuctionId } from "./season5-auction";
 import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSnapshot } from "./auction-client";
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
 const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
-const officialSeasonFiveAuctionId = "4d6e235c-9ba3-45d3-8287-ca591f5f6e5e";
 
 const matchDays = [
   { day: "21", label: "League day 1" },

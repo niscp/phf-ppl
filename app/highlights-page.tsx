@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getAuctionSnapshot, type AuctionPlayer, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
 import { buildAuctionHighlights, type HighlightTeam } from "./auction-highlights";
-
-const OFFICIAL_AUCTION_ID = "4d6e235c-9ba3-45d3-8287-ca591f5f6e5e";
+import { officialSeasonFiveAuctionId } from "./season5-auction";
 
 function asset(path: string | null) {
   if (!path) return "";
@@ -101,7 +100,7 @@ export default function HighlightsPage() {
   const [shareStatus, setShareStatus] = useState("");
   useEffect(() => {
     let active = true;
-    const auctionId = new URLSearchParams(window.location.search).get("auction") || OFFICIAL_AUCTION_ID;
+    const auctionId = new URLSearchParams(window.location.search).get("auction") || officialSeasonFiveAuctionId;
     getAuctionSnapshot(auctionId).then((next) => { if (active) setSnapshot(next); }).catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Highlights could not be loaded"); });
     return () => { active = false; };
   }, []);
@@ -118,7 +117,7 @@ export default function HighlightsPage() {
   if (!snapshot || !highlights) return <main className="highlights-state"><span className="highlights-loader"/><h1>Preparing the auction ledger</h1><p>Loading every sale and final squad…</p></main>;
 
   return <main className="highlights-page">
-    <header className="highlights-header"><a href={localLink("")} className="highlights-brand"><b>PHF</b><span>Premier League</span></a><nav><a href="#top-buys">Top buys</a><a href="#squads">Squads</a><a href={localLink(`teams.html?auction=${snapshot.auction?.id ?? OFFICIAL_AUCTION_ID}`)}>Team view</a><button type="button" onClick={() => void sharePage()}>Share highlights</button></nav></header>
+    <header className="highlights-header"><a href={localLink("")} className="highlights-brand"><b>PHF</b><span>Premier League</span></a><nav><a href="#top-buys">Top buys</a><a href="#squads">Squads</a><a href={localLink(`teams.html?auction=${snapshot.auction?.id ?? officialSeasonFiveAuctionId}`)}>Team view</a><button type="button" onClick={() => void sharePage()}>Share highlights</button></nav></header>
     {shareStatus && <p className="highlights-toast" role="status">{shareStatus}</p>}
     <section className="highlights-hero" aria-labelledby="highlights-title">
       <div className="highlights-hero-copy"><p>Season 5 official auction · Final ledger</p><h1 id="highlights-title">The hammer<br/>has fallen.</h1><div className="highlights-final-stamp"><span>{highlights.complete ? "Auction complete" : "Provisional results"}</span><b>{snapshot.auction?.name ?? "Season 5 Official Auction"}</b></div></div>
@@ -128,7 +127,7 @@ export default function HighlightsPage() {
     <section className="highlights-top-buys" id="top-buys"><div className="highlights-section-title"><span>01</span><div><p>The bidding table</p><h2>Ten biggest buys.</h2></div></div><ol>{highlights.purchases.slice(0, 10).map((player, index) => <li key={player.id}><span>{String(index + 1).padStart(2, "0")}</span><div className="highlights-buy-photo"><PlayerPortrait player={player} /></div><div><strong>{player.name}</strong><small>{player.role} · {player.team.name}</small></div><b>{cr(player.sold_price)}</b></li>)}</ol></section>
     <section className="highlights-spend-table"><div><p>Franchise ledger</p><h2>How every purse moved.</h2></div><ol>{highlights.teams.map((team, index) => <li key={team.id}><span>{index + 1}</span><TeamMark team={team}/><strong>{team.name}</strong><div><i style={{ width: `${(team.calculatedSpent / Math.max(...highlights.teams.map((item) => item.calculatedSpent), 1)) * 100}%` }}/></div><b>{cr(team.calculatedSpent)}</b><small>{cr(team.remaining)} left</small></li>)}</ol></section>
     <section className="highlights-role-board"><div className="highlights-role-copy"><p>Final player mix</p><h2>Every role,<br/>accounted for.</h2><span>The six completed squads, including playing captains.</span></div><div className="highlights-role-bars">{highlights.roles.map((role) => <div key={role.label}><span>{role.label}</span><i><b style={{ width: `${(role.count / highlights.squadCount) * 100}%` }}/></i><strong>{role.count}</strong></div>)}</div></section>
-    <section className="highlights-squads" id="squads"><div className="highlights-section-title"><span>02</span><div><p>The final six</p><h2>Complete squads.</h2></div><a href={localLink(`teams.html?auction=${snapshot.auction?.id ?? OFFICIAL_AUCTION_ID}`)}>Open interactive team view</a></div><div className="highlights-squad-ledgers">{highlights.teams.map((team) => <TeamLedger team={team} key={team.id}/>)}</div></section>
+    <section className="highlights-squads" id="squads"><div className="highlights-section-title"><span>02</span><div><p>The final six</p><h2>Complete squads.</h2></div><a href={localLink(`teams.html?auction=${snapshot.auction?.id ?? officialSeasonFiveAuctionId}`)}>Open interactive team view</a></div><div className="highlights-squad-ledgers">{highlights.teams.map((team) => <TeamLedger team={team} key={team.id}/>)}</div></section>
     <footer className="highlights-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · Official auction results</span><button type="button" onClick={() => window.print()}>Print results</button></footer>
   </main>;
 }
