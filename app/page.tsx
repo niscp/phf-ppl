@@ -6,6 +6,7 @@ import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSnap
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
 const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
+const officialSeasonFiveAuctionId = "4d6e235c-9ba3-45d3-8287-ca591f5f6e5e";
 
 const matchDays = [
   { day: "21", label: "League day 1" },
@@ -93,7 +94,7 @@ export default function Home() {
     let active = true;
     const refresh = async () => {
       try {
-        const next = await getAuctionSnapshot();
+        const next = await getAuctionSnapshot(officialSeasonFiveAuctionId);
         if (active) { setAuction(next); setAuctionOnline(Boolean(next.config)); }
       } catch { if (active) setAuctionOnline(false); }
     };
@@ -285,7 +286,7 @@ export default function Home() {
       </section>
 
       <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
-      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={command.status === "complete" ? "./highlights.html" : "./auction.html"}><i/>{command.status === "complete" ? "Results" : "Live"}</a><a href="./teams.html">Teams</a></nav>
+      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={command.status === "complete" ? `./highlights.html?auction=${officialSeasonFiveAuctionId}` : `./auction.html?auction=${officialSeasonFiveAuctionId}`}><i/>{command.status === "complete" ? "Results" : "Live"}</a><a href={`./teams.html?auction=${officialSeasonFiveAuctionId}`}>Teams</a></nav>
     </main>
   );
 }
