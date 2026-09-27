@@ -109,7 +109,9 @@ export default function Home() {
     const currentState = auction.players.find((player) => player.id === auction.config?.current_player_id);
     const current = currentState ?? null;
     const sold = auction.players.filter((player) => player.status === "sold").length;
-    return { current, sold, status: auction.config?.status ?? "preparing", id: auction.auction?.id ?? "" };
+    const allocated = auction.players.filter((player) => ["captain", "sold"].includes(player.status)).length;
+    const finished = auction.config?.status === "complete" || (auction.players.length > 0 && allocated === auction.players.length);
+    return { current, sold, finished, status: finished ? "complete" : auction.config?.status ?? "preparing", id: auction.auction?.id ?? "" };
   }, [auction]);
 
   return (
