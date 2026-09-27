@@ -1,0 +1,51 @@
+name: Inspect PHFPL auction rooms
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Assume AWS diagnostic role through OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: phfppl-inventory-${{ github.run_id }}
+
+      - name: Read auction room inventory
+        env:
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          query="select id,name,kind,active,archived,state_data->'config'->>'status' status,(select count(*) from jsonb_array_elements(state_data->'players')) players,(select count(*) from jsonb_array_elements(state_data->'players') p where p->>'status'='sold') sold,(select coalesce(sum((p->>'sold_price')::numeric),0) from jsonb_array_elements(state_data->'players') p where p->>'status'='sold') spend,(select concat(p->>'team_id',' @ ',p->>'sold_price',' CR') from jsonb_array_elements(state_data->'players') p where lower(p->>'name')='nishank singh' limit 1) nishank from auction_instances order by created_at;"
+
+          jq -n --arg query "$query" '{commands:[
+            "set -eu",
+            "db_id=$(docker ps --filter label=com.docker.compose.service=postgres --format {{.ID}} | head -n 1)",
+            "test -n \"$db_id\"",
+            ("docker exec \"$db_id\" psql -U phf_auction -d phf_auction -P pager=off -c " + ($query|@sh))
+          ]}' > /tmp/auction-inventory-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "Read-only PHFPL auction inventory" \
+            --parameters file:///tmp/auction-inventory-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result" | jq -r '.StandardOutputContent'
+          printf '%s\n' "$result" | jq -r '.StandardErrorContent' >&2
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
