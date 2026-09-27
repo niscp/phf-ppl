@@ -11,6 +11,12 @@ function originsFromEnv() {
   return (process.env.ALLOWED_ORIGINS || "http://localhost:4173,http://localhost:5173").split(",").map((v) => v.trim()).filter(Boolean);
 }
 
+export function canViewAuctionInstance(selected) {
+  if (!selected) return false;
+  if (!selected.archived) return true;
+  return selected.state_data?.config?.status === "complete";
+}
+
 export function createApp(pool, broadcast = () => {}, queueSync = async () => {}) {
   const app = express();
   const loginAttempts = new Map();
@@ -40,7 +46,7 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(auctionId)) return res.status(400).json({ error: "Invalid auction ID" });
       const { rows } = await pool.query("select id,name,kind,active,archived,state_data from auction_instances where id=$1", [auctionId]);
       const selected = rows[0];
-      if (!selected || selected.archived) return res.status(404).json({ error: "Auction not found" });
+      if (!canViewAuctionInstance(selected)) return res.status(404).json({ error: "Auction not found" });
       if (selected.active) {
         const [config, teams, players, events] = await Promise.all([
           pool.query("select status,current_player_id,minimum_increment::float8 minimum_increment,increment_threshold::float8 increment_threshold,increment_above_threshold::float8 increment_above_threshold,default_base_price::float8 default_base_price,min_squad_size,max_squad_size,money_label from auction_config where id=1"),
