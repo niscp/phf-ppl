@@ -1,5 +1,6 @@
 import { normalizeAuctionState } from "./auction-units.mjs";
 import { activeAuctionRound, roleGroup } from "./auction-rounds.mjs";
+import { normalizeAuctionAmount } from "./auction-bids.mjs";
 
 const allowedStatuses = new Set(["live", "paused", "complete"]);
 
@@ -134,8 +135,8 @@ export async function runAction(db, actorId, name, p = {}) {
       if (config.status !== "preparing") throw new Error("Teams are locked");
       const count = Number((await db.query("select count(*) from auction_teams")).rows[0].count);
       if (count >= 6) throw new Error("Six teams already exist");
-      const purse = Number(p.p_purse);
-      if (!Number.isFinite(purse) || purse <= 0 || Math.round(purse * 100) !== purse * 100) throw new Error("Purse must be a positive CR amount with at most two decimals");
+      const purse = normalizeAuctionAmount(p.p_purse);
+      if (purse === null || purse <= 0) throw new Error("Purse must be a positive CR amount with at most two decimals");
       const { rows } = await db.query("insert into auction_teams(id,name,purse) values(gen_random_uuid(),$1,$2) returning id", [String(p.p_name || "").trim(), purse]);
       await audit(db, actorId, name, { team_id: rows[0].id });
       return rows[0].id;
@@ -157,8 +158,8 @@ export async function runAction(db, actorId, name, p = {}) {
       await audit(db, actorId, name, p); return null;
     }
     case "auction_set_rules": {
-      const base = Number(p.p_base_price), increment = Number(p.p_increment), threshold = Number(p.p_increment_threshold), incrementAbove = Number(p.p_increment_above_threshold), min = Number(p.p_min_squad_size), max = Number(p.p_max_squad_size);
-      const moneyValid = [base, increment, threshold, incrementAbove].every((value) => Number.isFinite(value) && Math.round(value * 100) === value * 100);
+      const base = normalizeAuctionAmount(p.p_base_price), increment = normalizeAuctionAmount(p.p_increment), threshold = normalizeAuctionAmount(p.p_increment_threshold), incrementAbove = normalizeAuctionAmount(p.p_increment_above_threshold), min = Number(p.p_min_squad_size), max = Number(p.p_max_squad_size);
+      const moneyValid = [base, increment, threshold, incrementAbove].every((value) => value !== null);
       if (!moneyValid || ![min, max].every(Number.isSafeInteger) || base < 1 || increment <= 0 || threshold < 0 || incrementAbove <= 0 || min < 1 || max < min) throw new Error("Invalid auction rules");
       const { rowCount } = await db.query(`update auction_config set default_base_price=$1,minimum_increment=$2,increment_threshold=$3,increment_above_threshold=$4,min_squad_size=$5,max_squad_size=$6,money_label=$7,updated_at=now() where id=1 and status='preparing'`, [base, increment, threshold, incrementAbove, min, max, String(p.p_money_label || "").trim()]);
       if (!rowCount) throw new Error("Rules are locked once the auction starts");
@@ -224,10 +225,10 @@ export async function runAction(db, actorId, name, p = {}) {
       if (!team) throw new Error("Choose a team");
       const squad = Number((await db.query("select count(*) from auction_players where team_id=$1 and status in ('captain','sold')", [team.id])).rows[0].count);
       const increment = config.increment_threshold !== null && Number(player.current_bid) >= Number(config.increment_threshold) ? Number(config.increment_above_threshold ?? config.minimum_increment) : Number(config.minimum_increment);
-      const value = Math.round(Number(p.p_amount) * 100) / 100; const minimum = player.current_bid === null ? Number(player.base_price ?? config.default_base_price) : Math.round((Number(player.current_bid) + increment) * 100) / 100;
+      const value = normalizeAuctionAmount(p.p_amount); const minimum = player.current_bid === null ? Number(player.base_price ?? config.default_base_price) : Math.round((Number(player.current_bid) + increment) * 100) / 100;
       const reserveTarget = Number(config.max_squad_size ?? config.min_squad_size);
       const reserve = Math.max(0, reserveTarget - squad - 1) * Number(config.default_base_price);
-      if (!Number.isFinite(value) || Math.round(value * 100) !== value * 100 || value < minimum) throw new Error("Bid is below the next valid amount");
+      if (value === null || value < minimum) throw new Error("Bid is below the next valid amount");
       if (squad >= config.max_squad_size) throw new Error("Team squad is full");
       if (value > Number(team.purse) - Number(team.spent) - reserve) throw new Error("Bid would leave too little purse to complete a full squad");
       await db.query("update auction_players set current_bid=$1,current_bid_team_id=$2,updated_at=now() where id=$3", [value, team.id, player.id]);
@@ -291,9 +292,9 @@ export async function runAction(db, actorId, name, p = {}) {
       if (!player || player.status === "captain") throw new Error("Choose an auction player");
       const target = (await db.query("select * from auction_teams where id=$1 for update", [p.p_team_id])).rows[0];
       if (!target) throw new Error("Choose a team");
-      const amount = Math.round(Number(p.p_amount) * 100) / 100;
+      const amount = normalizeAuctionAmount(p.p_amount);
       const base = Number(player.base_price ?? config.default_base_price);
-      if (!Number.isFinite(amount) || Math.round(amount * 100) !== amount * 100 || amount < base) throw new Error(`Manual amount must be at least ${base} CR`);
+      if (amount === null || amount < base) throw new Error(`Manual amount must be at least ${base} CR`);
 
       const previousTeamId = player.status === "sold" ? player.team_id : null;
       const previousAmount = player.status === "sold" ? Number(player.sold_price || 0) : 0;

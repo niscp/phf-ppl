@@ -1,6 +1,7 @@
 import { normalizeAuctionState } from './auction-units.mjs';
 import { activeAuctionRound } from './auction-rounds.mjs';
 import { manuallyAssignInState, undoSaleInState } from './auction-corrections.mjs';
+import { normalizeAuctionAmount } from './auction-bids.mjs';
 
 const round2 = (value) => Math.round(Number(value) * 100) / 100;
 const squadSize = (state, teamId) => state.players.filter((p) => p.team_id === teamId && ['captain', 'sold'].includes(p.status)).length;
@@ -77,10 +78,10 @@ export async function runInstanceAction(db, actorId, auctionId, name, p = {}) {
       const increment = player.current_bid != null && Number(player.current_bid) >= Number(config.increment_threshold)
         ? Number(config.increment_above_threshold) : Number(config.minimum_increment);
       const minimum = player.current_bid == null ? Number(player.base_price ?? config.default_base_price) : round2(Number(player.current_bid) + increment);
-      const value = round2(p.p_amount);
+      const value = normalizeAuctionAmount(p.p_amount);
       const reserveTarget = Number(config.max_squad_size ?? config.min_squad_size);
       const reserve = Math.max(0, reserveTarget - squadSize(state, team.id) - 1) * Number(config.default_base_price);
-      if (!Number.isFinite(value) || value < minimum) throw new Error('Bid is below the next valid amount');
+      if (value === null || value < minimum) throw new Error('Bid is below the next valid amount');
       if (squadSize(state, team.id) >= Number(config.max_squad_size)) throw new Error('Team squad is full');
       if (value > Number(team.purse) - Number(team.spent) - reserve) throw new Error('Bid would leave too little purse to complete a full squad');
       player.current_bid = value; player.current_bid_team_id = team.id;

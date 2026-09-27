@@ -28,7 +28,6 @@ REVIEWED_ALIASES = {
     "Chandan Mahapatra": "Chandan",
     "Saket Kumar": "Saket",
     "Shobhit Kastuar": "Shobhit K",
-    "Sunil Boddula": "Sunil B",
     "E V PAVAN KUMAR": "Pavan kumar E V",
     "Hanuma Madireddy": "Hanuma",
     "Meet Patel": "Meet",
@@ -37,6 +36,23 @@ REVIEWED_ALIASES = {
     "Phanidhar": "Phanidhar Raju",
     "SUBASH K REDDY": "Subash Reddy K",
     "Tarun Talluri": "Talluri Tarun",
+    # Registration-sheet links reviewed on 2026-09-20.
+    "Navin Jha": "navin kumar jha",
+    "Srikanth Kavuri": "Srikanth K",
+    "Abhishek S": "Abhishek S - PHF",
+    "Rai Sumit Kumar Sinha": "Sumit Sinha",
+    "Romit Kumar": "Romit K",
+    "Revanth reddy": "Revanth",
+    "Srinivas Janga": "SRINIVAS GN",
+    "Prashanth Palipudi (KP)": "Krishna Prashanth (KP)",
+    "Santosh Kumar Sriramoju": "Santosh Sriramoju",
+    "Jitendra Kumar Shukla": "Jeet",
+    "Praveer Kumar Kullu": "Praveer",
+    "Sunnihith": "DSY",
+    "Rajeswar Rao": "Raj",
+    "Yogesh": "Yogi",
+    "Bhupesh Jatiani": "Bhupesh",
+    "Vinay Bhardwaj": "Vinay Bharadwaj",
 }
 
 
@@ -114,9 +130,37 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=0, help="Only test the first N linked players")
     parser.add_argument("--pending-only", action="store_true", help="Skip players with previously verified stats")
     parser.add_argument("--matches-only", action="store_true", help="Refresh bowling matches for verified profiles without changing other stats")
+    parser.add_argument("--import-json", type=Path, help="Import browser-fetched stats keyed by verified profile URL")
     parser.add_argument("--write", action="store_true", help="Update the public roster JSON")
     args = parser.parse_args()
     players = json.loads(ROSTER.read_text(encoding="utf-8"))
+    if args.import_json:
+        imported = json.loads(args.import_json.read_text(encoding="utf-8"))
+        if imported and isinstance(imported[0], list):
+            imported = [
+                {
+                    "profileId": item[0],
+                    "batting": {"innings": item[1], "runs": item[2], "average": item[3], "strikeRate": item[4]},
+                    "bowling": {"matches": item[5], "wickets": item[6], "economy": item[7], "best": item[8]},
+                }
+                for item in imported
+            ]
+        by_source = {item.get("url") or item["profileId"]: item for item in imported}
+        success = 0
+        for player in players:
+            source = player.get("statsSource", "")
+            profile_match = re.search(r"/player-profile/(\d+)/", source)
+            item = by_source.get(source) or (by_source.get(profile_match.group(1)) if profile_match else None)
+            if not item:
+                continue
+            player["stats"] = {"batting": item["batting"], "bowling": item["bowling"]}
+            player["statsScope"] = "CricHeroes career"
+            player["statsChecked"] = date.today().isoformat()
+            success += 1
+        if args.write:
+            ROSTER.write_text(json.dumps(players, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"Imported {success}/{len(imported)} browser-fetched profiles" + (" and saved" if args.write else " (dry run)"))
+        return
     linked = [player for player in players if player["cricheroesUrl"] and (not args.pending_only or not player.get("statsSource")) and (not args.matches_only or player.get("statsSource"))]
     if args.limit:
         linked = linked[: args.limit]

@@ -1,3 +1,5 @@
+import { normalizeAuctionAmount } from "./auction-bids.mjs";
+
 const round2 = (value) => Math.round(Number(value) * 100) / 100;
 
 function requireOpenAuction(config) {
@@ -35,9 +37,9 @@ export function manuallyAssignInState(state, playerId, teamId, rawAmount) {
   if (!player || player.status === "captain") throw new Error("Choose an auction player");
   if (!target) throw new Error("Choose a team");
 
-  const amount = round2(rawAmount);
+  const amount = normalizeAuctionAmount(rawAmount);
   const base = Number(player.base_price ?? config.default_base_price);
-  if (!Number.isFinite(amount) || Math.round(amount * 100) !== amount * 100 || amount < base) throw new Error(`Manual amount must be at least ${base} CR`);
+  if (amount === null || amount < base) throw new Error(`Manual amount must be at least ${base} CR`);
 
   const previousTeam = player.status === "sold" ? state.teams.find((item) => item.id === player.team_id) : null;
   const previousAmount = player.status === "sold" ? Number(player.sold_price || 0) : 0;
