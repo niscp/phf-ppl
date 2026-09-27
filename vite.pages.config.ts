@@ -18,6 +18,7 @@ export default defineConfig({
         auction: fileURLToPath(new URL("./auction.html", import.meta.url)),
         auctionAdmin: fileURLToPath(new URL("./auction-admin.html", import.meta.url)),
         teams: fileURLToPath(new URL("./teams.html", import.meta.url)),
+        highlights: fileURLToPath(new URL("./highlights.html", import.meta.url)),
       },
     },
   },

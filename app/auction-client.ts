@@ -103,10 +103,10 @@ export type AuctionEvent = { id: number; event_type: string; player_id: string; 
 export type AuctionSnapshot = { auction?: { id: string; name: string; kind: "official" | "demo" } | null; config: AuctionConfig | null; teams: AuctionTeam[]; players: AuctionPlayer[]; events: AuctionEvent[] };
 
 export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
-export async function getAuctionSnapshot(): Promise<AuctionSnapshot> {
+export async function getAuctionSnapshot(explicitAuctionId = ""): Promise<AuctionSnapshot> {
   if (!auctionClient) return preAuctionSnapshot;
   const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
-  const auctionId = params?.get("auction") || params?.get("id");
+  const auctionId = explicitAuctionId || params?.get("auction") || params?.get("id");
   return auctionId
     ? request("/api/auction/view", { method: "POST", body: JSON.stringify({ auctionId }) }) as Promise<AuctionSnapshot>
     : request("/api/auction") as Promise<AuctionSnapshot>;

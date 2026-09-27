@@ -125,7 +125,7 @@ export default function Home() {
           <a href="#sponsors" onClick={() => setMenuOpen(false)}>Sponsors</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
-          <a className="gold-link" href="./auction.html">Live auction ↗</a>
+          <a className="gold-link" href={command.status === "complete" ? `./highlights.html${command.id ? `?auction=${command.id}` : ""}` : "./auction.html"}>{command.status === "complete" ? "Auction highlights ↗" : "Live auction ↗"}</a>
         </nav>
       </header>
 
@@ -159,11 +159,12 @@ export default function Home() {
           <h3>{command.current ? command.current.name : command.status === "complete" ? "The squads are ready" : "The hammer awaits"}</h3>
           <p>{command.current ? `${command.current.role ?? "Player"} is currently on the block.` : "Follow every bid, sale and squad update from one live board."}</p>
           <div className="command-numbers"><div><b>{command.sold}</b><span>Players sold</span></div><div><b>{auction.teams.length || 6}</b><span>Teams</span></div><div><b>{auctionOnline ? auction.players.length : "80+"}</b><span>Player pool</span></div></div>
-          <div className="command-actions"><a href={`./auction.html${command.id ? `?auction=${command.id}` : ""}`}>Open live board</a><a href={`./teams.html${command.id ? `?auction=${command.id}` : ""}`}>View squads</a></div>
+          <div className="command-actions"><a href={command.status === "complete" ? `./highlights.html${command.id ? `?auction=${command.id}` : ""}` : `./auction.html${command.id ? `?auction=${command.id}` : ""}`}>{command.status === "complete" ? "See auction highlights" : "Open live board"}</a><a href={`./teams.html${command.id ? `?auction=${command.id}` : ""}`}>View squads</a></div>
         </div>
         <div className="command-links">
           <a href="./players.html"><span>Player directory</span><strong>Photos, roles &amp; career stats</strong><i>↗</i></a>
           <a href="./teams.html"><span>Six franchises</span><strong>Captains, crests &amp; squads</strong><i>↗</i></a>
+          <a href="./highlights.html"><span>Official auction results</span><strong>Biggest buys &amp; final ledgers</strong><i>↗</i></a>
           <a href="#dates"><span>Tournament calendar</span><strong>Six matchdays at MCG</strong><i>↓</i></a>
         </div>
       </section>
@@ -284,7 +285,7 @@ export default function Home() {
       </section>
 
       <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
-      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href="./auction.html"><i/>Live</a><a href="./teams.html">Teams</a></nav>
+      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={command.status === "complete" ? "./highlights.html" : "./auction.html"}><i/>{command.status === "complete" ? "Results" : "Live"}</a><a href="./teams.html">Teams</a></nav>
     </main>
   );
 }
