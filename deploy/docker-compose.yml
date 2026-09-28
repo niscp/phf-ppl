@@ -23,6 +23,7 @@ services:
     environment:
       DATABASE_URL: postgresql://phf_auction:${POSTGRES_PASSWORD}@postgres:5432/phf_auction
       JWT_SECRET: ${JWT_SECRET}
+      SYNC_SECRET: ${SYNC_SECRET}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
@@ -38,6 +39,27 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+
+  backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          stamp=$$(date -u +%Y%m%dT%H%M%SZ)
+          pg_dump -h postgres -U phf_auction -d phf_auction -Fc > "/backups/phf-auction-$${stamp}.dump.tmp" &&
+            mv "/backups/phf-auction-$${stamp}.dump.tmp" "/backups/phf-auction-$${stamp}.dump"
+          find /backups -type f -name 'phf-auction-*.dump' -mtime +14 -delete
+          sleep 300
+        done
 
 volumes:
   postgres_data:

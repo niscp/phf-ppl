@@ -8,7 +8,7 @@ export function nextBid(player: AuctionPlayer | undefined, config: AuctionConfig
     const standardIncrement = Number(config.minimum_increment ?? 0);
     const higherIncrement = Number(config.increment_above_threshold ?? standardIncrement);
     const increment = threshold !== null && currentBid >= threshold ? higherIncrement : standardIncrement;
-    return currentBid + increment;
+    return Math.round((currentBid + increment) * 100) / 100;
   }
   const openingBid = player.base_price ?? config.default_base_price;
   return openingBid === null ? null : Number(openingBid);
@@ -20,7 +20,8 @@ export function squadSize(players: AuctionPlayer[], teamId: string): number {
 
 export function maxBidAllowed(team: AuctionTeam, players: AuctionPlayer[], config: AuctionConfig | null): number {
   if (!config || config.default_base_price === null) return 0;
-  const openSlotsNeeded = Math.max(0, config.min_squad_size - squadSize(players, team.id) - 1);
+  const targetSquadSize = Number(config.max_squad_size ?? config.min_squad_size);
+  const openSlotsNeeded = Math.max(0, targetSquadSize - squadSize(players, team.id) - 1);
   return Math.max(0, Number(team.purse) - Number(team.spent) - openSlotsNeeded * Number(config.default_base_price));
 }
 

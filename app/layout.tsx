@@ -8,7 +8,7 @@ const mono = IBM_Plex_Mono({ variable: "--font-mono", weight: ["400", "600"], su
 
 export const metadata: Metadata = {
   title: "PHF Premier League | Cricket Season 5",
-  description: "PHF Premier League Season 5 will be played on 21, 22, 28 and 29 November, plus 5 and 6 December 2026, in an IPL-style round-robin format.",
+  description: "PHF Premier League Season 5 will be played on 21, 22, 27 and 28 November, plus 5 and 6 December 2026, in an IPL-style round-robin format.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
   openGraph: {
     title: "PHF Premier League | Cricket Season 5",

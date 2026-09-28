@@ -1,0 +1,6 @@
+# Copy this file to key.properties and replace every placeholder.
+# key.properties and keystores are intentionally ignored by Git.
+storePassword=REPLACE_WITH_A_STRONG_PASSWORD
+keyPassword=REPLACE_WITH_A_STRONG_PASSWORD
+keyAlias=upload
+storeFile=../keystores/auction-arena-upload.jks

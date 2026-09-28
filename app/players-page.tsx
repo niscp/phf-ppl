@@ -53,6 +53,7 @@ export default function PlayersPage() {
   const [query, setQuery] = useState("");
   const [role, setRole] = useState("All players");
   const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Player | null>(null);
 
   const filtered = useMemo(() => players.filter((player) => {
     const matchesName = player.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
@@ -96,7 +97,7 @@ export default function PlayersPage() {
         <span className="roster-result-count" aria-live="polite">{filtered.length} {filtered.length === 1 ? "player" : "players"}</span>
       </div>
 
-      {visible.length ? <div className="roster-grid">{visible.map((player) => <article className="roster-card" key={player.id}>
+      {visible.length ? <div className="roster-grid">{visible.map((player) => <article className="roster-card" key={player.id} tabIndex={0} role="button" onClick={() => setSelected(player)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setSelected(player); } }} aria-label={`Open ${player.name} profile`}>
         <div className="roster-photo">
           {player.photo ? <img src={getAssetUrl(player.photo)} alt={`${player.name}, Season 5 registered player`} loading="lazy" /> : <div className="roster-photo-fallback" aria-label="Photo not submitted">{player.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}</div>}
           <span className="roster-role-tag">{player.role}</span>
@@ -105,13 +106,20 @@ export default function PlayersPage() {
           <h3>{player.name}</h3>
           {player.statsProfileName && <p className="roster-alias-note">CricHeroes profile: {player.statsProfileName}</p>}
           <div className="roster-stat-pair"><StatBlock title="Batting" data={player.stats?.batting} kind="batting" /><StatBlock title="Bowling" data={player.stats?.bowling} kind="bowling" /></div>
-          {player.cricheroesUrl ? <a className="roster-profile-link" href={player.statsSource ?? player.cricheroesUrl} target="_blank" rel="noopener noreferrer">{player.statsSource ? "View career stats on CricHeroes" : "Open CricHeroes profile"} <span aria-hidden="true">↗</span></a> : <span className="roster-no-profile">CricHeroes profile not supplied</span>}
+          <button type="button" className="roster-open-profile" onClick={(event) => { event.stopPropagation(); setSelected(player); }}>View player card <span aria-hidden="true">↗</span></button>
         </div>
       </article>)}</div> : <div className="roster-empty">No players match that search.</div>}
 
       {pageCount > 1 && <div className="roster-pages" aria-label="Player pages"><button type="button" onClick={() => changePage(Math.max(1, page - 1))} disabled={page === 1}>Previous</button><span>Page {page} of {pageCount}</span><button type="button" onClick={() => changePage(Math.min(pageCount, page + 1))} disabled={page === pageCount}>Next</button></div>}
       <p className="roster-source-note">Player names, submitted photos and roles come from the Season 5 registration form. Playing captains are excluded from this auction pool and appear on the Teams page. Career stats come from each player-submitted CricHeroes link; profile nicknames are shown when they differ. These are not Season 5 or PHF-only totals. An unavailable message never means zero runs or wickets. No contact or payment details are published.</p>
     </section>
+    {selected && <div className="player-drawer-shell" role="dialog" aria-modal="true" aria-label={`${selected.name} player profile`} onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
+      <article className="player-drawer">
+        <button className="player-drawer-close" type="button" onClick={() => setSelected(null)} aria-label="Close player profile">×</button>
+        <div className="player-drawer-photo">{selected.photo ? <img src={getAssetUrl(selected.photo)} alt={selected.name}/> : <div className="roster-photo-fallback">{selected.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}</div>}<span>{selected.role}</span></div>
+        <div className="player-drawer-body"><p className="roster-eyebrow">Season 5 auction player</p><h2>{selected.name}</h2>{selected.statsProfileName && <p className="roster-alias-note">CricHeroes profile: {selected.statsProfileName}</p>}<div className="roster-stat-pair"><StatBlock title="Batting career" data={selected.stats?.batting} kind="batting"/><StatBlock title="Bowling career" data={selected.stats?.bowling} kind="bowling"/></div>{selected.cricheroesUrl ? <a className="player-drawer-link" href={selected.statsSource ?? selected.cricheroesUrl} target="_blank" rel="noopener noreferrer">Open verified CricHeroes profile ↗</a> : <p className="roster-no-profile">CricHeroes profile not supplied</p>}<small>Career totals shown where a submitted profile could be verified. Season 5 auction and tournament results will update separately.</small></div>
+      </article>
+    </div>}
     <footer className="roster-footer"><a href={homeUrl}>PHF Premier League</a><span>Season 5 · 2026</span></footer>
   </main>;
 }

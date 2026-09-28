@@ -63,7 +63,16 @@ def drive_id(raw: str) -> str | None:
 
 
 def role(raw: str) -> str:
-    return {"All - Rounder": "All-rounder", "Batsman": "Batter", "Bowler": "Bowler"}.get(raw.strip(), "Player")
+    value = raw.strip().lower().replace("_", " ")
+    if value in {"all - rounder", "all-rounder", "all rounder"}:
+        return "All-rounder"
+    if value in {"batsman", "batsmen", "batter", "batswoman"}:
+        return "Batter"
+    if value in {"bowler", "bowlers"}:
+        return "Bowler"
+    if value in {"wicketkeeper", "wicket keeper", "wicket-keeper", "wk", "keeper"}:
+        return "Wicketkeeper"
+    return "Player"
 
 
 def load_players(path: Path) -> list[dict]:
