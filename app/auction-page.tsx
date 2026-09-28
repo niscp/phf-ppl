@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import registeredPlayers from "./season5-players.json";
-import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionInstance, type AuctionSession, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
+import { auctionClient, getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionInstance, type AuctionSession, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
 import { canBid, maxBidAllowed, nextBid, provisionalPurse, squadSize } from "./auction-math";
 import { auctionExcludedPlayerIds } from "./season5-teams";
 
@@ -219,6 +219,8 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
   const [editingAuction, setEditingAuction] = useState("");
   const [adminTab, setAdminTab] = useState(inRoom ? "live" : "auctions");
   const [editAuction, setEditAuction] = useState({ name: "", kind: "demo" });
+  const [tournament, setTournament] = useState<TournamentSnapshot>({ matches: [], standings: [], player_stats: [] });
+  const [result, setResult] = useState({ matchId: "", homeRuns: "", homeWickets: "0", homeOvers: "20", awayRuns: "", awayWickets: "0", awayOvers: "20", resultText: "", statsJson: "[]" });
   const autoAdvanceTimer = useRef<number | null>(null);
 
   const cancelAutoAdvance = useCallback(() => {
@@ -249,6 +251,11 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
 
   useEffect(() => { if (isAdmin) void loadAuctions(); }, [isAdmin]);
 
+  const loadTournament = useCallback(async () => {
+    try { setTournament(await getTournamentSnapshot()); } catch { setFeedback("Tournament ledger is unavailable."); }
+  }, []);
+  useEffect(() => { if (isAdmin && inRoom) void loadTournament(); }, [isAdmin, inRoom, loadTournament]);
+
   useEffect(() => {
     // This form intentionally follows the authoritative rules loaded from the database.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -265,6 +272,7 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
       setFeedback("Saved. The public board is updating.");
       await refresh();
       await loadAuctions();
+      if (name === "tournament_record_match") await loadTournament();
       return true;
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "The action could not be saved.");
@@ -337,7 +345,8 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
           : !isAdmin ? <div className="auction-admin-notice"><h2>Access not granted</h2><p>Your account is signed in, but it is not an active auctioneer account.</p><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
             : <><div className="auction-admin-top"><span>Board: <b>{snapshot.config?.status ?? "not initialized"}</b></span><span>Teams: <b>{snapshot.teams.length} / 6</b></span><span>Captains: <b>{captainCount} / 6</b></span><span>Auction pool: <b>{snapshot.players.filter((player) => player.status !== "captain").length} / {playerPool.length}</b></span><button type="button" onClick={downloadSnapshot}>Download backup</button><button onClick={() => auctionClient?.auth.signOut()}>Sign out</button></div>
               {feedback && <p className="auction-feedback" role="status">{feedback}</p>}
-              <nav className="auction-admin-tabs" aria-label="Auctioneer sections">{(inRoom ? [["live","Auction desk"],["squads","Squads"],["activity","Activity"]] : [["auctions","Auction rooms"],["setup","Master setup"]]).map(([id,label]) => <button key={id} className={adminTab === id ? "selected" : ""} onClick={() => setAdminTab(id)}>{label}</button>)}</nav>
+              <nav className="auction-admin-tabs" aria-label="Auctioneer sections">{(inRoom ? [["live","Auction desk"],["league","League centre"],["squads","Squads"],["activity","Activity"]] : [["auctions","Auction rooms"],["setup","Master setup"]]).map(([id,label]) => <button key={id} className={adminTab === id ? "selected" : ""} onClick={() => setAdminTab(id)}>{label}</button>)}</nav>
+              {inRoom && <section className="auction-admin-panel tournament-admin-panel"><div className="tournament-admin-heading"><div><p className="auction-overline">Tournament operations</p><h2>Record a match</h2></div><span>{tournament.matches.filter((match) => match.status === "completed").length} completed</span></div><p>Enter the final score once. Standings, net run rate and player leaderboards update automatically. Player stats are optional and can be pasted as a JSON array.</p><form onSubmit={recordMatch}><label>Scheduled match<select required value={result.matchId} onChange={(event) => setResult({ ...result, matchId: event.target.value })}><option value="">Choose match</option>{scheduledMatches.map((match) => <option key={match.id} value={match.id}>Match {match.match_number} · {match.home_team} vs {match.away_team} · {match.match_date}</option>)}</select></label><div className="result-score-grid"><label>Home runs<input required type="number" min="0" value={result.homeRuns} onChange={(event) => setResult({ ...result, homeRuns: event.target.value })}/></label><label>Home wickets<input required type="number" min="0" max="10" value={result.homeWickets} onChange={(event) => setResult({ ...result, homeWickets: event.target.value })}/></label><label>Home overs<input required type="number" min="0.1" step="0.1" value={result.homeOvers} onChange={(event) => setResult({ ...result, homeOvers: event.target.value })}/></label><label>Away runs<input required type="number" min="0" value={result.awayRuns} onChange={(event) => setResult({ ...result, awayRuns: event.target.value })}/></label><label>Away wickets<input required type="number" min="0" max="10" value={result.awayWickets} onChange={(event) => setResult({ ...result, awayWickets: event.target.value })}/></label><label>Away overs<input required type="number" min="0.1" step="0.1" value={result.awayOvers} onChange={(event) => setResult({ ...result, awayOvers: event.target.value })}/></label></div><label>Result note<input value={result.resultText} onChange={(event) => setResult({ ...result, resultText: event.target.value })} placeholder="Example: High Flyers won by 18 runs" /></label><label>Player stats JSON<textarea value={result.statsJson} onChange={(event) => setResult({ ...result, statsJson: event.target.value })} rows={8} placeholder={'[{"player_id":"player-1","runs":42,"balls":28,"wickets":2,"runs_conceded":18,"overs":4,"catches":1,"potm":true}]'} /></label><button disabled={busy || !result.matchId}>Record result and update table</button></form><div className="tournament-admin-mini-table">{tournament.standings.map((row) => <span key={row.team_id}><b>{row.team_name}</b><small>{row.points} pts · {row.played} played · NRR {row.nrr.toFixed(2)}</small></span>)}</div></section>}
               <section className="auction-manager admin-panel admin-panel-auctions" aria-labelledby="auction-manager-title">
                 <div className="auction-manager-head"><div><p>Season control</p><h2 id="auction-manager-title">Auction manager</h2></div><span>{auctions.filter((item) => !item.archived).length} available</span></div>
                 <div className="auction-manager-body">

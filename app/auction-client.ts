@@ -101,6 +101,10 @@ export type AuctionTeam = { id: string; name: string; logo_url: string | null; p
 export type AuctionPlayer = { id: string; name: string; role: string; photo: string | null; status: PlayerStatus; team_id: string | null; sold_price: number | null; current_bid: number | null; current_bid_team_id: string | null; base_price: number | null };
 export type AuctionEvent = { id: number; event_type: string; player_id: string; team_id: string | null; amount: number | null; created_at: string };
 export type AuctionSnapshot = { auction?: { id: string; name: string; kind: "official" | "demo" } | null; config: AuctionConfig | null; teams: AuctionTeam[]; players: AuctionPlayer[]; events: AuctionEvent[] };
+export type TournamentMatch = { id: number; match_number: number; match_date: string; match_time: string; venue: string; status: "scheduled" | "completed"; home_team_id: string; away_team_id: string; home_team: string; away_team: string; home_runs: number | null; home_wickets: number | null; home_overs: number | null; away_runs: number | null; away_wickets: number | null; away_overs: number | null; winner_team_id: string | null; winner_team: string | null; result_text: string | null };
+export type TournamentStanding = { team_id: string; team_name: string; played: number; wins: number; losses: number; points: number; runs_for: number; runs_against: number; nrr: number };
+export type TournamentPlayerStat = { player_id: string; name: string; role: string; photo: string | null; team_id: string | null; team_name: string | null; matches: number; runs: number; balls: number; wickets: number; runs_conceded: number; overs: number; catches: number; potm_count: number };
+export type TournamentSnapshot = { matches: TournamentMatch[]; standings: TournamentStanding[]; player_stats: TournamentPlayerStat[] };
 
 export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
 export async function getAuctionSnapshot(explicitAuctionId = ""): Promise<AuctionSnapshot> {
@@ -110,4 +114,9 @@ export async function getAuctionSnapshot(explicitAuctionId = ""): Promise<Auctio
   return auctionId
     ? request("/api/auction/view", { method: "POST", body: JSON.stringify({ auctionId }) }) as Promise<AuctionSnapshot>
     : request("/api/auction") as Promise<AuctionSnapshot>;
+}
+
+export async function getTournamentSnapshot(): Promise<TournamentSnapshot> {
+  if (!auctionClient) return { matches: [], standings: [], player_stats: [] };
+  return request("/api/tournament") as Promise<TournamentSnapshot>;
 }

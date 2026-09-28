@@ -38,21 +38,6 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
-
-      - name: Detect API changes
-        id: changes
-        shell: bash
-        run: |
-          api_changed=true
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            api_changed=false
-            if git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep -Eq '^(server/|Dockerfile\.auction$|deploy/docker-compose\.yml$|deploy/migrations/|package\.json$|package-lock\.json$)'; then
-              api_changed=true
-            fi
-          fi
-          echo "api_changed=$api_changed" >> "$GITHUB_OUTPUT"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -159,7 +144,6 @@ jobs:
           grep -q 'root' /tmp/phfppl-home.html
 
       - name: Deploy auction API through Systems Manager
-        if: steps.changes.outputs.api_changed == 'true'
         env:
           DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
           EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
@@ -223,7 +207,6 @@ jobs:
           test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
 
       - name: Sync live auction players and 30 CR purse
-        if: steps.changes.outputs.api_changed == 'true'
         env:
           EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
         run: |

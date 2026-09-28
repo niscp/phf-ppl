@@ -6,15 +6,10 @@ import jwt from "jsonwebtoken";
 import { runAction, saveActiveState } from "./actions.mjs";
 import { runInstanceAction } from "./instance-actions.mjs";
 import { normalizeAuctionState } from "./auction-units.mjs";
+import { tournamentSnapshot, recordTournamentMatch } from "./tournament.mjs";
 
 function originsFromEnv() {
   return (process.env.ALLOWED_ORIGINS || "http://localhost:4173,http://localhost:5173").split(",").map((v) => v.trim()).filter(Boolean);
-}
-
-export function canViewAuctionInstance(selected) {
-  if (!selected) return false;
-  if (!selected.archived) return true;
-  return selected.state_data?.config?.status === "complete";
 }
 
 export function createApp(pool, broadcast = () => {}, queueSync = async () => {}) {
@@ -40,13 +35,18 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
     } catch (error) { next(error); }
   });
 
+  app.get("/api/tournament", async (_req, res, next) => {
+    try { res.set("Cache-Control", "no-store").json(await tournamentSnapshot(pool)); }
+    catch (error) { next(error); }
+  });
+
   app.post("/api/auction/view", async (req, res, next) => {
     try {
       const auctionId = String(req.body?.auctionId || "").trim();
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(auctionId)) return res.status(400).json({ error: "Invalid auction ID" });
       const { rows } = await pool.query("select id,name,kind,active,archived,state_data from auction_instances where id=$1", [auctionId]);
       const selected = rows[0];
-      if (!canViewAuctionInstance(selected)) return res.status(404).json({ error: "Auction not found" });
+      if (!selected || selected.archived) return res.status(404).json({ error: "Auction not found" });
       if (selected.active) {
         const [config, teams, players, events] = await Promise.all([
           pool.query("select status,current_player_id,minimum_increment::float8 minimum_increment,increment_threshold::float8 increment_threshold,increment_above_threshold::float8 increment_above_threshold,default_base_price::float8 default_base_price,min_squad_size,max_squad_size,money_label from auction_config where id=1"),
@@ -140,7 +140,11 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
         : true;
       let data;
       let syncAuctionId = auctionId;
-      if (auctionId && !active) {
+      if (String(req.body?.name || "") === "tournament_record_match") {
+        if (auctionId && !active) throw new Error("Tournament results can only be recorded on the active official ledger");
+        data = await recordTournamentMatch(db, Number(req.user.sub), req.body?.args || {});
+        syncAuctionId = null;
+      } else if (auctionId && !active) {
         data = await runInstanceAction(db, Number(req.user.sub), auctionId, String(req.body?.name || ""), req.body?.args || {});
       } else {
         data = await runAction(db, Number(req.user.sub), String(req.body?.name || ""), req.body?.args || {});

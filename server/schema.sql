@@ -94,6 +94,61 @@ create table if not exists auction_audit (
   created_at timestamptz not null default now()
 );
 
+-- Tournament ledger. Match results and scorecards are deliberately separate from
+-- auction state so corrections never rewrite the historical auction record.
+create table if not exists tournament_matches (
+  id bigserial primary key,
+  match_number integer not null unique,
+  match_date date not null,
+  match_time text not null,
+  venue text not null default 'Melbourne Cricket Ground',
+  home_team_id uuid not null references auction_teams(id),
+  away_team_id uuid not null references auction_teams(id),
+  status text not null default 'scheduled' check (status in ('scheduled','completed')),
+  home_runs integer,
+  home_wickets integer,
+  home_overs numeric(6,2),
+  away_runs integer,
+  away_wickets integer,
+  away_overs numeric(6,2),
+  winner_team_id uuid references auction_teams(id),
+  result_text text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (home_team_id <> away_team_id)
+);
+
+create table if not exists tournament_player_stats (
+  player_id text primary key references auction_players(id) on delete cascade,
+  matches integer not null default 0,
+  runs integer not null default 0,
+  balls integer not null default 0,
+  wickets integer not null default 0,
+  runs_conceded integer not null default 0,
+  overs numeric(8,2) not null default 0,
+  catches integer not null default 0,
+  potm_count integer not null default 0,
+  updated_at timestamptz not null default now()
+);
+
+insert into tournament_matches(match_number,match_date,match_time,home_team_id,away_team_id) values
+ (1,'2026-11-21','7:15 AM','44444444-4444-4444-8444-444444444444','33333333-3333-4333-8333-333333333333'),
+ (2,'2026-11-21','10:30 AM','11111111-1111-4111-8111-111111111111','22222222-2222-4222-8222-222222222222'),
+ (3,'2026-11-21','2:00 PM','55555555-5555-4555-8555-555555555555','66666666-6666-4666-8666-666666666666'),
+ (4,'2026-11-22','7:15 AM','44444444-4444-4444-8444-444444444444','22222222-2222-4222-8222-222222222222'),
+ (5,'2026-11-22','10:30 AM','33333333-3333-4333-8333-333333333333','66666666-6666-4666-8666-666666666666'),
+ (6,'2026-11-22','2:00 PM','11111111-1111-4111-8111-111111111111','55555555-5555-4555-8555-555555555555'),
+ (7,'2026-11-27','7:15 AM','33333333-3333-4333-8333-333333333333','55555555-5555-4555-8555-555555555555'),
+ (8,'2026-11-27','10:30 AM','44444444-4444-4444-8444-444444444444','66666666-6666-4666-8666-666666666666'),
+ (9,'2026-11-27','2:00 PM','22222222-2222-4222-8222-222222222222','11111111-1111-4111-8111-111111111111'),
+ (10,'2026-11-28','7:15 AM','66666666-6666-4666-8666-666666666666','22222222-2222-4222-8222-222222222222'),
+ (11,'2026-11-28','10:30 AM','44444444-4444-4444-8444-444444444444','55555555-5555-4555-8555-555555555555'),
+ (12,'2026-11-28','2:00 PM','11111111-1111-4111-8111-111111111111','33333333-3333-4333-8333-333333333333'),
+ (13,'2026-12-05','7:15 AM','55555555-5555-4555-8555-555555555555','33333333-3333-4333-8333-333333333333'),
+ (14,'2026-12-05','10:30 AM','66666666-6666-4666-8666-666666666666','11111111-1111-4111-8111-111111111111'),
+ (15,'2026-12-05','2:00 PM','22222222-2222-4222-8222-222222222222','44444444-4444-4444-8444-444444444444')
+on conflict(match_number) do nothing;
+
 create table if not exists auction_sync_outbox (
   auction_id uuid primary key references auction_instances(id) on delete cascade,
   payload jsonb not null,

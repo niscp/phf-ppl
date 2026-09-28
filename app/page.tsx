@@ -2,8 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { announcedTeams } from "./season5-teams";
-import { officialSeasonFiveAuctionId } from "./season5-auction";
-import { auctionClient, getAuctionSnapshot, preAuctionSnapshot, type AuctionSnapshot } from "./auction-client";
+import { auctionClient, getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionSnapshot, type TournamentSnapshot } from "./auction-client";
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
 const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
@@ -89,12 +88,13 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [auction, setAuction] = useState<AuctionSnapshot>(preAuctionSnapshot);
   const [auctionOnline, setAuctionOnline] = useState(false);
+  const [tournament, setTournament] = useState<TournamentSnapshot>({ matches: [], standings: [], player_stats: [] });
 
   useEffect(() => {
     let active = true;
     const refresh = async () => {
       try {
-        const next = await getAuctionSnapshot(officialSeasonFiveAuctionId);
+        const next = await getAuctionSnapshot();
         if (active) { setAuction(next); setAuctionOnline(Boolean(next.config)); }
       } catch { if (active) setAuctionOnline(false); }
     };
@@ -105,14 +105,32 @@ export default function Home() {
     return () => { active = false; window.clearInterval(timer); if (client && channel) void client.removeChannel(channel); };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => { try { const next = await getTournamentSnapshot(); if (active) setTournament(next); } catch { /* The pre-tournament shell remains useful offline. */ } };
+    void refresh();
+    const timer = window.setInterval(refresh, 10000);
+    return () => { active = false; window.clearInterval(timer); };
+  }, []);
+
   const command = useMemo(() => {
     const currentState = auction.players.find((player) => player.id === auction.config?.current_player_id);
     const current = currentState ?? null;
     const sold = auction.players.filter((player) => player.status === "sold").length;
-    const allocated = auction.players.filter((player) => ["captain", "sold"].includes(player.status)).length;
-    const finished = auction.config?.status === "complete" || (auction.players.length > 0 && allocated === auction.players.length);
-    return { current, sold, finished, status: finished ? "complete" : auction.config?.status ?? "preparing", id: auction.auction?.id ?? "" };
+    return { current, sold, status: auction.config?.status ?? "preparing", id: auction.auction?.id ?? "" };
   }, [auction]);
+
+  const tournamentHQ = useMemo(() => {
+    const teams = auction.teams.length ? auction.teams : announcedTeams;
+    const players = auction.players.filter((player) => player.status === "sold" || player.status === "captain");
+    const topBuys = players.filter((player) => player.status === "sold").sort((a, b) => (b.sold_price ?? 0) - (a.sold_price ?? 0)).slice(0, 3);
+    return { teams, players, topBuys };
+  }, [auction]);
+
+  const resolveFixtureTeam = (label: string) => {
+    const index = Number(label.replace("Team ", "")) - 1;
+    return tournamentHQ.teams[index]?.name ?? label;
+  };
 
   return (
     <main>
@@ -172,6 +190,32 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="tournament-hq" id="tournament-hq" aria-label="Season 5 tournament HQ">
+        <div className="hq-heading">
+          <div className="section-intro"><p>Season 5 tournament HQ</p><h2>Know the squads.<br/><em>Pick your heroes.</em></h2></div>
+          <p>One home for the tournament: official squads, auction stories and the players who could define the season.</p>
+        </div>
+        <div className="hq-grid">
+          <article className="hq-feature hq-squads">
+            <div className="hq-feature-head"><span>01 / Squads</span><a href={`./teams.html${command.id ? `?auction=${command.id}` : ""}`}>Open team view ↗</a></div>
+            <div className="hq-team-list">
+              {tournamentHQ.teams.map((team) => {
+                const squad = tournamentHQ.players.filter((player) => player.team_id === team.id);
+                return <a href={`./teams.html?team=${team.id}${command.id ? `&auction=${command.id}` : ""}`} key={team.id}><span>{String(squad.length).padStart(2, "0")}</span><strong>{team.name}</strong><small>{squad.length ? `${squad.length} players ready` : "Squad announcement pending"}</small><i>↗</i></a>;
+              })}
+            </div>
+          </article>
+          <article className="hq-feature hq-buys">
+            <div className="hq-feature-head"><span>02 / Auction watch</span><a href={`./highlights.html${command.id ? `?auction=${command.id}` : ""}`}>See full ledger ↗</a></div>
+            <h3>The biggest<br/><em>buys so far.</em></h3>
+            <div className="hq-buy-list">
+              {tournamentHQ.topBuys.length ? tournamentHQ.topBuys.map((player, index) => <a href="./players.html" key={player.id}><span>0{index + 1}</span><strong>{player.name}</strong><small>{tournamentHQ.teams.find((team) => team.id === player.team_id)?.name ?? "Team"}</small><b>{player.sold_price} CR</b></a>) : <p>Auction results will appear here once the squads are formed.</p>}
+            </div>
+          </article>
+        </div>
+        <div className="hq-footer"><span>Live roster signal</span><strong>{tournamentHQ.players.length ? `${tournamentHQ.players.length} squad places confirmed` : "Player pool ready"}</strong><a href="./players.html">Browse every player ↗</a></div>
+      </section>
+
       <section className="dates-stage" id="dates">
         <div className="section-intro"><p>The 2026 tournament</p><h2>Six days.<br/><em>One champion.</em></h2></div>
         <div className="date-grid">
@@ -198,7 +242,7 @@ export default function Home() {
         <div className="fixture-board">
           {fixtures.map((day, dayIndex) => <article className="fixture-day" key={day.date}>
             <header><span>League day {dayIndex + 1}</span><strong>{day.date}</strong></header>
-            <div>{day.matches.map(([time, home, away]) => <div className="fixture-row" key={`${day.date}-${time}`}><time>{time}</time><b>{home}</b><i>vs</i><b>{away}</b></div>)}</div>
+            <div>{day.matches.map(([time, home, away]) => <div className="fixture-row" key={`${day.date}-${time}`}><time>{time}</time><b>{resolveFixtureTeam(home)}</b><i>vs</i><b>{resolveFixtureTeam(away)}</b></div>)}</div>
           </article>)}
         </div>
         <div className="finals-board">
@@ -206,6 +250,32 @@ export default function Home() {
           {finals.map((match) => <article key={match.title}><time>{match.time}</time><span>{match.title}</span><strong>{match.teams}</strong></article>)}
         </div>
         <p className="fixtures-footnote">Every match counts. Every point matters.</p>
+      </section>
+
+      <section className="league-centre" id="league-centre" aria-label="Live league centre">
+        <div className="league-centre-heading">
+          <div className="section-intro"><p>Live league centre</p><h2>The table<br/><em>starts here.</em></h2></div>
+          <div className="table-status"><i/>Pre-tournament table<strong>Updates after every result</strong></div>
+        </div>
+        <div className="league-centre-grid">
+          <article className="points-panel">
+            <div className="table-head"><span>Pos</span><span>Team</span><span>P</span><span>W</span><span>L</span><span>Pts</span><span>NRR</span></div>
+            {(tournament.standings.length ? tournament.standings : tournamentHQ.teams.map((team) => ({ team_id: team.id, team_name: team.name, played: 0, wins: 0, losses: 0, points: 0, nrr: 0 }))).map((row, index) => <div className="table-row" key={row.team_id}><b>{String(index + 1).padStart(2, "0")}</b><strong>{row.team_name}</strong><span>{row.played}</span><span>{row.wins}</span><span>{row.losses}</span><em>{row.points}</em><span>{row.played ? row.nrr.toFixed(2) : "—"}</span></div>)}
+            <p className="table-note">Every team plays five league matches. Points and net run rate update automatically after the administrator records a result.</p>
+          </article>
+          <article className="next-match-panel">
+            <div className="next-match-kicker"><span>Next on the calendar</span><b>21 NOV</b></div>
+            <h3>Opening<br/><em>day.</em></h3>
+            <div className="next-match-list">
+              {fixtures[0].matches.map(([time, home, away]) => <div key={time}><time>{time}</time><strong>{resolveFixtureTeam(home)}</strong><i>vs</i><strong>{resolveFixtureTeam(away)}</strong></div>)}
+            </div>
+            <a href="#fixtures">View full fixture list ↓</a>
+          </article>
+        </div>
+        <div className="leaderboard-strip">
+          <div className="leaderboard-title"><span>Player leaderboard</span><strong>{tournament.player_stats.length ? "The season's first movers." : "The race starts on match day."}</strong></div>
+          {tournament.player_stats.length ? <><div className="leaderboard-card"><span>Orange cap watch</span><strong>{[...tournament.player_stats].sort((a, b) => b.runs - a.runs)[0]?.name}</strong><b>{[...tournament.player_stats].sort((a, b) => b.runs - a.runs)[0]?.runs} runs</b></div><div className="leaderboard-card"><span>Purple cap watch</span><strong>{[...tournament.player_stats].sort((a, b) => b.wickets - a.wickets)[0]?.name}</strong><b>{[...tournament.player_stats].sort((a, b) => b.wickets - a.wickets)[0]?.wickets} wickets</b></div></> : <div className="leaderboard-empty">Player runs, wickets, catches and Player-of-the-Match awards will appear automatically after the first scorecard.</div>}
+        </div>
       </section>
 
       <section className="auction-stage" id="season-five">
@@ -288,7 +358,7 @@ export default function Home() {
       </section>
 
       <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
-      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={command.status === "complete" ? `./highlights.html?auction=${officialSeasonFiveAuctionId}` : `./auction.html?auction=${officialSeasonFiveAuctionId}`}><i/>{command.status === "complete" ? "Results" : "Live"}</a><a href={`./teams.html?auction=${officialSeasonFiveAuctionId}`}>Teams</a></nav>
+      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={command.status === "complete" ? "./highlights.html" : "./auction.html"}><i/>{command.status === "complete" ? "Results" : "Live"}</a><a href="./teams.html">Teams</a></nav>
     </main>
   );
 }
