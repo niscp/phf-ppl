@@ -1,0 +1,250 @@
+name: Deploy PHFPL website to EC2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'public/**'
+      - 'src/**'
+      - 'server/**'
+      - 'Dockerfile.auction'
+      - 'deploy/docker-compose.yml'
+      - 'deploy/migrations/**'
+      - '*.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.pages.config.ts'
+      - '.github/workflows/ec2-deploy.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: phfppl-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build, validate and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://phfppl.dwemory.com
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production website
+        run: npm run build:pages
+        env:
+          VITE_PUBLIC_BASE: /
+          VITE_AUCTION_API_URL: https://phfppl.dwemory.com
+
+      - name: Validate build output
+        run: |
+          test -s gh-pages/index.html
+          test -s gh-pages/players.html
+          test -s gh-pages/teams.html
+          test -s gh-pages/auction.html
+          test -s gh-pages/highlights.html
+
+      - name: Assume AWS deployment role through OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: phfppl-${{ github.run_id }}
+
+      - name: Package and upload immutable release
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+        run: |
+          tar -C gh-pages -czf "/tmp/phfppl-${GITHUB_SHA}.tgz" .
+          aws s3 cp "/tmp/phfppl-${GITHUB_SHA}.tgz" \
+            "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" \
+            --only-show-errors
+          tar -czf "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
+            package.json package-lock.json Dockerfile.auction server deploy/docker-compose.yml \
+            deploy/migrations/20260926-replace-duplicate-shravan-with-harshank.sql \
+            deploy/migrations/20260927-replace-sunil-with-vinay.sql
+          aws s3 cp "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
+            "s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz" \
+            --only-show-errors
+
+      - name: Deploy through Systems Manager
+        id: ssm
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          artifact="s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz"
+          download_url="$(aws s3 presign "$artifact" --expires-in 900)"
+
+          jq -n \
+            --arg sha "$GITHUB_SHA" \
+            --arg url "$download_url" \
+            '{commands:[
+              "set -eu",
+              ("release_sha=" + ($sha|@sh)),
+              ("download_url=" + ($url|@sh)),
+              "archive=/tmp/phfppl-${release_sha}.tgz",
+              "releases=/var/www/phfppl-releases",
+              "release=${releases}/${release_sha}",
+              "live=/var/www/phfppl",
+              "next=/var/www/.phfppl-next",
+              "previous=",
+              "mkdir -p \"$release\"",
+              "curl -fsSL \"$download_url\" -o \"$archive\"",
+              "tar -xzf \"$archive\" -C \"$release\"",
+              "test -s \"$release/index.html\"",
+              "chown -R www-data:www-data \"$release\"",
+              "if test -L \"$live\"; then previous=$(readlink -f \"$live\"); elif test -d \"$live\"; then previous=${releases}/legacy-$(date +%Y%m%d%H%M%S); mv \"$live\" \"$previous\"; fi",
+              "ln -sfn \"$release\" \"$next\"",
+              "mv -Tf \"$next\" \"$live\"",
+              "if ! curl -kfsS --retry 5 --retry-delay 2 https://phfppl.dwemory.com/ >/dev/null; then rm -f \"$live\"; test -z \"$previous\" || ln -s \"$previous\" \"$live\"; echo Health-check-failed-previous-release-restored >&2; exit 1; fi",
+              "rm -f \"$archive\"",
+              "find \"$releases\" -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf -- {} +"
+            ]}' > /tmp/ssm-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "PHFPL ${GITHUB_SHA}" \
+            --parameters file:///tmp/ssm-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          echo "command_id=$command_id" >> "$GITHUB_OUTPUT"
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result"
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
+
+      - name: Verify public website
+        run: |
+          curl -fsS --retry 8 --retry-delay 3 https://phfppl.dwemory.com/ > /tmp/phfppl-home.html
+          grep -q 'root' /tmp/phfppl-home.html
+
+      - name: Deploy auction API through Systems Manager
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          artifact="s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz"
+          download_url="$(aws s3 presign "$artifact" --expires-in 900)"
+
+          jq -n \
+            --arg sha "$GITHUB_SHA" \
+            --arg url "$download_url" \
+            '{commands:[
+              "set -eu",
+              ("release_sha=" + ($sha|@sh)),
+              ("download_url=" + ($url|@sh)),
+              "api_id=$(docker ps --filter label=com.docker.compose.service=api --format {{.ID}} | head -n 1)",
+              "test -n \"$api_id\"",
+              "project=$(docker inspect \"$api_id\" --format \"{{index .Config.Labels \\\"com.docker.compose.project\\\"}}\")",
+              "old_workdir=$(docker inspect \"$api_id\" --format \"{{index .Config.Labels \\\"com.docker.compose.project.working_dir\\\"}}\")",
+              "old_config=$(docker inspect \"$api_id\" --format \"{{index .Config.Labels \\\"com.docker.compose.project.config_files\\\"}}\" | cut -d, -f1)",
+              "test -n \"$project\" && test -d \"$old_workdir\" && test -f \"$old_config\" && test -f \"$old_workdir/.env\"",
+              "old_image=$(docker inspect \"$api_id\" --format \"{{.Image}}\")",
+              "rollback_tag=${project}-api:rollback-${release_sha}",
+              "docker tag \"$old_image\" \"$rollback_tag\"",
+              "archive=/tmp/phfppl-api-${release_sha}.tgz",
+              "releases=/opt/phfppl-auction-releases",
+              "release=${releases}/${release_sha}",
+              "mkdir -p \"$release\"",
+              "curl -fsSL \"$download_url\" -o \"$archive\"",
+              "tar -xzf \"$archive\" -C \"$release\"",
+              "db_id=$(docker ps --filter label=com.docker.compose.service=postgres --format {{.ID}} | head -n 1)",
+              "test -n \"$db_id\"",
+              "mkdir -p \"$old_workdir/backups\"",
+              "docker exec \"$db_id\" pg_dump -U phf_auction -d phf_auction -Fc > \"$old_workdir/backups/pre-harshank-${release_sha}.dump\"",
+              "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20260926-replace-duplicate-shravan-with-harshank.sql\"",
+              "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20260927-replace-sunil-with-vinay.sql\"",
+              "cp \"$release/deploy/docker-compose.yml\" \"$old_config\"",
+              "docker build -f \"$release/Dockerfile.auction\" -t \"${project}-api:latest\" \"$release\"",
+              "docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d --no-deps --no-build --force-recreate api",
+              "docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d backup",
+              "if ! curl -fsS --retry-all-errors --retry 20 --retry-delay 2 http://127.0.0.1:8280/health >/dev/null; then failed_api=$(docker ps -aq --filter label=com.docker.compose.service=api | head -n 1); test -z \"$failed_api\" || docker logs --tail 200 \"$failed_api\" >&2 || true; docker tag \"$rollback_tag\" \"${project}-api:latest\"; docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d --no-deps --no-build --force-recreate api; exit 1; fi",
+              "docker image rm \"$rollback_tag\" >/dev/null 2>&1 || true",
+              "rm -f \"$archive\"",
+              "find \"$releases\" -mindepth 1 -maxdepth 1 -type d -mtime +14 -exec rm -rf -- {} +"
+            ]}' > /tmp/ssm-api-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "PHFPL API ${GITHUB_SHA}" \
+            --parameters file:///tmp/ssm-api-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result"
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
+
+      - name: Sync live auction players and 30 CR purse
+        env:
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+        run: |
+          sql_payload="$(cat deploy/migrations/20260926-add-season5-players.sql deploy/migrations/20260926-set-team-purse-30.sql | base64 -w 0)"
+
+          jq -n \
+            --arg sql "$sql_payload" \
+            '{commands:[
+              "set -eu",
+              ("printf %s " + ($sql|@sh) + " | base64 -d > /tmp/phfppl-add-players.sql"),
+              "postgres_id=$(docker ps --filter label=com.docker.compose.service=postgres --format {{.ID}} | head -n 1)",
+              "test -n \"$postgres_id\"",
+              "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < /tmp/phfppl-add-players.sql",
+              "docker exec -i \"$postgres_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction -Atc \"select count(*) from auction_players where substring(id from 8)::integer between 87 and 91\"",
+              "rm -f /tmp/phfppl-add-players.sql"
+            ]}' > /tmp/ssm-player-parameters.json
+
+          command_id="$(aws ssm send-command \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "Sync PHFPL Season 5 players" \
+            --parameters file:///tmp/ssm-player-parameters.json \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          aws ssm wait command-executed \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID" || true
+          result="$(aws ssm get-command-invocation \
+            --command-id "$command_id" \
+            --instance-id "$EC2_INSTANCE_ID")"
+          printf '%s\n' "$result"
+          test "$(printf '%s' "$result" | jq -r '.Status')" = "Success"
+
+      - name: Remove deployment artifact
+        if: always()
+        env:
+          DEPLOY_BUCKET: ${{ vars.DEPLOY_BUCKET }}
+        run: |
+          aws s3 rm "s3://${DEPLOY_BUCKET}/releases/${GITHUB_SHA}.tgz" --only-show-errors || true
+          aws s3 rm "s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz" --only-show-errors || true

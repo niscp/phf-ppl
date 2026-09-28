@@ -1,6 +1,7 @@
 import { announcedCaptains, announcedTeams } from "./season5-teams";
 
-const apiUrl = (import.meta.env.VITE_AUCTION_API_URL || "").replace(/\/$/, "");
+const apiUrl = (import.meta.env.VITE_AUCTION_API_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "")).replace(/\/$/, "");
 const tokenKey = "phf-auction-token";
 
 export type AuctionSession = { access_token: string; user: { id: string; email: string } };
@@ -44,12 +45,12 @@ export const auctionClient = apiUrl ? {
       authListeners.forEach((listener) => listener("SIGNED_OUT", null)); return { error: null };
     },
   },
-  async rpc(name: string, args: Record<string, unknown> = {}) {
+  async rpc(name: string, args: Record<string, unknown> = {}, auctionId?: string) {
     try {
       if (name === "is_auction_admin") {
         const body = await request("/api/auth/me"); return { data: body.admin === true, error: null };
       }
-      const body = await request("/api/admin/action", { method: "POST", body: JSON.stringify({ name, args }) });
+      const body = await request("/api/admin/action", { method: "POST", body: JSON.stringify({ name, args, ...(auctionId ? { auctionId } : {}) }) });
       return { data: body.data, error: null };
     } catch (error) { return { data: null, error: error as Error }; }
   },
@@ -59,17 +60,37 @@ export const auctionClient = apiUrl ? {
   },
   channel(_name?: string) {
     let callback: (() => void) | null = null;
-    return {
+    let socket: WebSocket | undefined;
+    let retryTimer: number | undefined;
+    let stopped = false;
+    const channel = {
+      socket,
       on(_event: string, _filter: unknown, listener: () => void) { callback = listener; return this; },
       subscribe() {
         const wsUrl = apiUrl.replace(/^http/, "ws");
-        const socket = new WebSocket(`${wsUrl}/ws`);
-        socket.onmessage = () => callback?.();
-        return { socket };
+        const connect = () => {
+          if (stopped) return;
+          socket = new WebSocket(`${wsUrl}/ws`);
+          channel.socket = socket;
+          socket.onmessage = () => callback?.();
+          socket.onclose = () => {
+            if (!stopped) retryTimer = window.setTimeout(connect, 2000);
+          };
+        };
+        connect();
+        return channel;
+      },
+      close() {
+        stopped = true;
+        if (retryTimer !== undefined) window.clearTimeout(retryTimer);
+        socket?.close();
       },
     };
+    return channel;
   },
-  async removeChannel(channel: { socket?: WebSocket }) { channel.socket?.close(); },
+  async removeChannel(channel: { close?: () => void; socket?: WebSocket }) {
+    if (channel.close) channel.close(); else channel.socket?.close();
+  },
 } : null;
 
 export type AuctionStatus = "preparing" | "live" | "paused" | "complete";
@@ -80,13 +101,22 @@ export type AuctionTeam = { id: string; name: string; logo_url: string | null; p
 export type AuctionPlayer = { id: string; name: string; role: string; photo: string | null; status: PlayerStatus; team_id: string | null; sold_price: number | null; current_bid: number | null; current_bid_team_id: string | null; base_price: number | null };
 export type AuctionEvent = { id: number; event_type: string; player_id: string; team_id: string | null; amount: number | null; created_at: string };
 export type AuctionSnapshot = { auction?: { id: string; name: string; kind: "official" | "demo" } | null; config: AuctionConfig | null; teams: AuctionTeam[]; players: AuctionPlayer[]; events: AuctionEvent[] };
+export type TournamentMatch = { id: number; match_number: number; match_date: string; match_time: string; venue: string; status: "scheduled" | "completed"; home_team_id: string; away_team_id: string; home_team: string; away_team: string; home_runs: number | null; home_wickets: number | null; home_overs: number | null; away_runs: number | null; away_wickets: number | null; away_overs: number | null; winner_team_id: string | null; winner_team: string | null; result_text: string | null };
+export type TournamentStanding = { team_id: string; team_name: string; played: number; wins: number; losses: number; points: number; runs_for: number; runs_against: number; nrr: number };
+export type TournamentPlayerStat = { player_id: string; name: string; role: string; photo: string | null; team_id: string | null; team_name: string | null; matches: number; runs: number; balls: number; wickets: number; runs_conceded: number; overs: number; catches: number; potm_count: number };
+export type TournamentSnapshot = { matches: TournamentMatch[]; standings: TournamentStanding[]; player_stats: TournamentPlayerStat[] };
 
 export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
-export async function getAuctionSnapshot(): Promise<AuctionSnapshot> {
+export async function getAuctionSnapshot(explicitAuctionId = ""): Promise<AuctionSnapshot> {
   if (!auctionClient) return preAuctionSnapshot;
   const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
-  const auctionId = params?.get("auction") || params?.get("id");
+  const auctionId = explicitAuctionId || params?.get("auction") || params?.get("id");
   return auctionId
     ? request("/api/auction/view", { method: "POST", body: JSON.stringify({ auctionId }) }) as Promise<AuctionSnapshot>
     : request("/api/auction") as Promise<AuctionSnapshot>;
+}
+
+export async function getTournamentSnapshot(): Promise<TournamentSnapshot> {
+  if (!auctionClient) return { matches: [], standings: [], player_stats: [] };
+  return request("/api/tournament") as Promise<TournamentSnapshot>;
 }

@@ -1,0 +1,98 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Keyless GitHub Actions deployment role and artifact bucket for PHFPL.
+
+Parameters:
+  GitHubRepository:
+    Type: String
+    Default: niscp/phf-ppl
+  Ec2InstanceId:
+    Type: AWS::EC2::Instance::Id
+  CreateGitHubOidcProvider:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: Set false when token.actions.githubusercontent.com already exists in IAM.
+
+Conditions:
+  ShouldCreateProvider: !Equals [!Ref CreateGitHubOidcProvider, 'true']
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: ShouldCreateProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList: [sts.amazonaws.com]
+      ThumbprintList: [6938fd4d98bab03faadb97b34396831e3780aea1]
+
+  DeploymentBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: RemoveDeploymentArtifacts
+            Status: Enabled
+            ExpirationInDays: 7
+      VersioningConfiguration:
+        Status: Enabled
+
+  GitHubDeploymentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: phfppl-github-deploy
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                # GitHub's current OIDC subject includes stable owner/repository IDs.
+                token.actions.githubusercontent.com:sub: repo:niscp@3517389/phf-ppl@1336970131:*
+      Policies:
+        - PolicyName: phfppl-deploy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: DeploymentArtifact
+                Effect: Allow
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject]
+                Resource: !Sub ${DeploymentBucket.Arn}/releases/*
+              - Sid: RunDeploymentOnPhfInstance
+                Effect: Allow
+                Action: ssm:SendCommand
+                Resource:
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}::document/AWS-RunShellScript
+                  - !Sub arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:instance/${Ec2InstanceId}
+              - Sid: ReadDeploymentCommand
+                Effect: Allow
+                Action:
+                  - ssm:GetCommandInvocation
+                  - ssm:ListCommandInvocations
+                Resource: '*'
+
+Outputs:
+  AwsDeployRoleArn:
+    Value: !GetAtt GitHubDeploymentRole.Arn
+  DeployBucket:
+    Value: !Ref DeploymentBucket
+  AwsRegion:
+    Value: !Ref AWS::Region
+  Ec2InstanceId:
+    Value: !Ref Ec2InstanceId

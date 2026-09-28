@@ -3,15 +3,20 @@ import cors from "cors";
 import helmet from "helmet";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { runAction } from "./actions.mjs";
+import { runAction, saveActiveState } from "./actions.mjs";
+import { runInstanceAction } from "./instance-actions.mjs";
+import { normalizeAuctionState } from "./auction-units.mjs";
+import { tournamentSnapshot, recordTournamentMatch } from "./tournament.mjs";
 
 function originsFromEnv() {
   return (process.env.ALLOWED_ORIGINS || "http://localhost:4173,http://localhost:5173").split(",").map((v) => v.trim()).filter(Boolean);
 }
 
-export function createApp(pool, broadcast = () => {}) {
+export function createApp(pool, broadcast = () => {}, queueSync = async () => {}) {
   const app = express();
+  const loginAttempts = new Map();
   app.disable("x-powered-by");
+  app.set("trust proxy", 1);
   app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(cors({ origin(origin, done) { const allowed = originsFromEnv(); done(null, !origin || allowed.includes(origin)); } }));
   app.use(express.json({ limit: "1mb" }));
@@ -26,8 +31,13 @@ export function createApp(pool, broadcast = () => {}) {
         pool.query("select id::float8 id,event_type,player_id,team_id,amount::float8 amount,created_at from auction_events order by id desc limit 12"),
         pool.query("select id,name,kind from auction_instances where active=true"),
       ]);
-      res.set("Cache-Control", "no-store").json({ auction: auction.rows[0] || null, config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows });
+      res.set("Cache-Control", "no-store").json(normalizeAuctionState({ auction: auction.rows[0] || null, config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows }));
     } catch (error) { next(error); }
+  });
+
+  app.get("/api/tournament", async (_req, res, next) => {
+    try { res.set("Cache-Control", "no-store").json(await tournamentSnapshot(pool)); }
+    catch (error) { next(error); }
   });
 
   app.post("/api/auction/view", async (req, res, next) => {
@@ -44,21 +54,30 @@ export function createApp(pool, broadcast = () => {}) {
           pool.query("select id,name,role,photo,status,team_id,sold_price::float8 sold_price,current_bid::float8 current_bid,current_bid_team_id,base_price::float8 base_price from auction_players order by name"),
           pool.query("select id::float8 id,event_type,player_id,team_id,amount::float8 amount,created_at from auction_events order by id desc limit 12"),
         ]);
-        return res.set("Cache-Control", "no-store").json({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows });
+        return res.set("Cache-Control", "no-store").json(normalizeAuctionState({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows }));
       }
       const state = selected.state_data || {};
       const events = Array.isArray(state.events) ? [...state.events].reverse().slice(0, 12) : [];
-      res.set("Cache-Control", "no-store").json({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: state.config || null, teams: state.teams || [], players: state.players || [], events });
+      res.set("Cache-Control", "no-store").json(normalizeAuctionState({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: state.config || null, teams: state.teams || [], players: state.players || [], events }));
     } catch (error) { next(error); }
   });
 
   app.post("/api/auth/login", async (req, res, next) => {
     try {
+      const key = req.ip || "unknown";
+      const now = Date.now();
+      const attempt = loginAttempts.get(key);
+      if (attempt?.blockedUntil > now) return res.status(429).json({ error: "Too many sign-in attempts. Try again in 15 minutes." });
       const username = String(req.body?.username || req.body?.email || "").trim().toLowerCase();
       const { rows } = await pool.query("select id,email,password_hash from auction_admins where lower(email)=$1 and active=true", [username]);
       const admin = rows[0];
-      if (!admin || !(await bcrypt.compare(String(req.body?.password || ""), admin.password_hash))) return res.status(401).json({ error: "Invalid username or password" });
-      const token = jwt.sign({ sub: String(admin.id), email: admin.email, role: "auction_admin" }, process.env.JWT_SECRET, { expiresIn: "12h", issuer: "phf-auction" });
+      if (!admin || !(await bcrypt.compare(String(req.body?.password || ""), admin.password_hash))) {
+        const count = attempt?.firstAttempt > now - 15 * 60_000 ? attempt.count + 1 : 1;
+        loginAttempts.set(key, { count, firstAttempt: count === 1 ? now : attempt.firstAttempt, blockedUntil: count >= 8 ? now + 15 * 60_000 : 0 });
+        return res.status(401).json({ error: "Invalid username or password" });
+      }
+      loginAttempts.delete(key);
+      const token = jwt.sign({ sub: String(admin.id), email: admin.email, role: "auction_admin" }, process.env.JWT_SECRET, { expiresIn: "18h", issuer: "phf-auction" });
       res.json({ token, user: { id: String(admin.id), email: admin.email } });
     } catch (error) { next(error); }
   });
@@ -71,6 +90,37 @@ export function createApp(pool, broadcast = () => {}) {
     } catch { res.status(401).json({ error: "Your session has expired. Sign in again." }); }
   }
   app.get("/api/auth/me", authenticate, (req, res) => res.json({ user: { id: req.user.sub, email: req.user.email }, admin: req.user.role === "auction_admin" }));
+  app.get("/api/sync/status", async (_req, res, next) => {
+    try {
+      const [pending, status] = await Promise.all([
+        pool.query("select count(*)::int count from auction_sync_outbox"),
+        pool.query("select last_success_at,last_error,updated_at from auction_sync_status where id=1"),
+      ]);
+      res.set("Cache-Control", "no-store").json({
+        localHub: Boolean(process.env.CLOUD_SYNC_URL),
+        pending: pending.rows[0]?.count || 0,
+        lastSuccessAt: status.rows[0]?.last_success_at || null,
+        lastError: status.rows[0]?.last_error || null,
+      });
+    } catch (error) { next(error); }
+  });
+  app.post("/api/sync/auction", async (req, res, next) => {
+    try {
+      if (!process.env.SYNC_SECRET || req.headers["x-auction-sync-secret"] !== process.env.SYNC_SECRET) {
+        return res.status(401).json({ error: "Auction synchronization is not authorized" });
+      }
+      const payload = req.body?.payload;
+      const auction = payload?.auction;
+      if (!auction?.id || !payload?.state_data) return res.status(400).json({ error: "Invalid synchronization payload" });
+      await pool.query(`insert into auction_instances(id,name,kind,state_data,active,archived,updated_at)
+        values($1,$2,$3,$4,false,false,now())
+        on conflict(id) do update set name=excluded.name,kind=excluded.kind,state_data=excluded.state_data,
+          active=false,archived=false,updated_at=now()`,
+        [auction.id, auction.name, auction.kind === "demo" ? "demo" : "official", payload.state_data]);
+      broadcast({ type: "auction_updated", auctionId: auction.id });
+      res.json({ ok: true });
+    } catch (error) { next(error); }
+  });
   app.get("/api/admin/auctions", authenticate, async (_req, res, next) => {
     try {
       const { rows } = await pool.query(`select i.id,i.name,i.kind,i.active,i.archived,i.created_at,i.updated_at,
@@ -84,8 +134,25 @@ export function createApp(pool, broadcast = () => {}) {
     const db = await pool.connect();
     try {
       await db.query("begin");
-      const data = await runAction(db, Number(req.user.sub), String(req.body?.name || ""), req.body?.args || {});
-      await db.query("commit"); broadcast({ type: "auction_updated" }); res.json({ data });
+      const auctionId = String(req.body?.auctionId || "").trim();
+      const active = auctionId
+        ? (await db.query("select active from auction_instances where id=$1", [auctionId])).rows[0]?.active === true
+        : true;
+      let data;
+      let syncAuctionId = auctionId;
+      if (String(req.body?.name || "") === "tournament_record_match") {
+        if (auctionId && !active) throw new Error("Tournament results can only be recorded on the active official ledger");
+        data = await recordTournamentMatch(db, Number(req.user.sub), req.body?.args || {});
+        syncAuctionId = null;
+      } else if (auctionId && !active) {
+        data = await runInstanceAction(db, Number(req.user.sub), auctionId, String(req.body?.name || ""), req.body?.args || {});
+      } else {
+        data = await runAction(db, Number(req.user.sub), String(req.body?.name || ""), req.body?.args || {});
+        syncAuctionId = await saveActiveState(db) || auctionId;
+      }
+      await db.query("commit");
+      if (syncAuctionId) void queueSync(syncAuctionId).catch((error) => console.error("Could not queue cloud synchronization", error));
+      broadcast({ type: "auction_updated", auctionId: syncAuctionId || null }); res.json({ data });
     } catch (error) { await db.query("rollback"); next(error); }
     finally { db.release(); }
   });
