@@ -1,0 +1,13 @@
+@media(max-width:760px){
+  .auction-header{padding:0 16px}
+  .auction-header nav{max-width:72vw;overflow-x:auto;white-space:nowrap;gap:14px;scrollbar-width:none}
+  .auction-header nav::-webkit-scrollbar,.roster-header nav::-webkit-scrollbar,.highlights-header nav::-webkit-scrollbar{display:none}
+  .auction-header nav>*,.roster-header nav>*,.highlights-header nav>*{flex:none}
+  .roster-header nav{max-width:72vw;overflow-x:auto;white-space:nowrap;gap:14px;scrollbar-width:none}
+  .highlights-header nav{max-width:76vw;overflow-x:auto;white-space:nowrap;gap:14px;scrollbar-width:none}
+}
+@media(max-width:700px){
+  .mobile-dock{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .mobile-dock a{font-size:8px;white-space:nowrap}
+  .cinema-nav{max-height:calc(100dvh - 80px);overflow-y:auto}
+}

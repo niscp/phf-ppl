@@ -142,11 +142,14 @@ export default function Home() {
           <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
           <a href="./players.html">Players</a>
           <div className="cinema-nav-teams"><a href="./teams.html">Teams</a><div className="cinema-team-menu" aria-label="Season 5 teams">{announcedTeams.map((team) => <a key={team.id} href={`./teams.html?team=${team.id}`}>{team.name}</a>)}</div></div>
+          <a href="./auction.html">Auction board</a>
+          <a href="./bid-history.html">Bid history</a>
+          <a href="./highlights.html">Auction results</a>
           <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
           <a href="#sponsors" onClick={() => setMenuOpen(false)}>Sponsors</a>
           <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
           <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
-          <a className="gold-link" href={command.status === "complete" ? `./highlights.html${command.id ? `?auction=${command.id}` : ""}` : "./auction.html"}>{command.status === "complete" ? "Auction highlights ↗" : "Live auction ↗"}</a>
+          <a className="gold-link" href={`./auction.html${command.id ? `?auction=${command.id}` : ""}`}>Open auction ↗</a>
         </nav>
       </header>
 
@@ -358,7 +361,7 @@ export default function Home() {
       </section>
 
       <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
-      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={command.status === "complete" ? "./highlights.html" : "./auction.html"}><i/>{command.status === "complete" ? "Results" : "Live"}</a><a href="./teams.html">Teams</a></nav>
+      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={`./auction.html${command.id ? `?auction=${command.id}` : ""}`}>Auction</a><a href="./teams.html">Teams</a><a href="./bid-history.html">History</a><a href={`./highlights.html${command.id ? `?auction=${command.id}` : ""}`}>Results</a></nav>
     </main>
   );
 }

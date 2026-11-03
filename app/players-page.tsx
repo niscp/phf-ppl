@@ -74,7 +74,7 @@ export default function PlayersPage() {
   return <main className="roster-page">
     <header className="roster-header">
       <a className="roster-logo" href={homeUrl} aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
-      <nav aria-label="Roster navigation"><a href={homeUrl}>Home</a><a href={`${homeUrl}teams.html`}>Teams</a><span>Season 5 player pool</span></nav>
+      <nav aria-label="Roster navigation"><a href={homeUrl}>Home</a><a href={`${homeUrl}auction.html`}>Auction</a><a href={`${homeUrl}teams.html`}>Teams</a><a href={`${homeUrl}bid-history.html`}>Bid history</a><a href={`${homeUrl}highlights.html`}>Results</a><span>Players</span></nav>
     </header>
 
     <section className="roster-hero">
