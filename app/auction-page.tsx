@@ -158,7 +158,7 @@ function PublicAuction({ snapshot, loading, error }: { snapshot: AuctionSnapshot
 
   return <main className={`auction-page${presentation ? " auction-presentation" : ""}`}>
     <SoldCelebration snapshot={snapshot} />
-    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><a href={`${localLink("teams.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Teams</a><span>Season 5 auction</span></nav></header>
+    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><a href={`${localLink("teams.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Teams</a><a href={`${localLink("bid-history.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Bid history</a><span>Season 5 auction</span></nav></header>
     <section className="auction-hero">
       <div className="auction-hero-copy">
         <p className="auction-overline">PHF Premier League · {snapshot.auction?.name ?? "Season 5"}</p>

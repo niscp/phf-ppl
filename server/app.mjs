@@ -62,6 +62,37 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
     } catch (error) { next(error); }
   });
 
+  app.get("/api/auction/bid-history", async (req, res, next) => {
+    try {
+      const playerId = String(req.query.playerId || "").trim();
+      const auctionId = String(req.query.auctionId || "").trim();
+      if (!playerId) return res.status(400).json({ error: "Choose a player to view their bid history" });
+      let selected;
+      if (auctionId) {
+        if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(auctionId)) return res.status(400).json({ error: "Invalid auction ID" });
+        selected = (await pool.query("select id,name,kind,active,archived,state_data from auction_instances where id=$1 and archived=false", [auctionId])).rows[0];
+      } else {
+        selected = (await pool.query("select id,name,kind,active,archived,state_data from auction_instances where active=true limit 1")).rows[0];
+      }
+      if (!selected) return res.status(404).json({ error: "Auction not found" });
+      if (selected.active) {
+        const [config, teams, player, events] = await Promise.all([
+          pool.query("select money_label from auction_config where id=1"),
+          pool.query("select id,name from auction_teams order by name"),
+          pool.query("select id,name,role from auction_players where id=$1", [playerId]),
+          pool.query("select id::float8 id,event_type,player_id,team_id,amount::float8 amount,created_at from auction_events where player_id=$1 order by id", [playerId]),
+        ]);
+        if (!player.rows[0]) return res.status(404).json({ error: "Player not found in this auction" });
+        return res.set("Cache-Control", "no-store").json({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, player: player.rows[0], teams: teams.rows, money_label: config.rows[0]?.money_label ?? "CR", events: events.rows });
+      }
+      const data = selected.state_data || {};
+      const player = (data.players || []).find((item) => item.id === playerId);
+      if (!player) return res.status(404).json({ error: "Player not found in this auction" });
+      const events = (data.events || []).map((event, index) => ({ ...event, id: event.id ?? index + 1 })).filter((event) => event.player_id === playerId);
+      return res.set("Cache-Control", "no-store").json({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, player: { id: player.id, name: player.name, role: player.role }, teams: data.teams || [], money_label: data.config?.money_label ?? "CR", events });
+    } catch (error) { next(error); }
+  });
+
   app.post("/api/auth/login", async (req, res, next) => {
     try {
       const key = req.ip || "unknown";
