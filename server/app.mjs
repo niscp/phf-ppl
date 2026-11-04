@@ -276,22 +276,26 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
           select p.fan_id,count(*)::int match_entries,
             count(*) filter(where m.status='completed')::int completed_entries,
             count(*) filter(where m.status='completed' and p.winner_team_id=m.winner_team_id)::int points,
-            sum(1 + case when p.top_scorer_player_id is not null then 1 else 0 end + case when p.top_wicket_taker_player_id is not null then 1 else 0 end)::int prediction_votes
+            count(*) filter(where p.top_scorer_player_id is not null and p.top_wicket_taker_player_id is not null)::int complete_entries,
+            sum(2 + case when p.top_scorer_player_id is not null then 1 else 0 end
+              + case when p.top_wicket_taker_player_id is not null then 1 else 0 end
+              + case when p.top_scorer_player_id is not null and p.top_wicket_taker_player_id is not null then 1 else 0 end)::int engagement_score
           from fan_match_picks p join tournament_matches m on m.id=p.match_id group by p.fan_id
         ), public_fans as (
           select f.id,f.display_name,coalesce(p.points,0)::int points,
-            coalesce(p.prediction_votes,0)::int votes_cast,
+            coalesce(p.engagement_score,0)::int engagement_score,
             coalesce(p.match_entries,0)::int match_entries,
+            coalesce(p.complete_entries,0)::int complete_entries,
             case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent
           from fan_users f left join picks p on p.fan_id=f.id
           where f.active=true
         ), ranked as (
           select public_fans.*,
-            row_number() over(order by votes_cast desc,match_entries desc,points desc,display_name asc) engagement_rank,
-            row_number() over(order by points desc,accuracy_percent desc,votes_cast desc,display_name asc) points_rank
+            row_number() over(order by engagement_score desc,match_entries desc,complete_entries desc,points desc,display_name asc) engagement_rank,
+            row_number() over(order by points desc,accuracy_percent desc,engagement_score desc,display_name asc) points_rank
           from public_fans
         )
-        select id,display_name,points,votes_cast,match_entries,accuracy_percent
+        select id,display_name,points,engagement_score,match_entries,complete_entries,accuracy_percent
         from ranked where engagement_rank<=50 or points_rank<=50
         order by points_rank,engagement_rank`);
       res.set("Cache-Control", "no-store").json({ leaderboard: rows });
