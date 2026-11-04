@@ -6,6 +6,7 @@ import { getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type Auc
 import { announcedTeams } from "./season5-teams";
 import SiteHeader from "./site-header";
 import { seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
+import MatchRules from "./match-rules";
 
 type DirectoryPlayer = {
   id: string;
@@ -208,6 +209,8 @@ export default function MatchDetailsPage() {
       </section>
 
       {loadIssue && <p className="match-load-issue" role="status">{loadIssue}</p>}
+
+      <MatchRules variant="match" />
 
       <section className="match-analysis-section">
         <div className="match-section-title"><div><span>Pre-match analysis</span><h2>The numbers<br/><em>to watch.</em></h2></div><p>Built from {analysisSources}. It describes recorded player performance; it does not predict the result.</p></div>
