@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { announcedTeams } from "./season5-teams";
 import { auctionClient, getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionSnapshot, type TournamentSnapshot } from "./auction-client";
+import { seasonFiveFixtureDays, teamNameForSlot } from "./season5-fixtures";
 
 const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
 const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
@@ -10,18 +11,10 @@ const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cric
 const matchDays = [
   { day: "21", label: "League day 1" },
   { day: "22", label: "League day 2" },
-  { day: "27", label: "League day 3" },
-  { day: "28", label: "League day 4" },
+  { day: "28", label: "League day 3" },
+  { day: "29", label: "League day 4" },
   { day: "05", month: "Dec", label: "League day 5" },
   { day: "06", month: "Dec", label: "Championship day" },
-];
-
-const fixtures = [
-  { date: "21 Nov", matches: [["7:15 AM", "Team 1", "Team 6"], ["10:30 AM", "Team 2", "Team 5"], ["2:00 PM", "Team 3", "Team 4"]] },
-  { date: "22 Nov", matches: [["7:15 AM", "Team 1", "Team 5"], ["10:30 AM", "Team 6", "Team 4"], ["2:00 PM", "Team 2", "Team 3"]] },
-  { date: "27 Nov", matches: [["7:15 AM", "Team 6", "Team 2"], ["10:30 AM", "Team 1", "Team 4"], ["2:00 PM", "Team 5", "Team 3"]] },
-  { date: "28 Nov", matches: [["7:15 AM", "Team 4", "Team 2"], ["10:30 AM", "Team 1", "Team 3"], ["2:00 PM", "Team 5", "Team 6"]] },
-  { date: "05 Dec", matches: [["7:15 AM", "Team 3", "Team 6"], ["10:30 AM", "Team 4", "Team 5"], ["2:00 PM", "Team 1", "Team 2"]] },
 ];
 
 const finals = [
@@ -127,11 +120,6 @@ export default function Home() {
     return { teams, players, topBuys };
   }, [auction]);
 
-  const resolveFixtureTeam = (label: string) => {
-    const index = Number(label.replace("Team ", "")) - 1;
-    return tournamentHQ.teams[index]?.name ?? label;
-  };
-
   return (
     <main>
       <header className="cinema-header">
@@ -165,7 +153,7 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-fixture">
-          <span>Match days</span><b>21 · 22 · 27 · 28 Nov</b><small>5 · 6 December 2026 · Melbourne Cricket Ground</small>
+          <span>Match days</span><b>21 · 22 · 28 · 29 Nov</b><small>5 · 6 December 2026 · Melbourne Cricket Ground</small>
         </div>
         <div className="hero-edition"><span>Edition</span><b>05</b></div>
       </section>
@@ -236,16 +224,16 @@ export default function Home() {
       <section className="fixtures-stage" id="fixtures">
         <div className="fixtures-lead">
           <div className="section-intro"><p>Official Season 5 schedule</p><h2>Fifteen battles.<br/><em>One final.</em></h2></div>
-          <div className="fixtures-summary"><b>6</b><span>Teams</span><b>5</b><span>Games each</span><b>17</b><span>Total matches</span></div>
+          <div className="fixtures-summary"><b>6</b><span>Teams</span><b>5</b><span>Games each</span><b>15</b><span>League matches</span></div>
         </div>
         <div className="lottery-note">
-          <span>Live lottery · 27 September</span>
-          <p>Team numbers 1–6 will be drawn live on Auction Day. No choosing fixtures. No choosing opponents.</p>
+          <span>League format</span>
+          <p>Six teams play five round-robin matches each. The top two meet in the final; third and fourth play for bronze.</p>
         </div>
         <div className="fixture-board">
-          {fixtures.map((day, dayIndex) => <article className="fixture-day" key={day.date}>
+          {seasonFiveFixtureDays.map((day, dayIndex) => <article className="fixture-day" key={day.date}>
             <header><span>League day {dayIndex + 1}</span><strong>{day.date}</strong></header>
-            <div>{day.matches.map(([time, home, away]) => <div className="fixture-row" key={`${day.date}-${time}`}><time>{time}</time><b>{resolveFixtureTeam(home)}</b><i>vs</i><b>{resolveFixtureTeam(away)}</b></div>)}</div>
+            <div>{day.matches.map((match) => <a className="fixture-row" href={`./match.html?match=${match.match_number}`} key={match.match_number} aria-label={`Match ${match.match_number}: ${teamNameForSlot(match.home_slot, tournamentHQ.teams)} vs ${teamNameForSlot(match.away_slot, tournamentHQ.teams)}`}><time>{match.time}</time><b>{teamNameForSlot(match.home_slot, tournamentHQ.teams)}</b><i>vs</i><b>{teamNameForSlot(match.away_slot, tournamentHQ.teams)}</b><span className="fixture-details-link">Match details ↗</span></a>)}</div>
           </article>)}
         </div>
         <div className="finals-board">
@@ -270,7 +258,7 @@ export default function Home() {
             <div className="next-match-kicker"><span>Next on the calendar</span><b>21 NOV</b></div>
             <h3>Opening<br/><em>day.</em></h3>
             <div className="next-match-list">
-              {fixtures[0].matches.map(([time, home, away]) => <div key={time}><time>{time}</time><strong>{resolveFixtureTeam(home)}</strong><i>vs</i><strong>{resolveFixtureTeam(away)}</strong></div>)}
+              {seasonFiveFixtureDays[0].matches.map((match) => <a href={`./match.html?match=${match.match_number}`} key={match.match_number}><time>{match.time}</time><strong>{teamNameForSlot(match.home_slot, tournamentHQ.teams)}</strong><i>vs</i><strong>{teamNameForSlot(match.away_slot, tournamentHQ.teams)}</strong></a>)}
             </div>
             <a href="#fixtures">View full fixture list ↓</a>
           </article>

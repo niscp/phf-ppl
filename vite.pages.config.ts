@@ -20,6 +20,7 @@ export default defineConfig({
         teams: fileURLToPath(new URL("./teams.html", import.meta.url)),
         highlights: fileURLToPath(new URL("./highlights.html", import.meta.url)),
         bidHistory: fileURLToPath(new URL("./bid-history.html", import.meta.url)),
+        match: fileURLToPath(new URL("./match.html", import.meta.url)),
       },
     },
   },
