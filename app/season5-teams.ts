@@ -21,7 +21,7 @@ export const announcedTeams: AnnouncedTeam[] = [
   },
   {
     id: "33333333-3333-4333-8333-333333333333",
-    name: "Super PHF Kings",
+    name: "PHF Super Kings",
     logo_url: "/team-logos/super-phf-kings.jpg",
     purse: 30,
     spent: 0,

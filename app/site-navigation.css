@@ -75,3 +75,43 @@
 
 @media(max-width:950px){.phf-site-header{gap:16px}.phf-primary-nav{gap:12px}.phf-primary-nav>a{font-size:12px}.sponsor-banner-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.fixture-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.phf-site-header{min-height:66px;padding:10px 16px}.phf-site-menu-button{display:grid;gap:5px;place-content:center;width:42px;height:42px;border:1px solid rgba(255,255,255,.28);border-radius:11px;background:transparent}.phf-site-menu-button i{display:block;width:19px;height:2px;background:#f2cb52}.phf-primary-nav{display:none;position:absolute;top:100%;left:0;right:0;max-height:calc(100dvh - 76px);overflow:auto;padding:9px 18px 18px;background:#0b211c;border-top:1px solid rgba(255,255,255,.12);box-shadow:0 16px 25px rgba(0,0,0,.22)}.phf-primary-nav.is-open{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}.phf-primary-nav>a{padding:14px 2px;border-bottom:1px solid rgba(255,255,255,.1);font-size:14px}.phf-primary-nav>a.is-active:after{display:none}.phf-nav-action{padding-top:12px}.phf-site-header-overlay{position:absolute}.fixtures-hero{padding:48px 23px 34px}.fixtures-hero p{font-size:16px}.fixtures-content{padding:30px 16px 55px}.fixtures-filter-heading h2{font-size:25px}.fixture-cards{grid-template-columns:1fr}.fixture-card{padding:15px}.finals-day{grid-template-columns:1fr;padding:22px;gap:12px}.finals-day>div:last-child{grid-template-columns:1fr 1fr}.sponsor-banner-section{padding:35px 18px}.sponsor-banner-title{display:block}.sponsor-banner-title h2{margin-top:8px}.sponsor-banner-rail{display:flex;overflow:auto;scroll-snap-type:x mandatory;padding-bottom:8px}.sponsor-banner{flex:0 0 72%;scroll-snap-align:start}.phf-site-brand b{width:38px;height:38px}}
+
+/* Fixtures: a compact matchday programme, with crests and captains as the scan anchors. */
+.fixtures-page .fixtures-hero{display:flex;align-items:end;justify-content:space-between;gap:32px;padding:52px max(6vw,24px) 44px;background:#0c3027}
+.fixtures-page .fixtures-hero-copy>span{color:#f0ca55;font:700 12px var(--font-mono);letter-spacing:.11em;text-transform:uppercase}
+.fixtures-page .fixtures-hero h1{margin:12px 0 5px;font:600 clamp(58px,8vw,92px)/.82 var(--font-display);letter-spacing:.005em;text-transform:uppercase}
+.fixtures-page .fixtures-hero p{margin:15px 0 0;max-width:500px;font-size:17px}
+.fixtures-page .fixtures-hero-facts{display:flex;gap:0;align-items:stretch;border-left:1px solid rgba(255,255,255,.24)}
+.fixtures-page .fixtures-hero-facts>div{min-width:112px;padding:4px 20px;display:flex;flex-direction:column;justify-content:center;gap:3px;border-right:1px solid rgba(255,255,255,.24)}
+.fixtures-page .fixtures-hero-facts b{color:#f0ca55;font:600 31px/.95 var(--font-display)}
+.fixtures-page .fixtures-hero-facts span{color:rgba(255,255,255,.7);font-size:11px}
+.fixtures-page .fixtures-content{max-width:1280px;padding-top:35px}
+.fixtures-page .fixtures-filter-heading{margin-bottom:14px}
+.fixtures-page .fixtures-filter-heading>div>span{font:700 11px var(--font-mono);letter-spacing:.1em}
+.fixtures-page .fixtures-filter-heading h2{font:600 34px/.95 var(--font-display);letter-spacing:.01em;text-transform:uppercase}
+.fixtures-page .fixtures-filter{gap:8px;padding-bottom:13px}
+.fixtures-page .fixtures-filter button{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border-color:#d3d9d2;background:#fff;font-size:12px}
+.fixtures-page .fixtures-filter button img{width:25px;height:25px;object-fit:contain;border-radius:50%;background:#f0f1ed}
+.fixtures-page .fixtures-filter button.selected{border-color:#e4b72d;background:#f5df8a;color:#182a22}
+.fixtures-page .fixture-day{min-width:0;margin-top:24px;border:0;background:transparent}
+.fixtures-page .fixture-day header.fixture-day-heading{min-height:0;padding:0 0 8px;display:flex;flex-direction:row;align-items:baseline;justify-content:space-between;border:0;border-bottom:1px solid #cdd5cd;background:transparent}
+.fixtures-page .fixture-day-heading{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #cdd5cd}
+.fixtures-page .fixture-day-heading h3{margin:0;font:600 27px/.95 var(--font-display);letter-spacing:.015em;text-transform:uppercase}
+.fixtures-page .fixture-day-heading span{color:#64746b;font-size:11px;font-weight:700}
+.fixtures-page .fixture-cards{grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.fixtures-page .fixture-card{overflow:hidden;padding:0;border:1px solid #d8ded6;border-radius:12px;background:#fff;box-shadow:0 2px 7px rgba(17,40,31,.035)}
+.fixtures-page .fixture-card:hover{transform:translateY(-2px);border-color:#0c765e}
+.fixtures-page .fixture-card-top{padding:10px 13px;background:#e9eee8;color:#52665b;font:700 10px var(--font-mono);letter-spacing:.04em;text-transform:uppercase}
+.fixtures-page .fixture-card-top b{color:#153f33;font-size:12px}
+.fixtures-page .fixture-versus{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:6px;min-height:0;padding:16px 10px 12px}
+.fixtures-page .fixture-versus>i{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#f2d76f;color:#27362d;font:700 9px var(--font-mono)}
+.fixtures-page .fixture-team{min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}
+.fixtures-page .fixture-team img{width:54px;height:54px;margin-bottom:7px;object-fit:contain}
+.fixtures-page .fixture-team strong{max-width:100%;min-height:34px;display:flex;align-items:center;justify-content:center;font-size:13px;line-height:1.25}
+.fixtures-page .fixture-team small{width:100%;margin-top:5px;color:#738078;font-size:10px;line-height:1.3;overflow-wrap:anywhere}
+.fixtures-page .fixture-card-bottom{padding:10px 13px;border-top:1px solid #edf0eb;font-size:10px}
+.fixtures-page .fixture-card-bottom strong{font-size:10px}
+.fixtures-page .finals-day{margin-top:38px;border-radius:13px;background:#0c3027}
+@media(max-width:900px){.fixtures-page .fixtures-hero{align-items:flex-start;flex-direction:column;gap:22px}.fixtures-page .fixture-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.fixtures-page .fixtures-hero{padding:38px 20px 27px}.fixtures-page .fixtures-hero h1{font-size:68px}.fixtures-page .fixtures-hero p{max-width:340px;font-size:15px}.fixtures-page .fixtures-hero-facts{width:100%}.fixtures-page .fixtures-hero-facts>div{flex:1;min-width:0;padding:2px 12px}.fixtures-page .fixtures-hero-facts b{font-size:26px}.fixtures-page .fixtures-content{padding:25px 14px 44px}.fixtures-page .fixtures-filter-heading h2{font-size:30px}.fixtures-page .fixture-cards{grid-template-columns:1fr;gap:9px}.fixtures-page .fixture-card{border-radius:10px}.fixtures-page .fixture-versus{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);padding:13px 12px 11px}.fixtures-page .fixture-team{display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;column-gap:9px;align-items:center;text-align:left}.fixtures-page .fixture-team img{grid-row:1/3;width:42px;height:42px;margin:0}.fixtures-page .fixture-team strong{min-height:0;justify-content:flex-start;text-align:left;font-size:13px}.fixtures-page .fixture-team small{margin-top:3px;font-size:10px}.fixtures-page .finals-day{padding:20px}.fixtures-page .finals-day>div:last-child{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.fixtures-page .fixture-card{transition:none}.fixtures-page .fixture-card:hover{transform:none}}

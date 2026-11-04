@@ -175,7 +175,7 @@ alter table auction_events alter column amount type numeric(12,2) using amount::
 insert into auction_teams(id, name, logo_url, purse) values
  ('11111111-1111-4111-8111-111111111111','PHF Blasterz','/team-logos/phf-blasterz.jpg',30),
  ('22222222-2222-4222-8222-222222222222','Prestige Super Giants','/team-logos/prestige-super-giants.jpg',30),
- ('33333333-3333-4333-8333-333333333333','Super PHF Kings','/team-logos/super-phf-kings.jpg',30),
+ ('33333333-3333-4333-8333-333333333333','PHF Super Kings','/team-logos/super-phf-kings.jpg',30),
  ('44444444-4444-4444-8444-444444444444','High Flyers','/team-logos/high-flyers.jpg',30),
  ('55555555-5555-4555-8555-555555555555','PHF Avengers','/team-logos/phf-avengers.jpg',30),
  ('66666666-6666-4666-8666-666666666666','PHF Amigos','/team-logos/phf-amigos.jpg',30)
@@ -188,11 +188,11 @@ set state_data = jsonb_set(
   '{teams}',
   (
     select jsonb_agg(
-      case when team->>'id' = '22222222-2222-4222-8222-222222222222'
-        then team || jsonb_build_object(
-          'name', 'Prestige Super Giants',
-          'logo_url', '/team-logos/prestige-super-giants.jpg'
-        )
+      case
+        when team->>'id' = '22222222-2222-4222-8222-222222222222'
+          then team || jsonb_build_object('name', 'Prestige Super Giants', 'logo_url', '/team-logos/prestige-super-giants.jpg')
+        when team->>'id' = '33333333-3333-4333-8333-333333333333'
+          then team || jsonb_build_object('name', 'PHF Super Kings', 'logo_url', '/team-logos/super-phf-kings.jpg')
         else team
       end
     )
@@ -202,7 +202,7 @@ set state_data = jsonb_set(
 where jsonb_typeof(state_data->'teams') = 'array'
   and exists (
     select 1 from jsonb_array_elements(state_data->'teams') team
-    where team->>'id' = '22222222-2222-4222-8222-222222222222'
+    where team->>'id' in ('22222222-2222-4222-8222-222222222222', '33333333-3333-4333-8333-333333333333')
   );
 
 insert into auction_players(id,name,role,photo,status,team_id,sold_price) values

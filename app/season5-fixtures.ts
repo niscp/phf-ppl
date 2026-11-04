@@ -4,7 +4,7 @@ export const fixtureTeamOrder = [
   "66666666-6666-4666-8666-666666666666", // PHF Amigos
   "55555555-5555-4555-8555-555555555555", // PHF Avengers
   "11111111-1111-4111-8111-111111111111", // PHF Blasterz
-  "33333333-3333-4333-8333-333333333333", // Super PHF Kings
+  "33333333-3333-4333-8333-333333333333", // PHF Super Kings
 ] as const;
 
 export const seasonFiveFixtures = [
