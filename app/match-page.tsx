@@ -7,6 +7,7 @@ import { announcedTeams } from "./season5-teams";
 import SiteHeader from "./site-header";
 import { seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
 import MatchRules from "./match-rules";
+import { FanMatchActivity } from "./fan-activity";
 
 type DirectoryPlayer = {
   id: string;
@@ -278,6 +279,8 @@ export default function MatchDetailsPage() {
       </section>
 
       {loadIssue && <p className="match-load-issue" role="status">{loadIssue}</p>}
+
+      <FanMatchActivity matchNumber={matchNumber} />
 
       <MatchRules variant="match" />
 

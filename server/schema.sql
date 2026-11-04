@@ -131,6 +131,41 @@ create table if not exists tournament_player_stats (
   updated_at timestamptz not null default now()
 );
 
+-- Public fan accounts and one editable pre-match entry per fan and fixture.
+-- Phone numbers are normalized to E.164; passwords are stored only as bcrypt hashes.
+create table if not exists fan_users (
+  id uuid primary key default gen_random_uuid(),
+  phone_e164 text not null unique,
+  display_name text not null,
+  password_hash text not null,
+  leaderboard_opt_in boolean not null default false,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists fan_match_picks (
+  id bigserial primary key,
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  match_id bigint not null references tournament_matches(id) on delete cascade,
+  winner_team_id uuid not null references auction_teams(id),
+  top_scorer_player_id text references auction_players(id),
+  top_wicket_taker_player_id text references auction_players(id),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(fan_id, match_id)
+);
+create index if not exists fan_match_picks_match_idx on fan_match_picks(match_id);
+
+create table if not exists fan_potm_votes (
+  id bigserial primary key,
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  match_id bigint not null references tournament_matches(id) on delete cascade,
+  player_id text not null references auction_players(id),
+  created_at timestamptz not null default now(),
+  unique(fan_id, match_id)
+);
+create index if not exists fan_potm_votes_match_idx on fan_potm_votes(match_id);
+
 insert into tournament_matches(match_number,match_date,match_time,home_team_id,away_team_id) values
  (1,'2026-11-21','7:15 AM','22222222-2222-4222-8222-222222222222','33333333-3333-4333-8333-333333333333'),
  (2,'2026-11-21','10:30 AM','44444444-4444-4444-8444-444444444444','11111111-1111-4111-8111-111111111111'),

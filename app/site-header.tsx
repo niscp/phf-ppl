@@ -2,11 +2,12 @@
 
 import { useState, type ReactNode } from "react";
 
-type PageKey = "home" | "fixtures" | "teams" | "players" | "auction" | "history" | "results" | "sponsors";
+type PageKey = "home" | "fixtures" | "teams" | "players" | "auction" | "history" | "results" | "sponsors" | "fan";
 
 const links: Array<{ key: PageKey; label: string; href: string }> = [
   { key: "home", label: "Home", href: "" },
   { key: "fixtures", label: "Fixtures", href: "fixtures.html" },
+  { key: "fan", label: "Fan picks", href: "fan.html" },
   { key: "teams", label: "Teams", href: "teams.html" },
   { key: "players", label: "Players", href: "players.html" },
   { key: "auction", label: "Auction", href: "auction.html" },

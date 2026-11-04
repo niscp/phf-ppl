@@ -22,6 +22,7 @@ export default defineConfig({
         bidHistory: fileURLToPath(new URL("./bid-history.html", import.meta.url)),
         match: fileURLToPath(new URL("./match.html", import.meta.url)),
         fixtures: fileURLToPath(new URL("./fixtures.html", import.meta.url)),
+        fan: fileURLToPath(new URL("./fan.html", import.meta.url)),
       },
     },
   },
