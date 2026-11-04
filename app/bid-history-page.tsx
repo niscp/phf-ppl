@@ -1,5 +1,7 @@
 "use client";
 
+import SiteHeader from "./site-header";
+
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import rosterJson from "./season5-players.json";
 import { officialSeasonFiveAuctionId } from "./season5-auction";
@@ -77,7 +79,8 @@ export default function BidHistoryPage() {
   }
 
   return <main className="auction-page bid-history-page">
-    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("auction.html")}>Auction</a><a href={localLink("players.html")}>Players</a><a href={localLink("teams.html")}>Teams</a><a href={localLink("highlights.html")}>Results</a><span>Bid history</span></nav></header>
+    <SiteHeader active="history" />
+
     <section className="bid-history-hero"><p className="auction-overline">Season 5 · Official ledger</p><h1>Every bid.<br/><span>In order.</span></h1><p>Follow how the bidding moved for each player, from the opening offer to the final call.</p></section>
     <section className="bid-history-content">
       <form className="bid-history-search" onSubmit={submitSearch}><label htmlFor="bid-player-search">Find a player</label><div><input id="bid-player-search" type="search" list="bid-player-options" placeholder="Type a player name" value={search} onChange={(event) => setSearch(event.target.value)} /><datalist id="bid-player-options">{playerOptions.map((player) => <option key={player.id} value={player.name}>{player.role}</option>)}</datalist><button type="submit">Show history</button></div><small>Search the Season 5 registered player list.</small></form>

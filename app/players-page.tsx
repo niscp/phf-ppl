@@ -1,5 +1,7 @@
 "use client";
 
+import SiteHeader from "./site-header";
+
 import { useMemo, useState } from "react";
 import playersJson from "./season5-players.json";
 import { auctionExcludedPlayerIds } from "./season5-teams";
@@ -72,11 +74,7 @@ export default function PlayersPage() {
   }
 
   return <main className="roster-page">
-    <header className="roster-header">
-      <a className="roster-logo" href={homeUrl} aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
-      <nav aria-label="Roster navigation"><a href={homeUrl}>Home</a><a href={`${homeUrl}auction.html`}>Auction</a><a href={`${homeUrl}teams.html`}>Teams</a><a href={`${homeUrl}bid-history.html`}>Bid history</a><a href={`${homeUrl}highlights.html`}>Results</a><span>Players</span></nav>
-    </header>
-
+    <SiteHeader active="players" />
     <section className="roster-hero">
       <div className="roster-hero-copy">
         <p className="roster-eyebrow">PHF Premier League / 2026</p>

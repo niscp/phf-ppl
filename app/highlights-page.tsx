@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getAuctionSnapshot, type AuctionPlayer, type AuctionSnapshot, type AuctionTeam } from "./auction-client";
 import { buildAuctionHighlights, type HighlightTeam } from "./auction-highlights";
 import { officialSeasonFiveAuctionId } from "./season5-auction";
+import SiteHeader from "./site-header";
 
 function asset(path: string | null) {
   if (!path) return "";
@@ -117,7 +118,7 @@ export default function HighlightsPage() {
   if (!snapshot || !highlights) return <main className="highlights-state"><span className="highlights-loader"/><h1>Preparing the auction ledger</h1><p>Loading every sale and final squad…</p></main>;
 
   return <main className="highlights-page">
-    <header className="highlights-header"><a href={localLink("")} className="highlights-brand"><b>PHF</b><span>Premier League</span></a><nav aria-label="Results navigation"><a href={localLink("")}>Home</a><a href={localLink("auction.html")}>Auction</a><a href={localLink("players.html")}>Players</a><a href={localLink(`teams.html?auction=${snapshot.auction?.id ?? officialSeasonFiveAuctionId}`)}>Teams</a><a href={localLink(`bid-history.html?auction=${snapshot.auction?.id ?? officialSeasonFiveAuctionId}`)}>Bid history</a><a href="#top-buys">Top buys</a><a href="#squads">Squads</a><button type="button" onClick={() => void sharePage()}>Share</button></nav></header>
+    <SiteHeader active="results" action={<button type="button" onClick={() => void sharePage()}>Share</button>} />
     {shareStatus && <p className="highlights-toast" role="status">{shareStatus}</p>}
     <section className="highlights-hero" aria-labelledby="highlights-title">
       <div className="highlights-hero-copy"><p>Season 5 official auction · Final ledger</p><h1 id="highlights-title">The hammer<br/>has fallen.</h1><div className="highlights-final-stamp"><span>{highlights.complete ? "Auction complete" : "Provisional results"}</span><b>{snapshot.auction?.name ?? "Season 5 Official Auction"}</b></div></div>

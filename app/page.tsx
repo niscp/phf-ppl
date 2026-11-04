@@ -2,83 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { announcedTeams } from "./season5-teams";
+import SiteHeader from "./site-header";
 import { auctionClient, getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionSnapshot, type TournamentSnapshot } from "./auction-client";
-import { seasonFiveFixtureDays, teamNameForSlot } from "./season5-fixtures";
-
-const termsUrl = "https://docs.google.com/spreadsheets/d/1eAHfI2BuzCkMxljWtC9tXvmM71T9or022M6GlxW48MI/edit?usp=drivesdk";
-const venueUrl = "https://www.google.com/maps/search/?api=1&query=Melbourne+Cricket+Ground+Hyderabad";
-
-const matchDays = [
-  { day: "21", label: "League day 1" },
-  { day: "22", label: "League day 2" },
-  { day: "28", label: "League day 3" },
-  { day: "29", label: "League day 4" },
-  { day: "05", month: "Dec", label: "League day 5" },
-  { day: "06", month: "Dec", label: "Championship day" },
-];
-
-const finals = [
-  { time: "10:30 AM", title: "Bronze match", teams: "3rd vs 4th" },
-  { time: "2:00 PM", title: "Grand final", teams: "1st vs 2nd" },
-];
-
-const champions = [
-  { season: "01", year: "2022", winner: "PHF Spartans", runner: "PHF Cobras", final: "Won by 11 runs", href: "https://cricheroes.in/tournament/522214/prestige-cricket-leaguephf-season-1/matches/past-matches" },
-  { season: "02", year: "2023", winner: "PHF Cobras", runner: "PHF Master Blasters", final: "Won by 5 runs", href: "https://cricheroes.in/tournament/752988/prestige-cricket-leaguephf-season-2/matches/past-matches" },
-  { season: "03", year: "2024", winner: "PHF Spartans 2.0", runner: "PHF Cobras", final: "Won by 4 wickets", href: "https://cricheroes.in/tournament/1160041/prestige-premier-league-season-3/matches/past-matches" },
-  { season: "04", year: "2025", winner: "PHF Spartans 2.0", runner: "GARUDA", final: "15 matches · 8 teams · Won final by 6 wickets", href: "https://cricheroes.com/tournament/1680807/prestige-%28phf%29-premier-league-season-4/matches/past-matches" },
-];
-
-const tournamentHonours = [
-  {
-    season: "01", year: "2022", href: "https://cricheroes.com/tournament/522214/prestige-cricket-leaguephf-season-1/stats",
-    mvp: { title: "MVP No. 1", player: "Ansuman Nayak", team: "PHF Spartans", value: "14.904", label: "MVP points", photo: "players/ansuman-nayak.jpeg", profile: "https://cricheroes.com/player-profile/10145421/ansuman-nayak/matches" },
-    leaders: [
-      { title: "Most runs", player: "Naman Saxena", team: "PHF Spartans", value: "44", detail: "4 innings · HS 17", photo: "players/naman-saxena.jpeg", profile: "https://cricheroes.com/player-profile/1030230/naman-saxena/matches" },
-      { title: "Most wickets", player: "Ansuman Nayak", team: "PHF Spartans", value: "7", detail: "Economy 3.00 · Best 3 wickets", photo: "players/ansuman-nayak.jpeg", profile: "https://cricheroes.com/player-profile/10145421/ansuman-nayak/matches" },
-    ],
-  },
-  {
-    season: "02", year: "2023", href: "https://cricheroes.com/tournament/752988/prestige-cricket-leaguephf-season-2/stats",
-    mvp: { title: "MVP No. 1", player: "Naman Saxena", team: "PHF Spartans", value: "33.845", label: "MVP points", photo: "players/naman-saxena.jpeg", profile: "https://cricheroes.com/player-profile/1030230/naman-saxena/matches" },
-    leaders: [
-      { title: "Most runs", player: "Waseem", team: "PHF OG", value: "266", detail: "6 innings · HS 88", photo: "players/waseem.jpg", profile: "https://cricheroes.com/player-profile/2179032/waseem/matches" },
-      { title: "Most wickets", player: "Mayank", team: "PHF Cobras", value: "13", detail: "15 overs · Best 5 wickets", photo: "players/mayank.jpeg", profile: "https://cricheroes.com/player-profile/4489866/mayank/matches" },
-    ],
-  },
-  {
-    season: "03", year: "2024", href: "https://cricheroes.com/tournament/1160041/prestige-premier-league-season-3/stats",
-    mvp: { title: "Player of the tournament", player: "Swethan Kurakula", team: "PHF Cobras", value: "26.760", label: "MVP points", photo: "players/swethan-kurakula.jpeg", profile: "https://cricheroes.com/player-profile/19421803/swethan-kurakula/matches" },
-    leaders: [
-      { title: "Best batter", player: "Arjun Paladi", team: "PHF Dabang", value: "193", detail: "5 innings · HS 91", photo: "players/arjun-paladi.jpg", profile: "https://cricheroes.com/player-profile/1222494/arjun-paladi/matches" },
-      { title: "Best bowler", player: "Garvit", team: "PHF Spartans New", value: "8", detail: "12 overs · Economy 4.60", photo: "players/garvit.jpeg", profile: "https://cricheroes.com/player-profile/5917883/garvit/matches" },
-    ],
-  },
-  {
-    season: "04", year: "2025", href: "https://cricheroes.com/tournament/1680807/prestige-phf-premier-league-season-4/stats",
-    mvp: { title: "MVP No. 1", player: "Srikanth K", team: "Warriors", value: "28.487", label: "MVP points", photo: "players/srikanth-k.png", profile: "https://cricheroes.com/player-profile/33453377/srikanth-k/matches" },
-    leaders: [
-      { title: "Orange Cap", player: "Praveen Mustepally", team: "Garuda", value: "160", detail: "5 innings · HS 64", photo: "players/praveen-mustepally.jpg", profile: "https://cricheroes.com/player-profile/381881/praveen-mustepally/matches" },
-      { title: "Purple Cap", player: "Aditya Pandey", team: "PHF Spartans 2.0", value: "10", detail: "18 overs · Economy 4.00", photo: "players/aditya-pandey.jpeg", profile: "https://cricheroes.com/player-profile/15345610/aditya-pandey/matches" },
-    ],
-  },
-];
-
-const seasonFiveStages = [
-  { label: "Closed", title: "Player registrations", detail: "The Season 5 player pool is in place.", state: "live" },
-  { label: "27 Sep 2026", title: "Captain auction", detail: "Six captains will build balanced squads on auction day.", state: "next" },
-  { label: "After auction", title: "Teams & squads", detail: "Official team names and player rosters will appear here.", state: "locked" },
-  { label: "Published", title: "Fixtures", detail: "Fifteen league matches and Finals Day are now confirmed.", state: "live" },
-];
-
-const legacyPhotos = Array.from({ length: 30 }, (_, index) => ({
-  src: `legacy-${index + 1}.jpg`,
-  alt: `PHF Premier League legacy moment ${index + 1}`,
-  className: index % 9 === 0 ? "cinema-wide" : index % 5 === 0 ? "cinema-tall" : "",
-}));
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [auction, setAuction] = useState<AuctionSnapshot>(preAuctionSnapshot);
   const [auctionOnline, setAuctionOnline] = useState(false);
   const [tournament, setTournament] = useState<TournamentSnapshot>({ matches: [], standings: [], player_stats: [] });
@@ -113,33 +40,11 @@ export default function Home() {
     return { current, sold, status: auction.config?.status ?? "preparing", id: auction.auction?.id ?? "" };
   }, [auction]);
 
-  const tournamentHQ = useMemo(() => {
-    const teams = auction.teams.length ? auction.teams : announcedTeams;
-    const players = auction.players.filter((player) => player.status === "sold" || player.status === "captain");
-    const topBuys = players.filter((player) => player.status === "sold").sort((a, b) => (b.sold_price ?? 0) - (a.sold_price ?? 0)).slice(0, 3);
-    return { teams, players, topBuys };
-  }, [auction]);
+  const homeTeams = useMemo(() => auction.teams.length ? auction.teams : announcedTeams, [auction.teams]);
 
   return (
     <main>
-      <header className="cinema-header">
-        <a className="phf-mark" href="#top" aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
-        <button className="cinema-menu" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-label="Toggle navigation"><i/><i/></button>
-        <nav className={menuOpen ? "cinema-nav open" : "cinema-nav"} aria-label="Main navigation">
-          <a href="#fixtures" onClick={() => setMenuOpen(false)}>Fixtures</a>
-          <a href="#season-five" onClick={() => setMenuOpen(false)}>Season 5</a>
-          <a href="./players.html">Players</a>
-          <div className="cinema-nav-teams"><a href="./teams.html">Teams</a><div className="cinema-team-menu" aria-label="Season 5 teams">{announcedTeams.map((team) => <a key={team.id} href={`./teams.html?team=${team.id}`}>{team.name}</a>)}</div></div>
-          <a href="./auction.html">Auction board</a>
-          <a href="./bid-history.html">Bid history</a>
-          <a href="./highlights.html">Auction results</a>
-          <a href="#records" onClick={() => setMenuOpen(false)}>Records</a>
-          <a href="#sponsors" onClick={() => setMenuOpen(false)}>Sponsors</a>
-          <a href="#legacy" onClick={() => setMenuOpen(false)}>Legacy</a>
-          <a href="#champions" onClick={() => setMenuOpen(false)}>Champions</a>
-          <a className="gold-link" href={`./auction.html${command.id ? `?auction=${command.id}` : ""}`}>Open auction ↗</a>
-        </nav>
-      </header>
+      <SiteHeader active="home" overlay />
 
       <section className="cinema-hero" id="top">
         <div className="hero-shade" />
@@ -152,9 +57,7 @@ export default function Home() {
             <a className="gold-button" href="./players.html">Meet the players <span>↗</span></a>
           </div>
         </div>
-        <div className="hero-fixture">
-          <span>Match days</span><b>21 · 22 · 28 · 29 Nov</b><small>5 · 6 December 2026 · Melbourne Cricket Ground</small>
-        </div>
+        <a className="hero-fixture" href="./fixtures.html"><span>Season 5 fixtures</span><b>15 league matches</b><small>Nov 21, 22, 28, 29 · Dec 5, 6</small></a>
         <div className="hero-edition"><span>Edition</span><b>05</b></div>
       </section>
 
@@ -177,70 +80,8 @@ export default function Home() {
           <a href="./players.html"><span>Player directory</span><strong>Photos, roles &amp; career stats</strong><i>↗</i></a>
           <a href="./teams.html"><span>Six franchises</span><strong>Captains, crests &amp; squads</strong><i>↗</i></a>
           <a href="./highlights.html"><span>Official auction results</span><strong>Biggest buys &amp; final ledgers</strong><i>↗</i></a>
-          <a href="#dates"><span>Tournament calendar</span><strong>Six matchdays at MCG</strong><i>↓</i></a>
+          <a href="./fixtures.html"><span>Fixtures</span><strong>Browse all matchdays and filter by team</strong><i>↗</i></a>
         </div>
-      </section>
-
-      <section className="tournament-hq" id="tournament-hq" aria-label="Season 5 tournament HQ">
-        <div className="hq-heading">
-          <div className="section-intro"><p>Season 5 tournament HQ</p><h2>Know the squads.<br/><em>Pick your heroes.</em></h2></div>
-          <p>One home for the tournament: official squads, auction stories and the players who could define the season.</p>
-        </div>
-        <div className="hq-grid">
-          <article className="hq-feature hq-squads">
-            <div className="hq-feature-head"><span>01 / Squads</span><a href={`./teams.html${command.id ? `?auction=${command.id}` : ""}`}>Open team view ↗</a></div>
-            <div className="hq-team-list">
-              {tournamentHQ.teams.map((team) => {
-                const squad = tournamentHQ.players.filter((player) => player.team_id === team.id);
-                return <a href={`./teams.html?team=${team.id}${command.id ? `&auction=${command.id}` : ""}`} key={team.id}><span>{String(squad.length).padStart(2, "0")}</span><strong>{team.name}</strong><small>{squad.length ? `${squad.length} players ready` : "Squad announcement pending"}</small><i>↗</i></a>;
-              })}
-            </div>
-          </article>
-          <article className="hq-feature hq-buys">
-            <div className="hq-feature-head"><span>02 / Auction watch</span><a href={`./highlights.html${command.id ? `?auction=${command.id}` : ""}`}>See full ledger ↗</a></div>
-            <h3>The biggest<br/><em>buys so far.</em></h3>
-            <div className="hq-buy-list">
-              {tournamentHQ.topBuys.length ? tournamentHQ.topBuys.map((player, index) => <a href="./players.html" key={player.id}><span>0{index + 1}</span><strong>{player.name}</strong><small>{tournamentHQ.teams.find((team) => team.id === player.team_id)?.name ?? "Team"}</small><b>{player.sold_price} CR</b></a>) : <p>Auction results will appear here once the squads are formed.</p>}
-            </div>
-          </article>
-        </div>
-        <div className="hq-footer"><span>Live roster signal</span><strong>{tournamentHQ.players.length ? `${tournamentHQ.players.length} squad places confirmed` : "Player pool ready"}</strong><a href="./players.html">Browse every player ↗</a></div>
-      </section>
-
-      <section className="dates-stage" id="dates">
-        <div className="section-intro"><p>The 2026 tournament</p><h2>Six days.<br/><em>One champion.</em></h2></div>
-        <div className="date-grid">
-          {matchDays.map((item, index) => <article className="date-tile" key={`${item.day}-${item.month ?? "Nov"}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{item.day}</strong><b>{item.month ?? "Nov"}</b><small>{item.label}</small></article>)}
-        </div>
-        <div className="event-rail">
-          <div><span>Venue</span><b>Melbourne Cricket Ground</b><a href={venueUrl} target="_blank" rel="noreferrer">Map search ↗</a></div>
-          <div><span>Format</span><b>IPL-style round robin</b><small>Every team plays every other team</small></div>
-          <div><span>Playing policy</span><b>Day games only</b><small>One match per player per day</small></div>
-          <div><span>Entry</span><b>₹2,000</b><small>Invitations closed</small></div>
-          <div><span>Auction</span><b>27 September 2026</b><small>Six captain-led squads</small></div>
-        </div>
-      </section>
-
-      <section className="fixtures-stage" id="fixtures">
-        <div className="fixtures-lead">
-          <div className="section-intro"><p>Official Season 5 schedule</p><h2>Fifteen battles.<br/><em>One final.</em></h2></div>
-          <div className="fixtures-summary"><b>6</b><span>Teams</span><b>5</b><span>Games each</span><b>15</b><span>League matches</span></div>
-        </div>
-        <div className="lottery-note">
-          <span>League format</span>
-          <p>Six teams play five round-robin matches each. The top two meet in the final; third and fourth play for bronze.</p>
-        </div>
-        <div className="fixture-board">
-          {seasonFiveFixtureDays.map((day, dayIndex) => <article className="fixture-day" key={day.date}>
-            <header><span>League day {dayIndex + 1}</span><strong>{day.date}</strong></header>
-            <div>{day.matches.map((match) => <a className="fixture-row" href={`./match.html?match=${match.match_number}`} key={match.match_number} aria-label={`Match ${match.match_number}: ${teamNameForSlot(match.home_slot, tournamentHQ.teams)} vs ${teamNameForSlot(match.away_slot, tournamentHQ.teams)}`}><time>{match.time}</time><b>{teamNameForSlot(match.home_slot, tournamentHQ.teams)}</b><i>vs</i><b>{teamNameForSlot(match.away_slot, tournamentHQ.teams)}</b><span className="fixture-details-link">Match details ↗</span></a>)}</div>
-          </article>)}
-        </div>
-        <div className="finals-board">
-          <div className="finals-date"><span>Finals day</span><strong>06 Dec</strong></div>
-          {finals.map((match) => <article key={match.title}><time>{match.time}</time><span>{match.title}</span><strong>{match.teams}</strong></article>)}
-        </div>
-        <p className="fixtures-footnote">Every match counts. Every point matters.</p>
       </section>
 
       <section className="league-centre" id="league-centre" aria-label="Live league centre">
@@ -251,16 +92,15 @@ export default function Home() {
         <div className="league-centre-grid">
           <article className="points-panel">
             <div className="table-head"><span>Pos</span><span>Team</span><span>P</span><span>W</span><span>L</span><span>Pts</span><span>NRR</span></div>
-            {(tournament.standings.length ? tournament.standings : tournamentHQ.teams.map((team) => ({ team_id: team.id, team_name: team.name, played: 0, wins: 0, losses: 0, points: 0, nrr: 0 }))).map((row, index) => <div className="table-row" key={row.team_id}><b>{String(index + 1).padStart(2, "0")}</b><strong>{row.team_name}</strong><span>{row.played}</span><span>{row.wins}</span><span>{row.losses}</span><em>{row.points}</em><span>{row.played ? row.nrr.toFixed(2) : "—"}</span></div>)}
+            {(tournament.standings.length ? tournament.standings : homeTeams.map((team) => ({ team_id: team.id, team_name: team.name, played: 0, wins: 0, losses: 0, points: 0, nrr: 0 }))).map((row, index) => <div className="table-row" key={row.team_id}><b>{String(index + 1).padStart(2, "0")}</b><strong>{row.team_name}</strong><span>{row.played}</span><span>{row.wins}</span><span>{row.losses}</span><em>{row.points}</em><span>{row.played ? row.nrr.toFixed(2) : "—"}</span></div>)}
             <p className="table-note">Every team plays five league matches. Points and net run rate update automatically after the administrator records a result.</p>
           </article>
-          <article className="next-match-panel">
-            <div className="next-match-kicker"><span>Next on the calendar</span><b>21 NOV</b></div>
-            <h3>Opening<br/><em>day.</em></h3>
-            <div className="next-match-list">
-              {seasonFiveFixtureDays[0].matches.map((match) => <a href={`./match.html?match=${match.match_number}`} key={match.match_number}><time>{match.time}</time><strong>{teamNameForSlot(match.home_slot, tournamentHQ.teams)}</strong><i>vs</i><strong>{teamNameForSlot(match.away_slot, tournamentHQ.teams)}</strong></a>)}
-            </div>
-            <a href="#fixtures">View full fixture list ↓</a>
+          <article className="next-match-panel schedule-callout">
+            <div className="next-match-kicker"><span>Season 5 schedule</span><b>2026</b></div>
+            <h3>Every day<br/><em>moves the table.</em></h3>
+            <p>Six teams. Fifteen league matches. The final and bronze match close the season on December 6.</p>
+            <div className="schedule-callout-dates"><span>Nov 21 · 22 · 28 · 29</span><span>Dec 5 · Finals Dec 6</span></div>
+            <a href="./fixtures.html">Browse fixtures ↗</a>
           </article>
         </div>
         <div className="leaderboard-strip">
@@ -269,87 +109,19 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="auction-stage" id="season-five">
-        <div className="auction-head">
-          <div className="section-intro"><p>Season 5 status</p><h2>The auction room<br/><em>is taking shape.</em></h2></div>
-          <div className="live-invite"><i/><span>Invitations closed</span><b>Pre-auction phase</b></div>
-        </div>
-        <p className="auction-copy">The Season 5 player pool is ready and invitations are closed. On 27 September 2026, six playing captains will form nearly equal squads before team numbers are decided by live lottery.</p>
-        <a className="auction-roster-link" href="./players.html">Explore the player pool <span>↗</span></a>
-        <div className="auction-track">
-          {seasonFiveStages.map((stage, index) => <article className={`auction-step ${stage.state}`} key={stage.title}><span>{String(index + 1).padStart(2, "0")} / {stage.label}</span><strong>{stage.title}</strong><p>{stage.detail}</p>{stage.state === "live" ? <a href={stage.title === "Fixtures" ? "#fixtures" : "./players.html"}>{stage.title === "Fixtures" ? "View full schedule ↓" : "View registered players ↗"}</a> : <small>{stage.state === "next" ? "Details coming soon" : "Locked until announced"}</small>}</article>)}
-        </div>
-      </section>
-
-      <section className="records-stage" id="records">
-        <div className="records-lead">
-          <div className="section-intro"><p>Official CricHeroes tournament records</p><h2>The league&apos;s<br/><em>hall of fame.</em></h2></div>
-          <p>Every name and number below is taken from the complete tournament leaderboard—not a single match. Open a season or player to inspect the record on CricHeroes.</p>
-        </div>
-        <div className="honours-board">
-          {tournamentHonours.map((item) => <article className="season-honours" key={item.season}>
-            <div className="honours-season"><span>Season</span><b>{item.season}</b><small>{item.year}</small><a href={item.href} target="_blank" rel="noreferrer">Full leaderboard ↗</a></div>
-            <a className="mvp-portrait" href={item.mvp.profile} target="_blank" rel="noreferrer">
-              <img src={item.mvp.photo} alt={`${item.mvp.player}, ${item.mvp.title} for PHF Season ${item.season}`} loading="lazy"/>
-              <span>{item.mvp.title}</span><strong>{item.mvp.player}</strong><small>{item.mvp.team}</small>
-              <div><b>{item.mvp.value}</b><i>{item.mvp.label}</i></div>
-            </a>
-            <div className="season-leaders">
-              {item.leaders.map((leader) => <a href={leader.profile} target="_blank" rel="noreferrer" className="leader-row" key={leader.title}>
-                <img src={leader.photo} alt={`${leader.player}, ${leader.title} for PHF Season ${item.season}`} loading="lazy"/>
-                <div><span>{leader.title}</span><strong>{leader.player}</strong><small>{leader.team}</small></div>
-                <p><b>{leader.value}</b><small>{leader.detail}</small></p><i>↗</i>
-              </a>)}
-            </div>
-          </article>)}
-        </div>
-        <div className="records-note"><span>Verified archive</span><p>Ranks reflect the completed Season 1–4 CricHeroes tournament leaderboards. Season 5 records will begin after the auction, squads and fixtures are announced.</p></div>
-      </section>
-
-      <section className="sponsors-stage" id="sponsors">
-        <div className="sponsors-copy">
-          <div className="section-intro"><p>Season 5 partners</p><h2>Backing the<br/><em>next chapter.</em></h2></div>
-          <p className="sponsors-intro">The partners helping turn Season 5 into a bigger stage for our players, teams and community.</p>
-          <div className="presenting-partner">
-            <span>Presenting sponsor</span>
-            <strong>Kotak Mahindra Bank</strong>
-          </div>
-          <div className="partner-list">
-            <article><span>Proud partner</span><strong>The Aartah School</strong></article>
-            <article><span>Proud partner</span><strong>Viseshta Avenues</strong></article>
-            <article><span>Proud partner</span><strong>Palm Valley</strong><small>Wealth in every acre</small></article>
-            <article><span>Beverage partner</span><strong>Monin</strong></article>
-            <article><span>Mobility partner</span><strong>GetMeCab</strong></article>
-          </div>
-        </div>
-        <a className="sponsors-poster" href="season5-auction-sponsors.jpg" target="_blank" rel="noreferrer" aria-label="Open the official Season 5 Player Auction poster">
-          <img src="season5-auction-sponsors.jpg" alt="PHF Premier League Season 5 Player Auction poster featuring the teams and official sponsors" loading="lazy"/>
-          <span>Official auction poster ↗</span>
-        </a>
-      </section>
-
-      <section className="legacy-stage" id="legacy">
-        <div className="legacy-title"><p>Five years in the making</p><h2>This is<br/>our <em>legacy.</em></h2><span>Thirty real moments. One PHF family.</span></div>
-        <div className="cinema-gallery">
-          {legacyPhotos.map((photo, index) => <a className={photo.className} href={photo.src} target="_blank" rel="noreferrer" key={photo.src} aria-label={`Open legacy photograph ${index + 1}`}><img src={photo.src} alt={photo.alt} loading="lazy"/><span>{String(index + 1).padStart(2, "0")}</span></a>)}
+      <section className="sponsor-banner-section" id="sponsors" aria-label="Season 5 sponsors">
+        <div className="sponsor-banner-title"><span>PHF Premier League · Season 5</span><h2>Presented with our partners</h2></div>
+        <div className="sponsor-banner-rail">
+          <article className="sponsor-banner presenting"><span>Presenting sponsor</span><strong>Kotak Mahindra Bank</strong></article>
+          <article className="sponsor-banner"><span>Proud partner</span><strong>The Aartah School</strong></article>
+          <article className="sponsor-banner"><span>Proud partner</span><strong>Viseshta Avenues</strong></article>
+          <article className="sponsor-banner"><span>Proud partner</span><strong>Palm Valley</strong><small>Wealth in every acre</small></article>
+          <article className="sponsor-banner"><span>Beverage partner</span><strong>Monin</strong></article>
+          <article className="sponsor-banner"><span>Mobility partner</span><strong>GetMeCab</strong></article>
         </div>
       </section>
 
-      <section className="champions-stage" id="champions">
-        <div className="section-intro"><p>Verified on CricHeroes</p><h2>The names on<br/><em>the trophy.</em></h2></div>
-        <div className="champion-list">
-          {champions.map((item) => <a href={item.href} target="_blank" rel="noreferrer" className="champion-row" key={item.season}><span>S{item.season} / {item.year}</span><strong>{item.winner}</strong><div><b>Runners-up · {item.runner}</b><small>{item.final}</small></div><i>↗</i></a>)}
-        </div>
-      </section>
-
-      <section className="final-call" id="register">
-        <div className="final-photo" />
-        <div className="final-copy"><p>Season 5 · Auction ahead</p><h2>Your team.<br/>Your moment.</h2><span>खेल · जुनून · परिवार</span><a className="gold-button" href="./players.html">Meet the players <b>↗</b></a></div>
-        <div className="final-details"><a href={termsUrl} target="_blank" rel="noreferrer">Terms &amp; conditions ↗</a><a href={venueUrl} target="_blank" rel="noreferrer">Venue map ↗</a><span>Tarun · +91 98853 01226</span><span>Karthik · +91 84381 49893</span></div>
-      </section>
-
-      <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="#top">Back to top ↑</a></footer>
-      <nav className="mobile-dock" aria-label="Quick navigation"><a href="./index.html">Home</a><a href="./players.html">Players</a><a className="live" href={`./auction.html${command.id ? `?auction=${command.id}` : ""}`}>Auction</a><a href="./teams.html">Teams</a><a href="./bid-history.html">History</a><a href={`./highlights.html${command.id ? `?auction=${command.id}` : ""}`}>Results</a></nav>
+      <footer className="cinema-footer"><div className="phf-mark"><b>PHF</b><span>Premier League</span></div><p>Season 5 · November–December 2026</p><a href="./index.html">Back to top ↑</a></footer>
     </main>
   );
 }

@@ -7,6 +7,7 @@ import registeredPlayers from "./season5-players.json";
 import { auctionClient, getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionInstance, type AuctionSession, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
 import { canBid, maxBidAllowed, nextBid, provisionalPurse, squadSize } from "./auction-math";
 import { auctionExcludedPlayerIds } from "./season5-teams";
+import SiteHeader from "./site-header";
 
 type RegisteredPlayer = {
   id: string;
@@ -158,7 +159,7 @@ function PublicAuction({ snapshot, loading, error }: { snapshot: AuctionSnapshot
 
   return <main className={`auction-page${presentation ? " auction-presentation" : ""}`}>
     <SoldCelebration snapshot={snapshot} />
-    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><a href={`${localLink("teams.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Teams</a><a href={`${localLink("bid-history.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Bid history</a><a href={`${localLink("highlights.html")}${selectedAuctionId() ? `?auction=${encodeURIComponent(selectedAuctionId())}` : ""}`}>Results</a><span>Auction</span></nav></header>
+    <SiteHeader active="auction" />
     <section className="auction-hero">
       <div className="auction-hero-copy">
         <p className="auction-overline">PHF Premier League · {snapshot.auction?.name ?? "Season 5"}</p>
@@ -338,7 +339,7 @@ function AdminAuction({ snapshot, refresh }: { snapshot: AuctionSnapshot; refres
     if (await action("tournament_record_match", { p_match_id: Number(result.matchId), p_home_runs: Number(result.homeRuns), p_home_wickets: Number(result.homeWickets), p_home_overs: Number(result.homeOvers), p_away_runs: Number(result.awayRuns), p_away_wickets: Number(result.awayWickets), p_away_overs: Number(result.awayOvers), p_result_text: result.resultText, p_player_stats: playerStats })) setResult({ ...result, matchId: "", homeRuns: "", awayRuns: "", resultText: "", statsJson: "[]" });
   };
 
-  return <main className={`auction-page auction-admin-page auction-admin-mode-${inRoom ? "room" : "lobby"} auction-admin-tab-${adminTab}`}><header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Auctioneer</span></a><nav>{inRoom && <a href={localLink("auction-admin.html")}>← All rooms</a>}<a href={localLink("")}>Home</a><span>Private console</span></nav></header>
+  return <main className={`auction-page auction-admin-page auction-admin-mode-${inRoom ? "room" : "lobby"} auction-admin-tab-${adminTab}`}><SiteHeader active="auction" />
     <div className="auction-admin-wrap">{inRoom && <a className="auction-room-back" href={localLink("auction-admin.html")}>← Back to auction rooms</a>}<p className="auction-overline">Season 5 · Auction operations</p><h1>{inRoom ? snapshot.auction?.name ?? "Auction room" : "Auctioneer console"}</h1>
       {!auctionClient ? <div className="auction-admin-notice"><h2>Auction API connection needed</h2><p>The public auction preparation page is ready. Add the self-hosted auction API URL to the website build as <code>VITE_AUCTION_API_URL</code>.</p></div>
         : !session ? <form className="auction-admin-form" onSubmit={signIn}><h2>Sign in</h2><p>Only approved auctioneers can change the live board.</p><label>Username<input type="text" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>Password<input type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} /></label><button>Sign in</button></form>
@@ -424,7 +425,7 @@ export function TeamsPage() {
   const auctionId = selectedAuctionId();
   const selected = snapshot.teams.find((team) => team.id === selectedId) ?? snapshot.teams[0];
   const squad = selected ? snapshot.players.filter((player) => player.team_id === selected.id && (player.status === "captain" || player.status === "sold")).sort((a, b) => a.status === "captain" ? -1 : b.status === "captain" ? 1 : a.name.localeCompare(b.name)) : [];
-  return <main className="auction-page auction-squads-page"><header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={localLink("players.html")}>Players</a><a href={localLink("auction.html")}>Auction</a><a href={localLink("bid-history.html")}>Bid history</a><a href={localLink("highlights.html")}>Results</a><span>Teams</span></nav></header>
+  return <main className="auction-page auction-squads-page"><SiteHeader active="teams" />
     <div className="auction-squads-wrap"><div className="auction-section-heading"><div><p className="auction-overline">Season 5 · Live squads</p><h1>Six teams. One trophy.</h1></div><span>{loading ? "Loading…" : "Updates live"}</span></div>
       {error && <p className="auction-alert" role="status">Team updates are unavailable. {error}</p>}
       {snapshot.teams.length ? <><div className="auction-squad-selector" aria-label="Choose a team">{snapshot.teams.map((team) => <a key={team.id} href={`${localLink("teams.html")}?team=${team.id}${auctionId ? `&auction=${encodeURIComponent(auctionId)}` : ""}`} className={selected?.id === team.id ? "selected" : ""}><TeamCrest team={team} /><strong>{team.name}</strong><span>{squadSize(snapshot.players, team.id)} players</span></a>)}</div>

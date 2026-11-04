@@ -63,6 +63,7 @@ jobs:
           test -s gh-pages/highlights.html
           test -s gh-pages/bid-history.html
           test -s gh-pages/match.html
+          test -s gh-pages/fixtures.html
 
       - name: Assume AWS deployment role through OIDC
         uses: aws-actions/configure-aws-credentials@v5

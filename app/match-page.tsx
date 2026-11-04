@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import playersJson from "./season5-players.json";
 import { getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionPlayer, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
 import { announcedTeams } from "./season5-teams";
+import SiteHeader from "./site-header";
 import { seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
 
 type DirectoryPlayer = {
@@ -151,15 +152,15 @@ export default function MatchDetailsPage() {
   const homeSquadStats = resolvedHome ? <TeamAnalysis team={resolvedHome} auction={auction} tournament={tournament} /> : null;
   const awaySquadStats = resolvedAway ? <TeamAnalysis team={resolvedAway} auction={auction} tournament={tournament} /> : null;
 
-  if (!fixture) return <main className="match-page"><header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav><a href={localLink("")}>Home</a><a href={`${localLink("")}#fixtures`}>Fixtures</a></nav></header><section className="match-not-found"><span>Season 5 fixtures</span><h1>Match not found</h1><p>Choose a match from the published schedule to see its details.</p><a href={`${localLink("")}#fixtures`}>Back to fixtures</a></section></main>;
+  if (!fixture) return <main className="match-page"><SiteHeader active="fixtures" /><section className="match-not-found"><span>Season 5 fixtures</span><h1>Match not found</h1><p>Choose a match from the published schedule to see its details.</p><a href={localLink("fixtures.html")}>Back to fixtures</a></section></main>;
 
   const analysisSources = tournament.player_stats.some((stat) => stat.matches > 0) ? "Season 5 scorecards" : "verified CricHeroes career profiles";
   const hasComparables = Boolean(resolvedHome && resolvedAway && auction.players.some((player) => player.team_id === resolvedHome.id) && auction.players.some((player) => player.team_id === resolvedAway.id));
 
   return <main className="match-page">
-    <header className="auction-header"><a className="auction-brand" href={localLink("")}><b>PHF</b><span>Premier League</span></a><nav aria-label="Match navigation"><a href={localLink("")}>Home</a><a href={`${localLink("")}#fixtures`}>Fixtures</a><a href={localLink("teams.html")}>Teams</a></nav></header>
+    <SiteHeader active="fixtures" />
     <div className="match-wrap">
-      <a className="match-back-link" href={`${localLink("")}#fixtures`}>← All fixtures</a>
+      <a className="match-back-link" href={localLink("fixtures.html")}>← All fixtures</a>
       <section className="match-hero">
         <div className="match-hero-kicker"><span>PHF Premier League · Season 5</span><b>Match {String(matchNumber).padStart(2, "0")}</b></div>
         <div className="match-versus">
@@ -188,7 +189,7 @@ export default function MatchDetailsPage() {
       </section>
 
       <section className="match-facts"><span>Match information</span><div><b>Date</b><strong>{displayDate(fixture.date)}</strong></div><div><b>Start</b><strong>{fixture.time}</strong></div><div><b>Venue</b><strong>{liveMatch?.venue ?? "Melbourne Cricket Ground"}</strong></div><div><b>Format</b><strong>Season 5 round robin · 2 points for a win</strong></div></section>
-      <footer className="match-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={`${localLink("")}#fixtures`}>Return to schedule ↑</a></footer>
+      <footer className="match-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={localLink("fixtures.html")}>Return to schedule ↑</a></footer>
     </div>
   </main>;
 }
