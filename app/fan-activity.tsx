@@ -17,6 +17,7 @@ export type FanMatch = {
   community: null | { home_votes: number; away_votes: number; total: number; home_percent: number; away_percent: number };
 };
 type FanProfile = { id: string; display_name: string; leaderboard_opt_in: boolean };
+type FanLeaderboardRow = { display_name: string; points: number; votes_cast: number; match_entries: number; potm_votes: number; accuracy_percent: number };
 
 export async function fanRequest(path: string, init: RequestInit = {}) {
   if (!apiUrl) throw new Error("Fan activity API is not configured.");
@@ -27,28 +28,25 @@ export async function fanRequest(path: string, init: RequestInit = {}) {
   return body;
 }
 
-function fanPath() { return typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/fan.html" : "/fan.html"; }
+function pagePath(file: string) { const base = typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/"; return `${base}${file}`; }
+function fanPath() { return pagePath("fan.html"); }
+function fanLeaderboardPath() { return pagePath("fan-leaderboard.html"); }
+function fanAccountPath(next?: string) { const base = typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/"; const returnTo = next ? `${base}${next.replace(/^\/+/, "")}` : `${base}fan.html`; return `${pagePath("fan-account.html")}?next=${encodeURIComponent(returnTo)}`; }
 
 export function FanMatchActivity({ matchNumber, compact = false, initialMatch }: { matchNumber: number; compact?: boolean; initialMatch?: FanMatch }) {
-  const [match, setMatch] = useState<FanMatch | null>(null);
-  const [signedIn, setSignedIn] = useState(false);
-  const [winner, setWinner] = useState("");
-  const [scorer, setScorer] = useState("");
-  const [bowler, setBowler] = useState("");
-  const [potmChoice, setPotmChoice] = useState("");
+  const [match, setMatch] = useState<FanMatch | null>(initialMatch ?? null);
+  const [signedIn] = useState(() => typeof window !== "undefined" && Boolean(window.localStorage.getItem(tokenKey)));
+  const [winner, setWinner] = useState(initialMatch?.my_pick?.winner_team_id ?? "");
+  const [scorer, setScorer] = useState(initialMatch?.my_pick?.top_scorer_player_id ?? "");
+  const [bowler, setBowler] = useState(initialMatch?.my_pick?.top_wicket_taker_player_id ?? "");
+  const [potmChoice, setPotmChoice] = useState(initialMatch?.my_potm_vote ?? "");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
-    setSignedIn(Boolean(window.localStorage.getItem(tokenKey)));
     if (initialMatch) {
-      setMatch(initialMatch);
-      setWinner(initialMatch.my_pick?.winner_team_id ?? "");
-      setScorer(initialMatch.my_pick?.top_scorer_player_id ?? "");
-      setBowler(initialMatch.my_pick?.top_wicket_taker_player_id ?? "");
-      setPotmChoice(initialMatch.my_potm_vote ?? "");
       return () => { active = false; };
     }
     fanRequest("/api/fan/matches").then((body) => {
@@ -98,19 +96,19 @@ export function FanMatchActivity({ matchNumber, compact = false, initialMatch }:
       {match.can_pick && <>
         <div className="fan-winner-options"><button type="button" className={winner === match.home_team_id ? "selected" : ""} onClick={() => setWinner(match.home_team_id)}>{match.home_team}</button><button type="button" className={winner === match.away_team_id ? "selected" : ""} onClick={() => setWinner(match.away_team_id)}>{match.away_team}</button></div>
         {!compact && <div className="fan-player-picks"><label>Top run-scorer <select value={scorer} onChange={(event) => setScorer(event.target.value)}><option value="">Optional player pick</option>{[...match.home_players, ...match.away_players].map((player) => <option key={player.id} value={player.id}>{player.name} · {player.team_id === match.home_team_id ? match.home_team : match.away_team}</option>)}</select></label><label>Top wicket-taker <select value={bowler} onChange={(event) => setBowler(event.target.value)}><option value="">Optional player pick</option>{[...match.home_players, ...match.away_players].map((player) => <option key={player.id} value={player.id}>{player.name} · {player.team_id === match.home_team_id ? match.home_team : match.away_team}</option>)}</select></label></div>}
-        {signedIn ? <div className="fan-save-row"><span>{match.my_pick ? "Pick saved · edits close at match start" : "One entry per fan · edits close at match start"}</span><button className="fan-button" type="button" disabled={busy} onClick={savePick}>{busy ? "Saving…" : match.my_pick ? "Update pick" : "Save pick"}</button></div> : <div className="fan-save-row"><span>Sign in to save a pick. Your phone number stays private.</span><a className="fan-button" href={`${fanPath()}?match=${matchNumber}`}>Sign in to pick</a></div>}
+      {signedIn ? <div className="fan-save-row"><span>{match.my_pick ? "Pick saved · edits close at match start" : "One entry per fan · edits close at match start"}</span><button className="fan-button" type="button" disabled={busy} onClick={savePick}>{busy ? "Saving…" : match.my_pick ? "Update pick" : "Save pick"}</button></div> : <div className="fan-save-row"><span>Sign in to save a pick. Your phone number stays private.</span><a className="fan-button" href={fanAccountPath(`/fan.html?match=${matchNumber}`)}>Sign in to pick</a></div>}
       </>}
       {!match.can_pick && <div className="fan-closed-state"><b>{match.status === "completed" ? "Match complete" : "Picks are closed"}</b><span>{match.result_text || "The match pick window has closed."}</span>{match.my_pick && <span>Your pick was saved before the match.</span>}</div>}
       {match.status === "completed" && <div className="fan-potm"><div className="fan-potm-heading"><span>After the final ball</span><b>Fan Player of the Match</b></div>
         {match.potm_votes.length > 0 && <ol>{match.potm_votes.map((vote) => <li key={vote.player_id}><span>{vote.player_name}</span><b>{vote.votes}</b></li>)}</ol>}
-        {!match.my_potm_vote ? <><label>Choose a player<select value={potmChoice} onChange={(event) => setPotmChoice(event.target.value)}><option value="">Select from both squads</option>{[...match.home_players, ...match.away_players].map((player) => <option key={player.id} value={player.id}>{player.name} · {player.team_id === match.home_team_id ? match.home_team : match.away_team}</option>)}</select></label>{signedIn ? <button className="fan-button" type="button" disabled={busy} onClick={votePotm}>{busy ? "Saving…" : "Cast one vote"}</button> : <a className="fan-button" href={`${fanPath()}?match=${matchNumber}`}>Sign in to vote</a>}</> : <p className="fan-potm-thanks">Your vote is recorded. Each fan gets one vote per match.</p>}
+        {!match.my_potm_vote ? <><label>Choose a player<select value={potmChoice} onChange={(event) => setPotmChoice(event.target.value)}><option value="">Select from both squads</option>{[...match.home_players, ...match.away_players].map((player) => <option key={player.id} value={player.id}>{player.name} · {player.team_id === match.home_team_id ? match.home_team : match.away_team}</option>)}</select></label>{signedIn ? <button className="fan-button" type="button" disabled={busy} onClick={votePotm}>{busy ? "Saving…" : "Cast one vote"}</button> : <a className="fan-button" href={fanAccountPath(`/fan.html?match=${matchNumber}`)}>Sign in to vote</a>}</> : <p className="fan-potm-thanks">Your vote is recorded. Each fan gets one vote per match.</p>}
       </div>}
       {message && <p className="fan-message success" role="status">{message}</p>}
     </>}
   </section>;
 }
 
-function FanAuth({ onAuth }: { onAuth: (profile: FanProfile) => void }) {
+export function FanAuth({ onAuth }: { onAuth: (profile: FanProfile) => void }) {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -127,7 +125,7 @@ function FanAuth({ onAuth }: { onAuth: (profile: FanProfile) => void }) {
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Sign-in could not be completed."); }
     finally { setBusy(false); }
   }
-  return <form className="fan-auth-card" onSubmit={submit}>
+  return <form id="fan-account" className="fan-auth-card" onSubmit={submit}>
     <div className="fan-auth-tabs"><button type="button" className={mode === "login" ? "active" : ""} onClick={() => { setMode("login"); setError(""); }}>Sign in</button><button type="button" className={mode === "register" ? "active" : ""} onClick={() => { setMode("register"); setError(""); }}>Create account</button></div>
     <h2>{mode === "register" ? "Join the fan table." : "Your picks, all season."}</h2>
     <p>{mode === "register" ? "Create one account to save a pick for every match." : "Sign in to save picks and follow your season score."}</p>
@@ -143,53 +141,66 @@ function FanAuth({ onAuth }: { onAuth: (profile: FanProfile) => void }) {
 export default function FanPage() {
   const [fan, setFan] = useState<FanProfile | null>(null);
   const [matches, setMatches] = useState<FanMatch[]>([]);
-  const [leaderboard, setLeaderboard] = useState<Array<{ display_name: string; points: number; votes_cast: number; match_entries: number; potm_votes: number; accuracy_percent: number }>>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [notice, setNotice] = useState("");
-
-  async function load() {
-    setLoading(true); setLoadError("");
-    try {
-      const [matchBody, boardBody] = await Promise.all([fanRequest("/api/fan/matches"), fanRequest("/api/fan/leaderboard")]);
-      setMatches(matchBody.matches as FanMatch[]); setLeaderboard(boardBody.leaderboard);
-    } catch (reason) { setLoadError(reason instanceof Error ? reason.message : "Fan picks could not be loaded."); }
-    finally { setLoading(false); }
-  }
 
   useEffect(() => {
     let active = true;
     const token = window.localStorage.getItem(tokenKey);
     const restore = token ? fanRequest("/api/fan/me").then((body) => { if (active) setFan(body.fan); }).catch(() => { window.localStorage.removeItem(tokenKey); }) : Promise.resolve();
-    Promise.all([restore, load()]);
+    const matchLoad = fanRequest("/api/fan/matches").then((body) => { if (active) setMatches(body.matches as FanMatch[]); }).catch((reason: Error) => { if (active) setLoadError(reason.message); }).finally(() => { if (active) setLoading(false); });
+    void Promise.all([restore, matchLoad]);
     return () => { active = false; };
   }, []);
 
-  async function toggleLeaderboard(checked: boolean) {
-    setNotice("");
-    try { const body = await fanRequest("/api/fan/profile", { method: "PATCH", body: JSON.stringify({ leaderboard_opt_in: checked }) }); setFan(body.fan); setNotice(checked ? "Your display name will appear on the public leaderboard." : "Your name has been removed from the public leaderboard."); await load(); }
-    catch (reason) { setLoadError(reason instanceof Error ? reason.message : "Profile setting could not be saved."); }
-  }
-
-  function signOut() { window.localStorage.removeItem(tokenKey); setFan(null); setNotice("You are signed out."); void load(); }
   const selectedMatch = Number(new URLSearchParams(window.location.search).get("match"));
 
   return <main className="fan-page">
-    <header className="fan-hero"><div className="fan-hero-inner"><span>PHF Premier League · Season 5</span><h1>Fan Picks</h1><p>Back your call before the first ball. Follow every fixture. Keep your season score.</p><div className="fan-hero-stats"><div><b>{matches.length || 15}</b><span>league matches</span></div><div><b>3</b><span>picks per match</span></div><div><b>0</b><span>entry fee</span></div></div></div></header>
-    <section className="fan-main-grid"><div className="fan-match-list">
+    <header className="fan-hero"><div className="fan-hero-inner"><span>PHF Premier League · Season 5</span><h1>Fan Picks</h1><p>Make your match calls and see how your predictions score through the season.</p><div className="fan-hero-stats"><div><b>{matches.length || 15}</b><span>league matches</span></div><div><b>3</b><span>picks per match</span></div><div><b>0</b><span>entry fee</span></div></div><div className="fan-page-actions"><a className="fan-button" href={fanAccountPath("/fan.html")}>{fan ? `Account · ${fan.display_name}` : "Sign in / Create account"}</a><a className="fan-button secondary" href={fanLeaderboardPath()}>Fan leaderboard ↗</a></div></div></header>
+    <section className="fan-main-grid"><div id="fan-matches" className="fan-match-list">
       <div className="fan-section-heading"><div><span>Season 5 schedule</span><h2>Make your picks.</h2></div><p>Choose the match winner. Player calls are optional. Change your picks until that match starts.</p></div>
       {loadError && <p className="fan-message error" role="alert">{loadError}</p>}
-      {notice && <p className="fan-message success" role="status">{notice}</p>}
       {loading && <p className="fan-loading">Loading the fixtures and picks…</p>}
       {!loading && matches.map((match) => <details id={`match-${match.match_number}`} key={match.id} open={selectedMatch === match.match_number || (!selectedMatch && match.can_pick && match.match_number === matches.find((candidate) => candidate.can_pick)?.match_number)} className={`fan-page-match${selectedMatch === match.match_number ? " focused" : ""}`}>
         <summary className="fan-page-match-head"><div><span>Match {String(match.match_number).padStart(2, "0")} · {new Date(`${match.match_date}T12:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" })} · {match.match_time}</span><h3>{match.home_team} <i>vs</i> {match.away_team}</h3></div><b className={match.can_pick ? "open" : "closed"}>{match.can_pick ? "Picks open" : match.status === "completed" ? "Final" : "Closed"}</b><span className="fan-match-expand">{selectedMatch === match.match_number || (!selectedMatch && match.can_pick && match.match_number === matches.find((candidate) => candidate.can_pick)?.match_number) ? "Hide" : "Make picks"}</span></summary>
         <FanMatchActivity key={`${match.match_number}-${fan?.id ?? "guest"}`} matchNumber={match.match_number} initialMatch={match}/>
       </details>)}
       {!loading && matches.length === 0 && !loadError && <div className="fan-empty">Fixtures are being prepared. Check back when the schedule is published.</div>}
-    </div><aside className="fan-sidebar">
-      {!fan ? <FanAuth onAuth={(profile) => { setFan(profile); setNotice(`Welcome, ${profile.display_name}. Your picks are ready.`); void load(); }} /> : <section className="fan-profile-card"><div className="fan-overline">Fan profile</div><h2>Welcome, {fan.display_name}.</h2><p>Your saved picks stay linked to this account across matches.</p><label className="fan-opt-in"><input type="checkbox" checked={fan.leaderboard_opt_in} onChange={(event) => void toggleLeaderboard(event.target.checked)}/><span><b>Show me on the leaderboard</b><small>Only your display name and correct-pick count are public. Your phone stays private.</small></span></label><button type="button" className="fan-button secondary" onClick={signOut}>Sign out</button></section>}
-      <section className="fan-rules-card"><div className="fan-overline">How fan picks work</div><ul><li>One account can save one entry for each match.</li><li>Pick the winner; top batter and bowler are optional.</li><li>Edit or replace your pick until scheduled start.</li><li>Winner calls count toward the season leaderboard.</li><li>No entry fee or cash prize.</li></ul></section>
-      <section className="fan-board-card"><div className="fan-section-heading"><div><span>Season standings</span><h2>Fan leaderboard</h2></div></div>{leaderboard.length ? <><div className="fan-board-columns"><span>Rank · fan</span><span>Votes / accuracy</span><b>Points</b></div><ol>{leaderboard.map((row, index) => <li key={`${row.display_name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{row.display_name}<small>{row.votes_cast} votes · {row.match_entries} match entries · {row.potm_votes} player-of-match votes · {row.accuracy_percent}% winner accuracy</small></span><strong>{row.points}</strong></li>)}</ol><p className="fan-board-scoring">1 point per correct match-winner pick. Each submitted winner, top-scorer, top-wicket-taker, and Player of the Match choice counts as a vote. Ranked by points, then votes, then accuracy.</p></> : <p>Leaderboard points appear after match results are recorded. Fans choose whether to show their display name here.</p>}</section>
-    </aside></section>
+    </div></section>
   </main>;
+}
+
+function FanLeaderboardCard({ leaderboard, loading, error }: { leaderboard: FanLeaderboardRow[]; loading: boolean; error: string }) {
+  const [mode, setMode] = useState<"engaged" | "points">("engaged");
+  const rankedFans = [...leaderboard].sort((a, b) => mode === "engaged"
+    ? b.votes_cast - a.votes_cast || b.match_entries - a.match_entries || b.points - a.points || a.display_name.localeCompare(b.display_name)
+    : b.points - a.points || b.accuracy_percent - a.accuracy_percent || b.votes_cast - a.votes_cast || a.display_name.localeCompare(b.display_name));
+  return <section className="fan-board-card fan-board-dashboard" aria-labelledby="fan-leaderboard-title">
+    <div className="fan-section-heading"><div><span>Season standings</span><h2 id="fan-leaderboard-title">Fan leaderboard</h2></div><p>Follow the fans driving the season, whether by showing up or calling the results.</p></div>
+    <div className="fan-board-tabs" role="tablist" aria-label="Fan leaderboard category"><button type="button" role="tab" aria-selected={mode === "engaged"} className={mode === "engaged" ? "active" : ""} onClick={() => setMode("engaged")}><b>Most engaged</b><small>Most picks and votes</small></button><button type="button" role="tab" aria-selected={mode === "points"} className={mode === "points" ? "active" : ""} onClick={() => setMode("points")}><b>Most points</b><small>Correct match calls</small></button></div>
+    {error && <p className="fan-message error" role="alert">{error}</p>}
+    {loading ? <p className="fan-loading">Loading the fan standings…</p> : rankedFans.length ? <><div className="fan-board-columns"><span>Rank · fan</span><span>{mode === "engaged" ? "Activity" : "Accuracy"}</span><b>{mode === "engaged" ? "Votes" : "Points"}</b></div><ol>{rankedFans.map((row, index) => <li key={`${row.display_name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{row.display_name}<small>{row.match_entries} match entries · {row.potm_votes} player-of-match votes · {row.accuracy_percent}% winner accuracy</small></span><strong>{mode === "engaged" ? row.votes_cast : row.points}</strong></li>)}</ol><p className="fan-board-scoring">{mode === "engaged" ? "Engagement counts submitted winner calls, optional run-scorer and wicket-taker picks, and Fan Player of the Match votes." : "One point is awarded for each correct match-winner pick. Ties are settled by accuracy, then total activity."}</p></> : <div className="fan-board-empty"><b>{mode === "engaged" ? "The fan activity race starts here." : "The points race starts when results are recorded."}</b><span>{mode === "engaged" ? "Make match picks and vote for Fan Player of the Match to climb the Most Engaged board." : "Correct match-winner calls earn points after results are recorded."}</span><a href={fanPath()}>Make your first pick →</a></div>}
+  </section>;
+}
+
+export function FanLeaderboardPage() {
+  const [leaderboard, setLeaderboard] = useState<FanLeaderboardRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => { let active = true; fanRequest("/api/fan/leaderboard").then((body) => { if (active) setLeaderboard(body.leaderboard as FanLeaderboardRow[]); }).catch((reason: Error) => { if (active) setError(reason.message); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, []);
+  return <main className="fan-page fan-standings-page"><header className="fan-hero"><div className="fan-hero-inner"><span>PHF Premier League · Season 5</span><h1>Fan Race</h1><p>Two ways to climb the standings: show up for every match, or make the calls that score.</p><div className="fan-page-actions"><a className="fan-button" href={fanPath()}>Make match picks</a><a className="fan-button secondary" href={fanAccountPath(fanLeaderboardPath())}>Fan account / Sign in</a></div></div></header><section className="fan-standings-content"><FanLeaderboardCard leaderboard={leaderboard} loading={loading} error={error}/><p className="fan-standings-privacy">Only fans who choose public leaderboard display are listed. Phone numbers are never shown.</p></section></main>;
+}
+
+export function FanAccountPage() {
+  const [fan, setFan] = useState<FanProfile | null>(null);
+  const [loading, setLoading] = useState(() => typeof window !== "undefined" && Boolean(window.localStorage.getItem(tokenKey)));
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const defaultNext = fanPath();
+  const nextRaw = new URLSearchParams(window.location.search).get("next") || defaultNext;
+  const next = nextRaw.startsWith("/") && !nextRaw.startsWith("//") ? nextRaw : defaultNext;
+  useEffect(() => { let active = true; const token = window.localStorage.getItem(tokenKey); if (token) fanRequest("/api/fan/me").then((body) => { if (active) setFan(body.fan as FanProfile); }).catch(() => { window.localStorage.removeItem(tokenKey); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, []);
+  async function toggleLeaderboard(checked: boolean) { setMessage(""); setError(""); try { const body = await fanRequest("/api/fan/profile", { method: "PATCH", body: JSON.stringify({ leaderboard_opt_in: checked }) }); setFan(body.fan as FanProfile); setMessage(checked ? "Your display name will appear on the public leaderboard." : "Your display name has been removed from the leaderboard."); } catch (reason) { setError(reason instanceof Error ? reason.message : "Profile setting could not be saved."); } }
+  function signOut() { window.localStorage.removeItem(tokenKey); setFan(null); setMessage("You are signed out."); }
+  return <main className="fan-page fan-account-page"><header className="fan-hero"><div className="fan-hero-inner"><span>PHF Premier League · Season 5</span><h1>Fan Account</h1><p>Sign in once to save your picks across the tournament and choose whether your name appears on the leaderboard.</p><div className="fan-page-actions"><a className="fan-button secondary" href={fanPath()}>Back to match picks</a><a className="fan-button secondary" href={fanLeaderboardPath()}>View leaderboard</a></div></div></header><section className="fan-account-content">{loading ? <p className="fan-loading">Checking your account…</p> : fan ? <section className="fan-profile-card"><div className="fan-overline">Fan profile</div><h2>Welcome, {fan.display_name}.</h2><p>Your saved picks stay linked to this account across matches.</p><div className="fan-opt-in"><input id="fan-leaderboard-opt-in" type="checkbox" checked={fan.leaderboard_opt_in} onChange={(event) => void toggleLeaderboard(event.target.checked)}/><label htmlFor="fan-leaderboard-opt-in"><b>Show me on the leaderboard</b><small>Only your display name and standings are public. Your phone stays private.</small></label></div>{message && <p className="fan-message success" role="status">{message}</p>}{error && <p className="fan-message error" role="alert">{error}</p>}<div className="fan-page-actions"><a className="fan-button" href={next}>Continue</a><button type="button" className="fan-button secondary" onClick={signOut}>Sign out</button></div></section> : <><FanAuth onAuth={(profile) => { setFan(profile); setMessage(`Welcome, ${profile.display_name}.`); }}/><p className="fan-account-next">After signing in, continue to <a href={next}>{next.includes("leaderboard") ? "the leaderboard" : "your match picks"} →</a></p></>}</section></main>;
 }

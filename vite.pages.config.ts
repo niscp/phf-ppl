@@ -23,6 +23,8 @@ export default defineConfig({
         match: fileURLToPath(new URL("./match.html", import.meta.url)),
         fixtures: fileURLToPath(new URL("./fixtures.html", import.meta.url)),
         fan: fileURLToPath(new URL("./fan.html", import.meta.url)),
+        fanLeaderboard: fileURLToPath(new URL("./fan-leaderboard.html", import.meta.url)),
+        fanAccount: fileURLToPath(new URL("./fan-account.html", import.meta.url)),
       },
     },
   },

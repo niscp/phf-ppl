@@ -316,14 +316,22 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
           from fan_match_picks p join tournament_matches m on m.id=p.match_id group by p.fan_id
         ), potm as (
           select fan_id,count(*)::int potm_votes from fan_potm_votes group by fan_id
+        ), public_fans as (
+          select f.id,f.display_name,coalesce(p.points,0)::int points,
+            (coalesce(p.prediction_votes,0)+coalesce(v.potm_votes,0))::int votes_cast,
+            coalesce(p.match_entries,0)::int match_entries,coalesce(v.potm_votes,0)::int potm_votes,
+            case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent
+          from fan_users f left join picks p on p.fan_id=f.id left join potm v on v.fan_id=f.id
+          where f.active=true and f.leaderboard_opt_in=true and coalesce(p.match_entries,0)+coalesce(v.potm_votes,0)>0
+        ), ranked as (
+          select public_fans.*,
+            row_number() over(order by votes_cast desc,match_entries desc,points desc,display_name asc) engagement_rank,
+            row_number() over(order by points desc,accuracy_percent desc,votes_cast desc,display_name asc) points_rank
+          from public_fans
         )
-        select f.id,f.display_name,coalesce(p.points,0)::int points,
-          (coalesce(p.prediction_votes,0)+coalesce(v.potm_votes,0))::int votes_cast,
-          coalesce(p.match_entries,0)::int match_entries,coalesce(v.potm_votes,0)::int potm_votes,
-          case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent
-        from fan_users f left join picks p on p.fan_id=f.id left join potm v on v.fan_id=f.id
-        where f.active=true and f.leaderboard_opt_in=true and coalesce(p.match_entries,0)+coalesce(v.potm_votes,0)>0
-        order by points desc,votes_cast desc,accuracy_percent desc,f.display_name asc limit 50`);
+        select id,display_name,points,votes_cast,match_entries,potm_votes,accuracy_percent
+        from ranked where engagement_rank<=50 or points_rank<=50
+        order by points_rank,engagement_rank`);
       res.set("Cache-Control", "no-store").json({ leaderboard: rows });
     } catch (error) { next(error); }
   });
