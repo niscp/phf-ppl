@@ -68,7 +68,7 @@ function getTeamStatSummary(team: AuctionTeam, auction: AuctionSnapshot, tournam
   const topScorer = [...metrics].filter((row) => row.runs !== null).sort((a, b) => (b.runs ?? 0) - (a.runs ?? 0))[0];
   const topBowler = [...metrics].filter((row) => row.wickets !== null).sort((a, b) => (b.wickets ?? 0) - (a.wickets ?? 0))[0];
   const averageStrikeRate = metrics.map((row) => row.strikeRate).filter((value): value is number => value !== null);
-  return { squad, statsScope, topScorer, topBowler, averageStrikeRate };
+  return { squad, statsScope, topScorer, topBowler, averageStrikeRate, metrics };
 }
 
 function PreMatchRead({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
@@ -107,6 +107,41 @@ function TeamAnalysis({ team, auction, tournament }: { team: AuctionTeam; auctio
       <div><span>Squad batting snapshot</span><strong>{averageStrikeRate.length ? `${(averageStrikeRate.reduce((sum, value) => sum + value, 0) / averageStrikeRate.length).toFixed(1)} SR` : "Not enough data"}</strong><b>{averageStrikeRate.length ? `Across ${averageStrikeRate.length} tracked players` : "No verified batting rates"}</b></div>
     </div>
   </article>;
+}
+
+function MatchTwoBrief({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
+  const homeStats = getTeamStatSummary(home, auction, tournament);
+  const awayStats = getTeamStatSummary(away, auction, tournament);
+  const roleCount = (stats: ReturnType<typeof getTeamStatSummary>, role: string) => stats.squad.filter((player) => player.role.toLowerCase() === role.toLowerCase()).length;
+  const leader = (stats: ReturnType<typeof getTeamStatSummary>, kind: "bat" | "bowl") => kind === "bat" ? stats.topScorer : stats.topBowler;
+  const homeBat = leader(homeStats, "bat");
+  const awayBat = leader(awayStats, "bat");
+  const homeBowl = leader(homeStats, "bowl");
+  const awayBowl = leader(awayStats, "bowl");
+  const homeAllRounders = roleCount(homeStats, "All-rounder");
+  const awayAllRounders = roleCount(awayStats, "All-rounder");
+  const captainName = (stats: ReturnType<typeof getTeamStatSummary>) => stats.squad.find((player) => player.status === "captain")?.name ?? "the captain";
+  const scope = homeStats.statsScope === awayStats.statsScope ? homeStats.statsScope : "available recorded";
+
+  return <section className="match-two-brief" aria-labelledby="match-two-brief-title">
+    <div className="match-two-brief-heading"><div><span>Match 02 · Tactical briefing</span><h2 id="match-two-brief-title">How each side<br/><em>can win.</em></h2></div><p>A scouting view for High Flyers vs PHF Blasterz, built from the listed squads and {scope.toLowerCase()} player records. These are discussion points, not a prediction or confirmed playing XI.</p></div>
+    <div className="match-two-teams">
+      <article className="match-two-team-card">
+        <header>{logo(home) ? <img src={logo(home)} alt="" /> : <b>{initials(home.name)}</b>}<div><span>Suggested game plan</span><h3>{home.name}</h3></div></header>
+        <div className="match-two-plan"><span>Route to a win</span><p>Build the innings around the squad’s strongest recorded run-makers{homeBat ? `, led by ${homeBat.player.name} (${homeBat.runs} ${homeStats.statsScope.toLowerCase()} runs)` : ""}. The {homeAllRounders}-player all-rounder group gives the captain options to balance batting and bowling once the XI is chosen.</p></div>
+        <div className="match-two-plan watch"><span>What to look out for</span><p>{awayBowl ? `How the batting group handles ${awayBowl.player.name} (${awayBowl.wickets} ${awayStats.statsScope.toLowerCase()} wickets)` : "Which PHF Blasterz bowlers make the XI"}. Watch how the final batting order supports captain {captainName(homeStats)}; the announced squad does not confirm batting positions.</p></div>
+        <div className="match-two-leader"><span>Recorded batting leader</span><strong>{homeBat?.player.name ?? "No verified figure yet"}</strong><small>{homeBat ? `${homeBat.runs} runs · ${homeStats.statsScope}` : "Player record unavailable"}</small></div>
+      </article>
+      <article className="match-two-team-card away">
+        <header>{logo(away) ? <img src={logo(away)} alt="" /> : <b>{initials(away.name)}</b>}<div><span>Suggested game plan</span><h3>{away.name}</h3></div></header>
+        <div className="match-two-plan"><span>Route to a win</span><p>Use the squad’s all-rounder depth ({awayAllRounders} listed) to keep both batting and bowling options available. Build around its leading recorded run-maker{awayBat ? `, ${awayBat.player.name} (${awayBat.runs} ${awayStats.statsScope.toLowerCase()} runs)` : ""}, while selecting a balanced XI for the match conditions.</p></div>
+        <div className="match-two-plan watch"><span>What to look out for</span><p>{homeBowl ? `Whether ${homeBowl.player.name} (${homeBowl.wickets} ${homeStats.statsScope.toLowerCase()} wickets) and the High Flyers attack can interrupt partnerships` : "Which High Flyers bowlers make the XI"}. Also watch the contribution from captain {captainName(awayStats)}; career or squad figures alone cannot establish his role in this match.</p></div>
+        <div className="match-two-leader"><span>Recorded bowling leader</span><strong>{awayBowl?.player.name ?? "No verified figure yet"}</strong><small>{awayBowl ? `${awayBowl.wickets} wickets · ${awayStats.statsScope}` : "Player record unavailable"}</small></div>
+      </article>
+    </div>
+    <div className="match-two-watchline"><span>Match watch</span><p>{homeBat && awayBowl ? `${homeBat.player.name}’s run record meets ${away.name}’s leading wicket record (${awayBowl?.wickets ?? "—"} wickets).` : "Compare the two sides’ leading batting and bowling records as the confirmed XI and scorecards become available."} {awayBat && homeBowl ? `${awayBat.player.name} is the corresponding batting name to watch for ${away.name}, with ${home.name}’s leading wicket record held by ${homeBowl.player.name}.` : ""}</p></div>
+    <small className="match-two-caveat">Figures are profile or scorecard totals, not head-to-head results. No player-versus-player history, pitch report, or confirmed XI is available here.</small>
+  </section>;
 }
 
 function SquadList({ team, auction }: { team: AuctionTeam; auction: AuctionSnapshot }) {
@@ -183,8 +218,10 @@ export default function MatchDetailsPage() {
         </> : <div className="match-analysis-empty"><h3>Analysis will sharpen when squads are available</h3><p>Once both team rosters and verified player figures are connected, this section will surface each side’s leading run scorer, wicket taker, and relevant batting rates.</p></div>}
       </section>
 
+      {matchNumber === 2 && !loading && resolvedHome && resolvedAway && <MatchTwoBrief home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
+
       <section className="match-squads-section">
-        <div className="match-section-title"><div><span>Confirmed line-ups</span><h2>Meet the<br/><em>squads.</em></h2></div><p>Player roles and current team assignments from the official Season 5 roster.</p></div>
+        <div className="match-section-title"><div><span>Season 5 squads</span><h2>Meet the<br/><em>squads.</em></h2></div><p>Player roles and current team assignments from the official Season 5 roster. Final playing XIs will be confirmed separately.</p></div>
         {loading ? <p className="match-loading">Loading team squads…</p> : <div className="match-squads-grid">{resolvedHome && <SquadList team={resolvedHome} auction={auction} />}{resolvedAway && <SquadList team={resolvedAway} auction={auction} />}</div>}
       </section>
 

@@ -7,6 +7,7 @@ import "../app/auction-live.css";
 import "../app/site-navigation.css";
 import "../app/match-details.css";
 import "../app/match-analysis.css";
+import "../app/match2-analysis.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode><MatchDetailsPage /></React.StrictMode>,
