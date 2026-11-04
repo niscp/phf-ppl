@@ -14,6 +14,7 @@ type DirectoryPlayer = {
   role: string;
   photo: string | null;
   statsSource?: string;
+  statsChecked?: string;
   stats?: {
     batting?: { runs?: number | string | null; average?: number | string | null; strikeRate?: number | string | null };
     bowling?: { wickets?: number | string | null; economy?: number | string | null };
@@ -58,8 +59,22 @@ function getTeamStatSummary(team: AuctionTeam, auction: AuctionSnapshot, tournam
   const metrics = squad.map((player) => {
     const profile = directory.find((item) => item.id === player.id);
     const season = tournament.player_stats.find((item) => item.player_id === player.id);
+    const careerRuns = profile?.statsSource ? numeric(profile.stats?.batting?.runs) : null;
+    const careerAverage = profile?.statsSource ? numeric(profile.stats?.batting?.average) : null;
+    const careerStrikeRate = profile?.statsSource ? numeric(profile.stats?.batting?.strikeRate) : null;
+    const careerWickets = profile?.statsSource ? numeric(profile.stats?.bowling?.wickets) : null;
+    const careerEconomy = profile?.statsSource ? numeric(profile.stats?.bowling?.economy) : null;
+    const hasSeasonRecord = Boolean(season?.matches);
     return {
       player,
+      profile,
+      hasSeasonRecord,
+      seasonMatches: season?.matches ?? 0,
+      careerRuns,
+      careerAverage,
+      careerStrikeRate,
+      careerWickets,
+      careerEconomy,
       runs: seasonStatsExist ? (season?.matches ? season.runs : null) : (profile?.statsSource ? numeric(profile.stats?.batting?.runs) : null),
       strikeRate: seasonStatsExist ? (season?.matches && season.balls ? (100 * season.runs / season.balls) : null) : (profile?.statsSource ? numeric(profile.stats?.batting?.strikeRate) : null),
       wickets: seasonStatsExist ? (season?.matches ? season.wickets : null) : (profile?.statsSource ? numeric(profile.stats?.bowling?.wickets) : null),
@@ -110,6 +125,57 @@ function TeamAnalysis({ team, auction, tournament }: { team: AuctionTeam; auctio
   </article>;
 }
 
+function PlayerByPlayerScouting({ team, auction, tournament }: { team: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
+  const stats = getTeamStatSummary(team, auction, tournament);
+  const careerBatting = stats.metrics.filter((row) => row.careerRuns !== null).sort((a, b) => (b.careerRuns ?? 0) - (a.careerRuns ?? 0));
+  const careerBowling = stats.metrics.filter((row) => row.careerWickets !== null).sort((a, b) => (b.careerWickets ?? 0) - (a.careerWickets ?? 0));
+  const number = (value: number | null, digits = 0) => value === null ? "—" : value.toLocaleString("en-IN", { maximumFractionDigits: digits, minimumFractionDigits: digits });
+  const recordFor = (row: typeof stats.metrics[number]) => {
+    if (row.hasSeasonRecord) return {
+      scope: "Season 5 scorecard",
+      runs: row.runs,
+      average: null,
+      strikeRate: row.strikeRate,
+      wickets: row.wickets,
+      economy: row.economy,
+      note: `${row.seasonMatches} Season 5 ${row.seasonMatches === 1 ? "appearance" : "appearances"} recorded.`,
+    };
+    const battingRank = row.careerRuns === null ? null : careerBatting.findIndex((item) => item.player.id === row.player.id) + 1;
+    const bowlingRank = row.careerWickets === null ? null : careerBowling.findIndex((item) => item.player.id === row.player.id) + 1;
+    const ranks = [
+      battingRank ? `career runs ${battingRank}/${careerBatting.length}` : null,
+      bowlingRank ? `career wickets ${bowlingRank}/${careerBowling.length}` : null,
+    ].filter(Boolean);
+    return {
+      scope: "Verified career profile",
+      runs: row.careerRuns,
+      average: row.careerAverage,
+      strikeRate: row.careerStrikeRate,
+      wickets: row.careerWickets,
+      economy: row.careerEconomy,
+      note: ranks.length ? `Squad rank: ${ranks.join(" · ")}.` : row.profile?.statsSource ? "Profile linked; comparable totals are not available." : "No verified career totals in this data set.",
+    };
+  };
+  return <details className="match-player-scouting" open>
+    <summary><span>Player-by-player record</span><b>{stats.squad.length} listed</b><i aria-hidden="true" /></summary>
+    <div className="match-player-scouting-intro"><p>All listed players are covered below. Batting and bowling totals are kept to the same profile scope; ranks compare available records within this squad. A dash means no comparable figure is available.</p><span>{stats.statsScope === "Season 5" ? "Season scorecards where recorded · career baseline otherwise" : "Verified career profile totals"}</span></div>
+    <div className="match-player-table-scroll" role="region" aria-label={`${team.name} player-by-player stats`} tabIndex={0}>
+      <table className="match-player-table"><thead><tr><th scope="col">Player &amp; role</th><th scope="col">Batting · runs / avg / SR</th><th scope="col">Bowling · wickets / econ</th><th scope="col">Scouting read</th></tr></thead><tbody>
+        {stats.metrics.map((row) => {
+          const record = recordFor(row);
+          return <tr key={row.player.id}>
+            <th scope="row"><strong>{row.player.name}{row.player.status === "captain" ? <span className="match-player-captain">C</span> : null}</strong><small>{row.player.role || "Role not listed"}</small>{row.profile?.statsSource && <a href={row.profile.statsSource} target="_blank" rel="noopener noreferrer">Profile source ↗</a>}</th>
+            <td><strong>{number(record.runs)}</strong><small>Avg {number(record.average, 2)} · SR {number(record.strikeRate, 2)}</small></td>
+            <td><strong>{number(record.wickets)} wickets</strong><small>Economy {number(record.economy, 2)}</small></td>
+            <td><span className="match-player-scope">{record.scope}</span><small>{record.note}</small></td>
+          </tr>;
+        })}
+      </tbody></table>
+    </div>
+    {stats.metrics.some((row) => row.profile?.statsChecked) && <small className="match-player-source-note">Career profile data checked {stats.metrics.find((row) => row.profile?.statsChecked)?.profile?.statsChecked}. Career records describe past performance and do not guarantee match-day selection or form.</small>}
+  </details>;
+}
+
 function MatchTwoBrief({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
   const homeStats = getTeamStatSummary(home, auction, tournament);
   const awayStats = getTeamStatSummary(away, auction, tournament);
@@ -121,6 +187,7 @@ function MatchTwoBrief({ home, away, auction, tournament }: { home: AuctionTeam;
   const awayBowl = leader(awayStats, "bowl");
   const homeAllRounders = roleCount(homeStats, "All-rounder");
   const awayAllRounders = roleCount(awayStats, "All-rounder");
+  const listedPlayerCount = homeStats.squad.length + awayStats.squad.length;
   const captainName = (stats: ReturnType<typeof getTeamStatSummary>) => stats.squad.find((player) => player.status === "captain")?.name ?? "the captain";
   const scope = homeStats.statsScope === awayStats.statsScope ? homeStats.statsScope : "available recorded";
 
@@ -142,6 +209,8 @@ function MatchTwoBrief({ home, away, auction, tournament }: { home: AuctionTeam;
     </div>
     <div className="match-two-watchline"><span>Match watch</span><p>{homeBat && awayBowl ? `${homeBat.player.name}’s run record meets ${away.name}’s leading wicket record (${awayBowl?.wickets ?? "—"} wickets).` : "Compare the two sides’ leading batting and bowling records as the confirmed XI and scorecards become available."} {awayBat && homeBowl ? `${awayBat.player.name} is the corresponding batting name to watch for ${away.name}, with ${home.name}’s leading wicket record held by ${homeBowl.player.name}.` : ""}</p></div>
     <small className="match-two-caveat">Figures are profile or scorecard totals, not head-to-head results. No player-versus-player history, pitch report, or confirmed XI is available here.</small>
+    <div className="match-two-full-scouting"><div><span>Complete squad view</span><h3>Every player.<br/><em>Every verified record.</em></h3></div><p>Review all {listedPlayerCount} players currently listed for this match. Profiles, batting totals, wicket records, and within-squad ranks appear where the data is available.</p></div>
+    <div className="match-two-player-grids"><PlayerByPlayerScouting team={home} auction={auction} tournament={tournament} /><PlayerByPlayerScouting team={away} auction={auction} tournament={tournament} /></div>
   </section>;
 }
 

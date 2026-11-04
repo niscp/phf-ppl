@@ -8,6 +8,7 @@ import "../app/site-navigation.css";
 import "../app/match-details.css";
 import "../app/match-analysis.css";
 import "../app/match2-analysis.css";
+import "../app/match-player-scouting.css";
 import "../app/match-rules.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

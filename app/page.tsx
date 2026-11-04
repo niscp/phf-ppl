@@ -10,6 +10,19 @@ export default function Home() {
   const [auctionOnline, setAuctionOnline] = useState(false);
   const [tournament, setTournament] = useState<TournamentSnapshot>({ matches: [], standings: [], player_stats: [] });
 
+  // Old bookmarks and cached navigation used /#fixtures. Send that legacy link
+  // to the dedicated match schedule instead of leaving visitors on the homepage.
+  useEffect(() => {
+    const openFixturesFromLegacyHash = () => {
+      if (window.location.hash.toLowerCase() !== "#fixtures") return;
+      const base = window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/";
+      window.location.replace(`${base}fixtures.html`);
+    };
+    openFixturesFromLegacyHash();
+    window.addEventListener("hashchange", openFixturesFromLegacyHash);
+    return () => window.removeEventListener("hashchange", openFixturesFromLegacyHash);
+  }, []);
+
   useEffect(() => {
     let active = true;
     const refresh = async () => {
