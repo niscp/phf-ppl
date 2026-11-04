@@ -12,12 +12,10 @@ export type FanMatch = {
   home_team_id: string; home_team: string; home_logo: string | null; away_team_id: string; away_team: string; away_logo: string | null;
   home_players: FanPlayer[]; away_players: FanPlayer[];
   my_pick: null | { winner_team_id: string; top_scorer_player_id: string | null; top_wicket_taker_player_id: string | null };
-  my_potm_vote: string | null;
-  potm_votes: Array<{ player_id: string; player_name: string; votes: number }>;
   community: null | { home_votes: number; away_votes: number; total: number; home_percent: number; away_percent: number };
 };
 type FanProfile = { id: string; display_name: string };
-type FanLeaderboardRow = { display_name: string; points: number; votes_cast: number; match_entries: number; potm_votes: number; accuracy_percent: number };
+type FanLeaderboardRow = { display_name: string; points: number; votes_cast: number; match_entries: number; accuracy_percent: number };
 
 export async function fanRequest(path: string, init: RequestInit = {}) {
   if (!apiUrl) throw new Error("Fan activity API is not configured.");
@@ -39,7 +37,6 @@ export function FanMatchActivity({ matchNumber, compact = false, initialMatch }:
   const [winner, setWinner] = useState(initialMatch?.my_pick?.winner_team_id ?? "");
   const [scorer, setScorer] = useState(initialMatch?.my_pick?.top_scorer_player_id ?? "");
   const [bowler, setBowler] = useState(initialMatch?.my_pick?.top_wicket_taker_player_id ?? "");
-  const [potmChoice, setPotmChoice] = useState(initialMatch?.my_potm_vote ?? "");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -56,7 +53,6 @@ export function FanMatchActivity({ matchNumber, compact = false, initialMatch }:
       setWinner(selected?.my_pick?.winner_team_id ?? "");
       setScorer(selected?.my_pick?.top_scorer_player_id ?? "");
       setBowler(selected?.my_pick?.top_wicket_taker_player_id ?? "");
-      setPotmChoice(selected?.my_potm_vote ?? "");
     }).catch((reason: Error) => { if (active) setError(reason.message); });
     return () => { active = false; };
   }, [matchNumber, initialMatch]);
@@ -70,18 +66,6 @@ export function FanMatchActivity({ matchNumber, compact = false, initialMatch }:
       setMatch((body.matches as FanMatch[]).find((item) => item.match_number === matchNumber) ?? null);
       setMessage("Your picks are saved. You can edit them until the match starts.");
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save your picks."); }
-    finally { setBusy(false); }
-  }
-
-  async function votePotm() {
-    if (!match || !potmChoice) { setError("Choose a player for Fan Player of the Match."); return; }
-    setBusy(true); setError(""); setMessage("");
-    try {
-      await fanRequest(`/api/fan/matches/${matchNumber}/potm`, { method: "POST", body: JSON.stringify({ player_id: potmChoice }) });
-      const body = await fanRequest("/api/fan/matches");
-      setMatch((body.matches as FanMatch[]).find((item) => item.match_number === matchNumber) ?? null);
-      setMessage("Your Fan Player of the Match vote is in.");
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save your vote."); }
     finally { setBusy(false); }
   }
 
@@ -99,10 +83,6 @@ export function FanMatchActivity({ matchNumber, compact = false, initialMatch }:
       {signedIn ? <div className="fan-save-row"><span>{match.my_pick ? "Pick saved · edits close at match start" : "One entry per fan · edits close at match start"}</span><button className="fan-button" type="button" disabled={busy} onClick={savePick}>{busy ? "Saving…" : match.my_pick ? "Update pick" : "Save pick"}</button></div> : <div className="fan-save-row"><span>Sign in to save a pick. Your phone number stays private.</span><a className="fan-button" href={fanAccountPath(`/fan.html?match=${matchNumber}`)}>Sign in to pick</a></div>}
       </>}
       {!match.can_pick && <div className="fan-closed-state"><b>{match.status === "completed" ? "Match complete" : "Picks are closed"}</b><span>{match.result_text || "The match pick window has closed."}</span>{match.my_pick && <span>Your pick was saved before the match.</span>}</div>}
-      {match.status === "completed" && <div className="fan-potm"><div className="fan-potm-heading"><span>After the final ball</span><b>Fan Player of the Match</b></div>
-        {match.potm_votes.length > 0 && <ol>{match.potm_votes.map((vote) => <li key={vote.player_id}><span>{vote.player_name}</span><b>{vote.votes}</b></li>)}</ol>}
-        {!match.my_potm_vote ? <><label>Choose a player<select value={potmChoice} onChange={(event) => setPotmChoice(event.target.value)}><option value="">Select from both squads</option>{[...match.home_players, ...match.away_players].map((player) => <option key={player.id} value={player.id}>{player.name} · {player.team_id === match.home_team_id ? match.home_team : match.away_team}</option>)}</select></label>{signedIn ? <button className="fan-button" type="button" disabled={busy} onClick={votePotm}>{busy ? "Saving…" : "Cast one vote"}</button> : <a className="fan-button" href={fanAccountPath(`/fan.html?match=${matchNumber}`)}>Sign in to vote</a>}</> : <p className="fan-potm-thanks">Your vote is recorded. Each fan gets one vote per match.</p>}
-      </div>}
       {message && <p className="fan-message success" role="status">{message}</p>}
     </>}
   </section>;
@@ -177,9 +157,9 @@ function FanLeaderboardCard({ leaderboard, loading, error }: { leaderboard: FanL
     : b.points - a.points || b.accuracy_percent - a.accuracy_percent || b.votes_cast - a.votes_cast || a.display_name.localeCompare(b.display_name));
   return <section className="fan-board-card fan-board-dashboard" aria-labelledby="fan-leaderboard-title">
     <div className="fan-section-heading"><div><span>Season standings</span><h2 id="fan-leaderboard-title">Fan leaderboard</h2></div><p>Follow the fans driving the season, whether by showing up or calling the results.</p></div>
-    <div className="fan-board-tabs" role="tablist" aria-label="Fan leaderboard category"><button type="button" role="tab" aria-selected={mode === "engaged"} className={mode === "engaged" ? "active" : ""} onClick={() => setMode("engaged")}><b>Most engaged</b><small>Most picks and votes</small></button><button type="button" role="tab" aria-selected={mode === "points"} className={mode === "points" ? "active" : ""} onClick={() => setMode("points")}><b>Most points</b><small>Correct match calls</small></button></div>
+    <div className="fan-board-tabs" role="tablist" aria-label="Fan leaderboard category"><button type="button" role="tab" aria-selected={mode === "engaged"} className={mode === "engaged" ? "active" : ""} onClick={() => setMode("engaged")}><b>Most engaged</b><small>Most match picks</small></button><button type="button" role="tab" aria-selected={mode === "points"} className={mode === "points" ? "active" : ""} onClick={() => setMode("points")}><b>Most points</b><small>Correct match calls</small></button></div>
     {error && <p className="fan-message error" role="alert">{error}</p>}
-    {loading ? <p className="fan-loading">Loading the fan standings…</p> : rankedFans.length ? <><div className="fan-board-columns"><span>Rank · fan</span><span>{mode === "engaged" ? "Activity" : "Accuracy"}</span><b>{mode === "engaged" ? "Votes" : "Points"}</b></div><ol>{rankedFans.map((row, index) => <li key={`${row.display_name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{row.display_name}<small>{row.match_entries} match entries · {row.potm_votes} player-of-match votes · {row.accuracy_percent}% winner accuracy</small></span><strong>{mode === "engaged" ? row.votes_cast : row.points}</strong></li>)}</ol><p className="fan-board-scoring">{mode === "engaged" ? "Engagement counts submitted winner calls, optional run-scorer and wicket-taker picks, and Fan Player of the Match votes." : "One point is awarded for each correct match-winner pick. Ties are settled by accuracy, then total activity."}</p></> : <div className="fan-board-empty"><b>{mode === "engaged" ? "The fan activity race starts here." : "The points race starts when results are recorded."}</b><span>{mode === "engaged" ? "Make match picks and vote for Fan Player of the Match to climb the Most Engaged board." : "Correct match-winner calls earn points after results are recorded."}</span><a href={fanPath()}>Make your first pick →</a></div>}
+    {loading ? <p className="fan-loading">Loading the fan standings…</p> : rankedFans.length ? <><div className="fan-board-columns"><span>Rank · fan</span><span>{mode === "engaged" ? "Activity" : "Accuracy"}</span><b>{mode === "engaged" ? "Picks" : "Points"}</b></div><ol>{rankedFans.map((row, index) => <li key={`${row.display_name}-${index}`}><b>{String(index + 1).padStart(2, "0")}</b><span>{row.display_name}<small>{row.match_entries} match entries · {row.accuracy_percent}% winner accuracy</small></span><strong>{mode === "engaged" ? row.votes_cast : row.points}</strong></li>)}</ol><p className="fan-board-scoring">{mode === "engaged" ? "Engagement counts submitted winner calls and optional run-scorer and wicket-taker picks." : "One point is awarded for each correct match-winner pick. Ties are settled by accuracy, then total activity."}</p></> : <div className="fan-board-empty"><b>{mode === "engaged" ? "The fan activity race starts here." : "The points race starts when results are recorded."}</b><span>{mode === "engaged" ? "Make a match pick to climb the Most Engaged board." : "Correct match-winner calls earn points after results are recorded."}</span><a href={fanPath()}>Make your first pick →</a></div>}
   </section>;
 }
 

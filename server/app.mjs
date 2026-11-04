@@ -207,33 +207,23 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
   app.get("/api/fan/matches", async (req, res, next) => {
     try {
       const fanId = optionalFanId(req);
-      const [matches, players, potmVotes] = await Promise.all([
+      const [matches, players] = await Promise.all([
         pool.query(`select m.id,m.match_number,m.match_date,m.match_time,m.status,m.winner_team_id,m.result_text,
           h.id home_team_id,h.name home_team,h.logo_url home_logo,a.id away_team_id,a.name away_team,a.logo_url away_logo,
           ((m.match_date + m.match_time::time) at time zone 'Asia/Kolkata') starts_at,
           case when m.status='scheduled' and ((m.match_date + m.match_time::time) at time zone 'Asia/Kolkata') > now() then true else false end can_pick,
           p.winner_team_id my_winner_team_id,p.top_scorer_player_id my_top_scorer_player_id,p.top_wicket_taker_player_id my_top_wicket_taker_player_id,
-          pv.player_id my_potm_vote,
           coalesce(v.home_votes,0)::int home_votes,coalesce(v.away_votes,0)::int away_votes,
           coalesce(v.scorer_votes,0)::int scorer_votes,coalesce(v.wicket_votes,0)::int wicket_votes
           from tournament_matches m join auction_teams h on h.id=m.home_team_id join auction_teams a on a.id=m.away_team_id
           left join fan_match_picks p on p.match_id=m.id and p.fan_id=$1
-          left join fan_potm_votes pv on pv.match_id=m.id and pv.fan_id=$1
           left join lateral (select count(*) filter(where winner_team_id=m.home_team_id) home_votes,
             count(*) filter(where winner_team_id=m.away_team_id) away_votes,
             count(top_scorer_player_id) scorer_votes,count(top_wicket_taker_player_id) wicket_votes
             from fan_match_picks where match_id=m.id) v on true
           order by m.match_number`, [fanId]),
         pool.query("select id,name,role,photo,team_id,status from auction_players where status in ('sold','captain') order by name"),
-        pool.query(`select m.match_number,v.player_id,p.name player_name,count(*)::int votes from fan_potm_votes v
-          join tournament_matches m on m.id=v.match_id join auction_players p on p.id=v.player_id
-          group by m.match_number,v.player_id,p.name order by m.match_number,votes desc,p.name`),
       ]);
-      const potmByMatch = new Map();
-      for (const vote of potmVotes.rows) {
-        if (!potmByMatch.has(vote.match_number)) potmByMatch.set(vote.match_number, []);
-        potmByMatch.get(vote.match_number).push(vote);
-      }
       const roster = new Map();
       for (const player of players.rows) {
         if (!roster.has(player.team_id)) roster.set(player.team_id, []);
@@ -248,8 +238,6 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
           home_players: roster.get(match.home_team_id) || [],
           away_players: roster.get(match.away_team_id) || [],
           my_pick: match.my_winner_team_id ? { winner_team_id: match.my_winner_team_id, top_scorer_player_id: match.my_top_scorer_player_id, top_wicket_taker_player_id: match.my_top_wicket_taker_player_id } : null,
-          my_potm_vote: match.my_potm_vote || null,
-          potm_votes: match.status === "completed" ? (potmByMatch.get(match.match_number) || []) : [],
           community: reveal ? { home_votes: homeVotes, away_votes: awayVotes, total: homeVotes + awayVotes, home_percent: homeVotes + awayVotes ? Math.round(homeVotes * 100 / (homeVotes + awayVotes)) : 0, away_percent: homeVotes + awayVotes ? Math.round(awayVotes * 100 / (homeVotes + awayVotes)) : 0 } : null,
           home_votes: undefined, away_votes: undefined, my_winner_team_id: undefined, my_top_scorer_player_id: undefined, my_top_wicket_taker_player_id: undefined,
         };
@@ -282,22 +270,6 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
     } catch (error) { next(error); }
   });
 
-  app.post("/api/fan/matches/:matchNumber/potm", fanAuth, async (req, res, next) => {
-    try {
-      const matchNumber = Number(req.params.matchNumber);
-      const playerId = String(req.body?.player_id || "");
-      const { rows: matches } = await pool.query("select id,home_team_id,away_team_id,status from tournament_matches where match_number=$1", [matchNumber]);
-      const match = matches[0];
-      if (!match) return res.status(404).json({ error: "Match not found." });
-      if (match.status !== "completed") return res.status(409).json({ error: "Fan Player of the Match voting opens after the match is completed." });
-      const { rows: players } = await pool.query("select id from auction_players where id=$1 and team_id=any($2::uuid[]) and status in ('sold','captain')", [playerId, [match.home_team_id, match.away_team_id]]);
-      if (!players[0]) return res.status(400).json({ error: "Choose a listed player from this match." });
-      const { rows: saved } = await pool.query("insert into fan_potm_votes(fan_id,match_id,player_id) values($1,$2,$3) on conflict(fan_id,match_id) do nothing returning player_id", [req.fan.id, match.id, playerId]);
-      if (!saved[0]) return res.status(409).json({ error: "You have already voted for this match." });
-      res.set("Cache-Control", "no-store").json({ vote: saved[0] });
-    } catch (error) { next(error); }
-  });
-
   app.get("/api/fan/leaderboard", async (_req, res, next) => {
     try {
       const { rows } = await pool.query(`with picks as (
@@ -306,14 +278,12 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
             count(*) filter(where m.status='completed' and p.winner_team_id=m.winner_team_id)::int points,
             sum(1 + case when p.top_scorer_player_id is not null then 1 else 0 end + case when p.top_wicket_taker_player_id is not null then 1 else 0 end)::int prediction_votes
           from fan_match_picks p join tournament_matches m on m.id=p.match_id group by p.fan_id
-        ), potm as (
-          select fan_id,count(*)::int potm_votes from fan_potm_votes group by fan_id
         ), public_fans as (
           select f.id,f.display_name,coalesce(p.points,0)::int points,
-            (coalesce(p.prediction_votes,0)+coalesce(v.potm_votes,0))::int votes_cast,
-            coalesce(p.match_entries,0)::int match_entries,coalesce(v.potm_votes,0)::int potm_votes,
+            coalesce(p.prediction_votes,0)::int votes_cast,
+            coalesce(p.match_entries,0)::int match_entries,
             case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent
-          from fan_users f left join picks p on p.fan_id=f.id left join potm v on v.fan_id=f.id
+          from fan_users f left join picks p on p.fan_id=f.id
           where f.active=true
         ), ranked as (
           select public_fans.*,
@@ -321,7 +291,7 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
             row_number() over(order by points desc,accuracy_percent desc,votes_cast desc,display_name asc) points_rank
           from public_fans
         )
-        select id,display_name,points,votes_cast,match_entries,potm_votes,accuracy_percent
+        select id,display_name,points,votes_cast,match_entries,accuracy_percent
         from ranked where engagement_rank<=50 or points_rank<=50
         order by points_rank,engagement_rank`);
       res.set("Cache-Control", "no-store").json({ leaderboard: rows });
