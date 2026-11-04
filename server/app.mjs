@@ -170,7 +170,7 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
       if (password.length < 10 || password.length > 128) return res.status(400).json({ error: "Choose a password between 10 and 128 characters." });
       const passwordHash = await bcrypt.hash(password, 12);
       const { rows } = await pool.query(
-        "insert into fan_users(phone_e164,display_name,password_hash) values($1,$2,$3) returning id,display_name,leaderboard_opt_in",
+        "insert into fan_users(phone_e164,display_name,password_hash) values($1,$2,$3) returning id,display_name",
         [phone, name, passwordHash],
       );
       const fan = rows[0];
@@ -185,29 +185,21 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
     try {
       if (!fanRateLimit(req, res, "login")) return;
       const phone = normalizeFanPhone(req.body?.phone);
-      const { rows } = phone ? await pool.query("select id,display_name,leaderboard_opt_in,password_hash from fan_users where phone_e164=$1 and active=true", [phone]) : { rows: [] };
+      const { rows } = phone ? await pool.query("select id,display_name,password_hash from fan_users where phone_e164=$1 and active=true", [phone]) : { rows: [] };
       const fan = rows[0];
       if (!fan || !(await bcrypt.compare(String(req.body?.password || ""), fan.password_hash))) {
         return res.status(401).json({ error: "Phone number or password is incorrect." });
       }
       fanAttempts.delete(`login:${req.ip || "unknown"}`);
-      const { password_hash: _passwordHash, ...safeFan } = fan;
+      const safeFan = { id: fan.id, display_name: fan.display_name };
       res.json({ token: signFanToken(fan), fan: safeFan });
     } catch (error) { next(error); }
   });
 
   app.get("/api/fan/me", fanAuth, async (req, res, next) => {
     try {
-      const { rows } = await pool.query("select id,display_name,leaderboard_opt_in from fan_users where id=$1 and active=true", [req.fan.id]);
+      const { rows } = await pool.query("select id,display_name from fan_users where id=$1 and active=true", [req.fan.id]);
       if (!rows[0]) return res.status(401).json({ error: "Fan account is unavailable. Sign in again." });
-      res.set("Cache-Control", "no-store").json({ fan: rows[0] });
-    } catch (error) { next(error); }
-  });
-
-  app.patch("/api/fan/profile", fanAuth, async (req, res, next) => {
-    try {
-      const { rows } = await pool.query("update fan_users set leaderboard_opt_in=$2 where id=$1 and active=true returning id,display_name,leaderboard_opt_in", [req.fan.id, req.body?.leaderboard_opt_in === true]);
-      if (!rows[0]) return res.status(404).json({ error: "Fan account not found." });
       res.set("Cache-Control", "no-store").json({ fan: rows[0] });
     } catch (error) { next(error); }
   });
@@ -322,7 +314,7 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
             coalesce(p.match_entries,0)::int match_entries,coalesce(v.potm_votes,0)::int potm_votes,
             case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent
           from fan_users f left join picks p on p.fan_id=f.id left join potm v on v.fan_id=f.id
-          where f.active=true and f.leaderboard_opt_in=true and coalesce(p.match_entries,0)+coalesce(v.potm_votes,0)>0
+          where f.active=true
         ), ranked as (
           select public_fans.*,
             row_number() over(order by votes_cast desc,match_entries desc,points desc,display_name asc) engagement_rank,
