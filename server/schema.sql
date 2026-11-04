@@ -154,7 +154,29 @@ create table if not exists fan_match_picks (
   updated_at timestamptz not null default now(),
   unique(fan_id, match_id)
 );
+alter table fan_match_picks add column if not exists player_spotlight_player_id text references auction_players(id);
+alter table fan_match_picks add column if not exists innings_score_band text;
 create index if not exists fan_match_picks_match_idx on fan_match_picks(match_id);
+
+-- A fan may mark one fixture as their power pick per scheduled matchday.
+create table if not exists fan_matchday_power_picks (
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  match_date date not null,
+  match_id bigint not null references tournament_matches(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key(fan_id,match_date),
+  unique(fan_id,match_id)
+);
+
+-- One editable, pre-match moment poll vote per fan per fixture.
+create table if not exists fan_match_moment_votes (
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  match_id bigint not null references tournament_matches(id) on delete cascade,
+  choice text not null check (choice in ('batting','bowling','fielding')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  primary key(fan_id,match_id)
+);
 
 create table if not exists fan_potm_votes (
   id bigserial primary key,

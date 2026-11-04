@@ -213,14 +213,23 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
           ((m.match_date + m.match_time::time) at time zone 'Asia/Kolkata') starts_at,
           case when m.status='scheduled' and ((m.match_date + m.match_time::time) at time zone 'Asia/Kolkata') > now() then true else false end can_pick,
           p.winner_team_id my_winner_team_id,p.top_scorer_player_id my_top_scorer_player_id,p.top_wicket_taker_player_id my_top_wicket_taker_player_id,
+          p.player_spotlight_player_id my_spotlight_player_id,p.innings_score_band my_score_band,
+          (power.match_id is not null) is_power_pick,pm.choice my_moment_vote,
           coalesce(v.home_votes,0)::int home_votes,coalesce(v.away_votes,0)::int away_votes,
-          coalesce(v.scorer_votes,0)::int scorer_votes,coalesce(v.wicket_votes,0)::int wicket_votes
+          coalesce(v.scorer_votes,0)::int scorer_votes,coalesce(v.wicket_votes,0)::int wicket_votes,
+          coalesce(moment.batting_votes,0)::int batting_votes,coalesce(moment.bowling_votes,0)::int bowling_votes,
+          coalesce(moment.fielding_votes,0)::int fielding_votes
           from tournament_matches m join auction_teams h on h.id=m.home_team_id join auction_teams a on a.id=m.away_team_id
           left join fan_match_picks p on p.match_id=m.id and p.fan_id=$1
+          left join fan_matchday_power_picks power on power.match_id=m.id and power.fan_id=$1
+          left join fan_match_moment_votes pm on pm.match_id=m.id and pm.fan_id=$1
           left join lateral (select count(*) filter(where winner_team_id=m.home_team_id) home_votes,
             count(*) filter(where winner_team_id=m.away_team_id) away_votes,
             count(top_scorer_player_id) scorer_votes,count(top_wicket_taker_player_id) wicket_votes
             from fan_match_picks where match_id=m.id) v on true
+          left join lateral (select count(*) filter(where choice='batting') batting_votes,
+            count(*) filter(where choice='bowling') bowling_votes,count(*) filter(where choice='fielding') fielding_votes
+            from fan_match_moment_votes where match_id=m.id) moment on true
           order by m.match_number`, [fanId]),
         pool.query("select id,name,role,photo,team_id,status from auction_players where status in ('sold','captain') order by name"),
       ]);
@@ -233,13 +242,18 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
         const homeVotes = Number(match.home_votes);
         const awayVotes = Number(match.away_votes);
         const reveal = Boolean(fanId && match.my_winner_team_id) || !match.can_pick;
+        const revealMoment = Boolean(fanId && match.my_moment_vote) || !match.can_pick;
         return {
           ...match,
           home_players: roster.get(match.home_team_id) || [],
           away_players: roster.get(match.away_team_id) || [],
-          my_pick: match.my_winner_team_id ? { winner_team_id: match.my_winner_team_id, top_scorer_player_id: match.my_top_scorer_player_id, top_wicket_taker_player_id: match.my_top_wicket_taker_player_id } : null,
+          my_pick: match.my_winner_team_id ? { winner_team_id: match.my_winner_team_id, top_scorer_player_id: match.my_top_scorer_player_id, top_wicket_taker_player_id: match.my_top_wicket_taker_player_id, player_spotlight_player_id: match.my_spotlight_player_id, innings_score_band: match.my_score_band } : null,
+          is_power_pick: Boolean(match.is_power_pick),
           community: reveal ? { home_votes: homeVotes, away_votes: awayVotes, total: homeVotes + awayVotes, home_percent: homeVotes + awayVotes ? Math.round(homeVotes * 100 / (homeVotes + awayVotes)) : 0, away_percent: homeVotes + awayVotes ? Math.round(awayVotes * 100 / (homeVotes + awayVotes)) : 0 } : null,
-          home_votes: undefined, away_votes: undefined, my_winner_team_id: undefined, my_top_scorer_player_id: undefined, my_top_wicket_taker_player_id: undefined,
+          moment_poll: { batting: revealMoment ? Number(match.batting_votes) : null, bowling: revealMoment ? Number(match.bowling_votes) : null, fielding: revealMoment ? Number(match.fielding_votes) : null, my_vote: match.my_moment_vote || null },
+          home_votes: undefined, away_votes: undefined, scorer_votes: undefined, wicket_votes: undefined,
+          my_winner_team_id: undefined, my_top_scorer_player_id: undefined, my_top_wicket_taker_player_id: undefined, my_spotlight_player_id: undefined, my_score_band: undefined, my_moment_vote: undefined,
+          batting_votes: undefined, bowling_votes: undefined, fielding_votes: undefined,
         };
       });
       res.set("Cache-Control", "no-store").json({ matches: data });
@@ -249,7 +263,8 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
   app.post("/api/fan/matches/:matchNumber/picks", fanAuth, async (req, res, next) => {
     try {
       const matchNumber = Number(req.params.matchNumber);
-      const { winner_team_id: winnerTeamId, top_scorer_player_id: scorerId = null, top_wicket_taker_player_id: bowlerId = null } = req.body || {};
+      const { winner_team_id: winnerTeamId, top_scorer_player_id: scorerId = null, top_wicket_taker_player_id: bowlerId = null,
+        player_spotlight_player_id: spotlightId = null, innings_score_band: scoreBand = null } = req.body || {};
       if (!Number.isInteger(matchNumber) || matchNumber < 1 || matchNumber > 15) return res.status(400).json({ error: "Choose a valid Season 5 match." });
       const { rows: matchRows } = await pool.query(`select id,home_team_id,away_team_id,status,
         ((match_date + match_time::time) at time zone 'Asia/Kolkata') starts_at from tournament_matches where match_number=$1`, [matchNumber]);
@@ -262,11 +277,55 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
         const { rows } = await pool.query("select id from auction_players where id=$1 and team_id=any($2::uuid[]) and status in ('sold','captain')", [playerId, [match.home_team_id, match.away_team_id]]);
         if (!rows[0]) return res.status(400).json({ error: `Choose a listed match player for ${label}.` });
       }
-      const { rows } = await pool.query(`insert into fan_match_picks(fan_id,match_id,winner_team_id,top_scorer_player_id,top_wicket_taker_player_id)
-        values($1,$2,$3,$4,$5) on conflict(fan_id,match_id) do update set winner_team_id=excluded.winner_team_id,
-        top_scorer_player_id=excluded.top_scorer_player_id,top_wicket_taker_player_id=excluded.top_wicket_taker_player_id,updated_at=now()
-        returning winner_team_id,top_scorer_player_id,top_wicket_taker_player_id,updated_at`, [req.fan.id, match.id, winnerTeamId, scorerId, bowlerId]);
+      if (spotlightId !== null) {
+        const { rows } = await pool.query("select id from auction_players where id=$1 and team_id=any($2::uuid[]) and status in ('sold','captain')", [spotlightId, [match.home_team_id, match.away_team_id]]);
+        if (!rows[0]) return res.status(400).json({ error: "Choose a listed player from this match for Player to Watch." });
+      }
+      const scoreBands = ["under_120", "120_149", "150_179", "180_209", "210_plus"];
+      if (scoreBand !== null && !scoreBands.includes(scoreBand)) return res.status(400).json({ error: "Choose a valid first-innings score range." });
+      const { rows } = await pool.query(`insert into fan_match_picks(fan_id,match_id,winner_team_id,top_scorer_player_id,top_wicket_taker_player_id,player_spotlight_player_id,innings_score_band)
+        values($1,$2,$3,$4,$5,$6,$7) on conflict(fan_id,match_id) do update set winner_team_id=excluded.winner_team_id,
+        top_scorer_player_id=excluded.top_scorer_player_id,top_wicket_taker_player_id=excluded.top_wicket_taker_player_id,
+        player_spotlight_player_id=excluded.player_spotlight_player_id,innings_score_band=excluded.innings_score_band,updated_at=now()
+        returning winner_team_id,top_scorer_player_id,top_wicket_taker_player_id,player_spotlight_player_id,innings_score_band,updated_at`, [req.fan.id, match.id, winnerTeamId, scorerId, bowlerId, spotlightId, scoreBand]);
       res.set("Cache-Control", "no-store").json({ pick: rows[0] });
+    } catch (error) { next(error); }
+  });
+
+  app.post("/api/fan/matches/:matchNumber/moment-poll", fanAuth, async (req, res, next) => {
+    try {
+      const matchNumber = Number(req.params.matchNumber);
+      const choice = String(req.body?.choice || "");
+      if (!Number.isInteger(matchNumber) || matchNumber < 1 || matchNumber > 15) return res.status(400).json({ error: "Choose a valid Season 5 match." });
+      if (!["batting", "bowling", "fielding"].includes(choice)) return res.status(400).json({ error: "Choose batting, bowling, or fielding." });
+      const { rows: matches } = await pool.query(`select id,status,((match_date + match_time::time) at time zone 'Asia/Kolkata') starts_at from tournament_matches where match_number=$1`, [matchNumber]);
+      const match = matches[0];
+      if (!match) return res.status(404).json({ error: "Match not found." });
+      if (match.status !== "scheduled" || new Date(match.starts_at).getTime() <= Date.now()) return res.status(409).json({ error: "This match poll is closed." });
+      const { rows } = await pool.query(`insert into fan_match_moment_votes(fan_id,match_id,choice) values($1,$2,$3)
+        on conflict(fan_id,match_id) do update set choice=excluded.choice,updated_at=now() returning choice`, [req.fan.id, match.id, choice]);
+      res.set("Cache-Control", "no-store").json({ vote: rows[0] });
+    } catch (error) { next(error); }
+  });
+
+  app.post("/api/fan/matches/:matchNumber/power-pick", fanAuth, async (req, res, next) => {
+    try {
+      const matchNumber = Number(req.params.matchNumber);
+      if (!Number.isInteger(matchNumber) || matchNumber < 1 || matchNumber > 15) return res.status(400).json({ error: "Choose a valid Season 5 match." });
+      const { rows: matches } = await pool.query(`select id,match_date,status,((match_date + match_time::time) at time zone 'Asia/Kolkata') starts_at from tournament_matches where match_number=$1`, [matchNumber]);
+      const match = matches[0];
+      if (!match) return res.status(404).json({ error: "Match not found." });
+      if (match.status !== "scheduled" || new Date(match.starts_at).getTime() <= Date.now()) return res.status(409).json({ error: "Power picks close when the match starts." });
+      const hasSavedPick = (await pool.query("select 1 from fan_match_picks where fan_id=$1 and match_id=$2", [req.fan.id, match.id])).rows[0];
+      if (!hasSavedPick) return res.status(409).json({ error: "Save a match prediction before choosing your power pick." });
+      const current = (await pool.query(`select p.match_id,m.status,((m.match_date + m.match_time::time) at time zone 'Asia/Kolkata') starts_at
+        from fan_matchday_power_picks p join tournament_matches m on m.id=p.match_id where p.fan_id=$1 and p.match_date=$2`, [req.fan.id, match.match_date])).rows[0];
+      if (current && current.match_id !== match.id && (current.status !== "scheduled" || new Date(current.starts_at).getTime() <= Date.now())) {
+        return res.status(409).json({ error: "Your power pick for this matchday is already locked." });
+      }
+      const { rows } = await pool.query(`insert into fan_matchday_power_picks(fan_id,match_date,match_id) values($1,$2,$3)
+        on conflict(fan_id,match_date) do update set match_id=excluded.match_id,created_at=now() returning match_id`, [req.fan.id, match.match_date, match.id]);
+      res.set("Cache-Control", "no-store").json({ power_pick: rows[0] });
     } catch (error) { next(error); }
   });
 
@@ -277,17 +336,68 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
             count(*) filter(where m.status='completed')::int completed_entries,
             count(*) filter(where m.status='completed' and p.winner_team_id=m.winner_team_id)::int points,
             count(*) filter(where p.top_scorer_player_id is not null and p.top_wicket_taker_player_id is not null)::int complete_entries,
+            count(p.player_spotlight_player_id)::int spotlight_entries,
+            count(p.innings_score_band)::int score_band_entries,
             sum(2 + case when p.top_scorer_player_id is not null then 1 else 0 end
               + case when p.top_wicket_taker_player_id is not null then 1 else 0 end
-              + case when p.top_scorer_player_id is not null and p.top_wicket_taker_player_id is not null then 1 else 0 end)::int engagement_score
+              + case when p.top_scorer_player_id is not null and p.top_wicket_taker_player_id is not null then 1 else 0 end
+              + case when p.player_spotlight_player_id is not null then 1 else 0 end
+              + case when p.innings_score_band is not null then 1 else 0 end)::int base_score
           from fan_match_picks p join tournament_matches m on m.id=p.match_id group by p.fan_id
+        ), matchdays as (
+          select match_date,count(*)::int fixture_count,row_number() over(order by match_date)::int day_number,
+            bool_and(status='completed') all_completed
+          from tournament_matches group by match_date
+        ), fan_matchdays as (
+          select f.id fan_id,d.match_date,d.day_number,d.fixture_count,d.all_completed,count(distinct p.match_id)::int picked_count
+          from fan_users f cross join matchdays d join tournament_matches m on m.match_date=d.match_date
+          left join fan_match_picks p on p.fan_id=f.id and p.match_id=m.id
+          group by f.id,d.match_date,d.day_number,d.fixture_count,d.all_completed
+        ), sweep_stats as (
+          select fan_id,count(*) filter(where picked_count=fixture_count)::int sweep_count
+          from fan_matchdays group by fan_id
+        ), sweep_streaks as (
+          select distinct a.fan_id from fan_matchdays a
+          join fan_matchdays b on b.fan_id=a.fan_id and b.day_number=a.day_number+1
+          join fan_matchdays c on c.fan_id=b.fan_id and c.day_number=b.day_number+1
+          where a.picked_count=a.fixture_count and b.picked_count=b.fixture_count and c.picked_count=c.fixture_count
+        ), poll_activity as (
+          select fan_id,count(*)::int moment_votes from fan_match_moment_votes group by fan_id
+        ), power_activity as (
+          select fan_id,count(*)::int power_picks from fan_matchday_power_picks group by fan_id
+        ), comeback_activity as (
+          select distinct current.fan_id from fan_matchdays current
+          where current.picked_count>0 and exists (
+            select 1 from fan_matchdays previous
+            where previous.fan_id=current.fan_id and previous.match_date<current.match_date and previous.picked_count>0
+              and exists (select 1 from fan_matchdays missed where missed.fan_id=current.fan_id
+                and missed.match_date>previous.match_date and missed.match_date<current.match_date
+                and missed.picked_count=0 and missed.all_completed=true)
+          )
         ), public_fans as (
           select f.id,f.display_name,coalesce(p.points,0)::int points,
-            coalesce(p.engagement_score,0)::int engagement_score,
+            (coalesce(p.base_score,0)+coalesce(poll.moment_votes,0)+coalesce(power.power_picks,0)
+              +2*coalesce(sweep.sweep_count,0)+case when streak.fan_id is not null then 2 else 0 end)::int engagement_score,
             coalesce(p.match_entries,0)::int match_entries,
             coalesce(p.complete_entries,0)::int complete_entries,
-            case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent
+            coalesce(p.spotlight_entries,0)::int spotlight_entries,coalesce(p.score_band_entries,0)::int score_band_entries,
+            coalesce(sweep.sweep_count,0)::int matchday_sweeps,case when streak.fan_id is not null then 3 else 0 end::int longest_sweep_streak,
+            coalesce(power.power_picks,0)::int power_picks,coalesce(poll.moment_votes,0)::int moment_votes,
+            case when coalesce(p.completed_entries,0)>0 then round(100.0*coalesce(p.points,0)/p.completed_entries)::int else 0 end accuracy_percent,
+            array_remove(array[
+              case when coalesce(p.match_entries,0)>=5 then '5 Match Picks' end,
+              case when coalesce(p.match_entries,0)>=10 then '10 Match Picks' end,
+              case when coalesce(p.match_entries,0)>=15 then 'Season Finisher' end,
+              case when coalesce(sweep.sweep_count,0)>0 then 'Matchday Sweep' end,
+              case when streak.fan_id is not null then '3 Matchday Streak' end,
+              case when comeback.fan_id is not null then 'Comeback Fan' end
+            ],null)::text[] badges
           from fan_users f left join picks p on p.fan_id=f.id
+          left join sweep_stats sweep on sweep.fan_id=f.id
+          left join sweep_streaks streak on streak.fan_id=f.id
+          left join power_activity power on power.fan_id=f.id
+          left join poll_activity poll on poll.fan_id=f.id
+          left join comeback_activity comeback on comeback.fan_id=f.id
           where f.active=true
         ), ranked as (
           select public_fans.*,
@@ -295,7 +405,8 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
             row_number() over(order by points desc,accuracy_percent desc,engagement_score desc,display_name asc) points_rank
           from public_fans
         )
-        select id,display_name,points,engagement_score,match_entries,complete_entries,accuracy_percent
+        select id,display_name,points,engagement_score,match_entries,complete_entries,accuracy_percent,
+          spotlight_entries,score_band_entries,matchday_sweeps,longest_sweep_streak,power_picks,moment_votes,badges
         from ranked where engagement_rank<=50 or points_rank<=50
         order by points_rank,engagement_rank`);
       res.set("Cache-Control", "no-store").json({ leaderboard: rows });
