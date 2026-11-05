@@ -258,15 +258,15 @@ export default function MatchDetailsPage() {
   const homeSquadStats = resolvedHome ? <TeamAnalysis team={resolvedHome} auction={auction} tournament={tournament} /> : null;
   const awaySquadStats = resolvedAway ? <TeamAnalysis team={resolvedAway} auction={auction} tournament={tournament} /> : null;
 
-  if (!fixture) return <main className="match-page"><SiteHeader active="fixtures" /><section className="match-not-found"><span>Season 5 fixtures</span><h1>Match not found</h1><p>Choose a match from the published schedule to see its details.</p><a href={localLink("fixtures.html")}>Back to fixtures</a></section></main>;
+  if (!fixture) return <main className="match-page"><SiteHeader active="match-center" /><section className="match-not-found"><span>Season 5 schedule</span><h1>Match not found</h1><p>Choose a match from the published schedule to see its details.</p><a href={localLink("fixtures.html")}>Back to schedule</a></section></main>;
 
   const analysisSources = tournament.player_stats.some((stat) => stat.matches > 0) ? "Season 5 scorecards" : "verified CricHeroes career profiles";
   const hasComparables = Boolean(resolvedHome && resolvedAway && auction.players.some((player) => player.team_id === resolvedHome.id) && auction.players.some((player) => player.team_id === resolvedAway.id));
 
   return <main className="match-page">
-    <SiteHeader active="fixtures" />
+    <SiteHeader active="match-center" />
     <div className="match-wrap">
-      <a className="match-back-link" href={localLink("fixtures.html")}>← All fixtures</a>
+      <a className="match-back-link" href={localLink("fixtures.html")}>← Full schedule</a>
       <section className="match-hero">
         <div className="match-hero-kicker"><span>PHF Premier League · Season 5</span><b>Match {String(matchNumber).padStart(2, "0")}</b></div>
         <div className="match-versus">

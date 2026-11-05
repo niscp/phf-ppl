@@ -2,17 +2,23 @@
 
 import { useState, type ReactNode } from "react";
 
-type PageKey = "home" | "fixtures" | "teams" | "players" | "auction" | "history" | "results" | "sponsors" | "fan" | "leaderboard" | "fan-account";
+type PageKey = "home" | "fixtures" | "match-center" | "stats" | "teams" | "players" | "auction" | "history" | "results" | "sponsors" | "fan" | "fan-guide" | "leaderboard" | "fan-account";
 
-const links: Array<{ key: PageKey; label: string; href: string }> = [
+const primaryLinks: Array<{ key: PageKey; label: string; href: string }> = [
   { key: "home", label: "Home", href: "" },
-  { key: "fixtures", label: "Fixtures", href: "fixtures.html" },
   { key: "fan", label: "Fan picks", href: "fan.html" },
+  { key: "fixtures", label: "Schedule", href: "fixtures.html" },
+  { key: "match-center", label: "Match centre", href: "match-centre.html" },
+  { key: "stats", label: "Tournament stats", href: "stats.html" },
   { key: "leaderboard", label: "Fan leaderboard", href: "fan-leaderboard.html" },
+];
+
+const moreLinks: Array<{ key: PageKey; label: string; href: string }> = [
+  { key: "fan-guide", label: "How Fan Picks works", href: "fan-guide.html" },
   { key: "fan-account", label: "Fan account", href: "fan-account.html" },
   { key: "teams", label: "Teams", href: "teams.html" },
   { key: "players", label: "Players", href: "players.html" },
-  { key: "auction", label: "Auction", href: "auction.html" },
+  { key: "auction", label: "Auction archive", href: "auction.html" },
   { key: "history", label: "Bid history", href: "bid-history.html" },
   { key: "results", label: "Results", href: "highlights.html" },
   { key: "sponsors", label: "Sponsors", href: "index.html#sponsors" },
@@ -29,7 +35,11 @@ export default function SiteHeader({ active, overlay = false, action }: { active
     <a className="phf-site-brand" href={pageLink("")} aria-label="PHF Premier League home"><b>PHF</b><span>Premier League</span></a>
     <button className="phf-site-menu-button" type="button" aria-expanded={open} aria-controls="phf-primary-nav" aria-label={open ? "Close navigation" : "Open navigation"} onClick={() => setOpen((value) => !value)}><i/><i/></button>
     <nav id="phf-primary-nav" className={open ? "phf-primary-nav is-open" : "phf-primary-nav"} aria-label="Main navigation">
-      {links.map((item) => <a key={item.key} className={active === item.key ? "is-active" : ""} href={pageLink(item.href)} aria-current={active === item.key ? "page" : undefined} onClick={() => setOpen(false)}>{item.label}</a>)}
+      {primaryLinks.map((item) => <a key={item.key} className={active === item.key ? "is-active" : ""} href={pageLink(item.href)} aria-current={active === item.key ? "page" : undefined} onClick={() => setOpen(false)}>{item.label}</a>)}
+      <details className={`phf-nav-more${moreLinks.some((item) => item.key === active) ? " has-active" : ""}`}>
+        <summary>More</summary>
+        <div className="phf-nav-more-menu">{moreLinks.map((item) => <a key={item.key} className={active === item.key ? "is-active" : ""} href={pageLink(item.href)} aria-current={active === item.key ? "page" : undefined} onClick={() => setOpen(false)}>{item.label}</a>)}</div>
+      </details>
       {action && <span className="phf-nav-action">{action}</span>}
     </nav>
   </header>;
