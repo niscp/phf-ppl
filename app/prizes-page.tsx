@@ -6,22 +6,22 @@ const base = import.meta.env.BASE_URL;
 const awards = [
   {
     name: "Player of the Match", tag: "MATCH DAY", feature: "Customized PHF cap",
-    prize: "Monin gift + Zomoz coupons",
+    extras: ["Monin gift", "Zomoz coupons"],
     detail: "For a standout performance in an individual match.",
   },
   {
-    name: "Player of the Series", tag: "THE SEASON", feature: "PHF kitbag + trophy",
-    prize: "Monin gift hamper + GetMeCab and Zomoz coupons",
+    name: "Player of the Series", tag: "THE SEASON", feature: "PHF kitbag",
+    extras: ["Trophy", "Monin gift hamper", "GetMeCab travel coupons", "Zomoz coupons"],
     detail: "The season-long individual honour, with a PHF kitbag as the featured prize.",
   },
   {
     name: "Purple Cap · Best Bowler", tag: "BOWLING", feature: "Shoes + customized Purple Cap",
-    prize: "Monin gift hamper + GetMeCab and Zomoz coupons",
+    extras: ["Monin gift hamper", "GetMeCab travel coupons", "Zomoz coupons"],
     detail: "A special prize bundle for the tournament’s top bowler.",
   },
   {
     name: "Orange Cap · Best Batter", tag: "BATTING", feature: "Batting gloves + customized Orange Cap",
-    prize: "Monin gift hamper + GetMeCab and Zomoz coupons",
+    extras: ["Monin gift hamper", "GetMeCab travel coupons", "Zomoz coupons"],
     detail: "A special prize bundle for the tournament’s top batter.",
   },
 ];
@@ -37,6 +37,12 @@ export default function PrizesPage() {
           <h1 id="prizes-title">Play for<br /><em>the pride.</em></h1>
           <p className="stage-deck">A season of big moments, silverware and rewards for the players who make it count.</p>
           <div className="grand-prize"><span>Total prizes announced</span><strong>₹105,000</strong><small>Team cash awards + trophies + individual honours</small></div>
+          <div className="prize-mix" aria-label="Season 5 prize highlights">
+            <span>THE PRIZE MIX</span>
+            <ul>
+              {["PHF kitbag", "Batting gloves", "Shoes", "Custom caps", "Gift hampers", "GetMeCab coupons", "Zomoz coupons", "Trophies"].map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
           <a className="stage-link" href={`${base}fixtures.html`}>Follow the season <span aria-hidden="true">↗</span></a>
         </div>
         <a className="stage-poster" href={`${base}phf-season-5-prize-announcement.jpg`} target="_blank" rel="noreferrer" aria-label="Open the full-size Season 5 prize poster">
@@ -85,13 +91,13 @@ export default function PrizesPage() {
             <summary className="award-summary" aria-label={`See prize details for ${award.name}`}>
             <span className="award-number">0{index + 1}</span>
             <div className="award-name"><small>{award.tag}</small><h3>{award.name}</h3></div>
-            <div className="award-details"><strong>{award.feature}</strong><p>{award.prize}</p><span className="award-toggle-label">See what’s included</span></div>
+            <div className="award-details"><strong>{award.feature}</strong><span className="award-toggle-label">{award.extras.includes("GetMeCab travel coupons") ? "Gift hamper + GetMeCab & Zomoz coupons" : award.extras.join(" + ")}</span><span className="award-open-label">Open the full prize bundle</span></div>
             <span className="award-toggle-icon" aria-hidden="true" />
             </summary>
             <div className="award-expanded">
               <p>{award.detail}</p>
               <ul aria-label={`${award.name} prize items`}>
-                {[award.feature, ...award.prize.split(" + ")].map((item) => <li key={item}>{item}</li>)}
+                {[award.feature, ...award.extras].map((item) => <li key={item}>{item}</li>)}
               </ul>
             </div>
           </details>)}
