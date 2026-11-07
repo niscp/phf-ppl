@@ -4,10 +4,26 @@ import "./prizes-page.css";
 const base = import.meta.env.BASE_URL;
 
 const awards = [
-  { name: "Player of the Match", tag: "MATCH DAY", feature: "Customized PHF cap", prize: "Plus a Monin gift and Zomoz coupons." },
-  { name: "Player of the Series", tag: "THE SEASON", feature: "PHF kitbag + trophy", prize: "Plus a Monin gift hamper, GetMeCab and Zomoz coupons." },
-  { name: "Purple Cap · Best Bowler", tag: "BOWLING", feature: "Shoes + customized Purple Cap", prize: "Plus a Monin gift hamper, GetMeCab and Zomoz coupons." },
-  { name: "Orange Cap · Best Batter", tag: "BATTING", feature: "Batting gloves + customized Orange Cap", prize: "Plus a Monin gift hamper, GetMeCab and Zomoz coupons." },
+  {
+    name: "Player of the Match", tag: "MATCH DAY", feature: "Customized PHF cap",
+    prize: "Monin gift + Zomoz coupons",
+    detail: "For a standout performance in an individual match.",
+  },
+  {
+    name: "Player of the Series", tag: "THE SEASON", feature: "PHF kitbag + trophy",
+    prize: "Monin gift hamper + GetMeCab and Zomoz coupons",
+    detail: "The season-long individual honour, with a PHF kitbag as the featured prize.",
+  },
+  {
+    name: "Purple Cap · Best Bowler", tag: "BOWLING", feature: "Shoes + customized Purple Cap",
+    prize: "Monin gift hamper + GetMeCab and Zomoz coupons",
+    detail: "A special prize bundle for the tournament’s top bowler.",
+  },
+  {
+    name: "Orange Cap · Best Batter", tag: "BATTING", feature: "Batting gloves + customized Orange Cap",
+    prize: "Monin gift hamper + GetMeCab and Zomoz coupons",
+    detail: "A special prize bundle for the tournament’s top batter.",
+  },
 ];
 
 export default function PrizesPage() {
@@ -65,12 +81,20 @@ export default function PrizesPage() {
           <p>Big performances earn their own spotlight. Four ways to leave your mark on Season 5.</p>
         </div>
         <div className="awards-list">
-          {awards.map((award, index) => <article className="award-row" key={award.name}>
+          {awards.map((award, index) => <details className="award-row" key={award.name}>
+            <summary className="award-summary" aria-label={`See prize details for ${award.name}`}>
             <span className="award-number">0{index + 1}</span>
             <div className="award-name"><small>{award.tag}</small><h3>{award.name}</h3></div>
-            <div className="award-details"><strong>{award.feature}</strong><p>{award.prize}</p></div>
-            <span className="award-star" aria-hidden="true">✳</span>
-          </article>)}
+            <div className="award-details"><strong>{award.feature}</strong><p>{award.prize}</p><span className="award-toggle-label">See what’s included</span></div>
+            <span className="award-toggle-icon" aria-hidden="true" />
+            </summary>
+            <div className="award-expanded">
+              <p>{award.detail}</p>
+              <ul aria-label={`${award.name} prize items`}>
+                {[award.feature, ...award.prize.split(" + ")].map((item) => <li key={item}>{item}</li>)}
+              </ul>
+            </div>
+          </details>)}
         </div>
 
       </section>
