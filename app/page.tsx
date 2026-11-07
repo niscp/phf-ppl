@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import SiteHeader from "./site-header";
+import HomeBannerCarousel from "./home-banner-carousel";
 import { getTournamentSnapshot, type TournamentSnapshot } from "./auction-client";
 import { announcedTeams } from "./season5-teams";
 import { fixtureTeamOrder, seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
@@ -95,6 +96,8 @@ export default function Home() {
         <span className="hub-match-link">Open Match Centre <b>↗</b></span>
       </a>
     </section>
+
+    <HomeBannerCarousel />
 
     <section className="hub-destinations" aria-label="Season destinations">
       <a className="hub-destination hub-picks" href={localLink("fan.html")}><span className="hub-destination-mark">P</span><div><h2>Fan Picks</h2><p>Call the winner, pick players, join the match poll, and climb the fan boards.</p></div><b className="hub-destination-arrow">↗</b></a>

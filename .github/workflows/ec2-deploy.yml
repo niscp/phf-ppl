@@ -67,6 +67,8 @@ jobs:
           test -s gh-pages/fan.html
           test -s gh-pages/fan-guide.html
           test -s gh-pages/phf-fan-engagement-announcement.mp4
+          test -s gh-pages/prizes.html
+          test -s gh-pages/phf-season-5-prize-announcement.jpg
           test -s gh-pages/fan-leaderboard.html
           test -s gh-pages/fan-account.html
 

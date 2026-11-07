@@ -26,6 +26,7 @@ export default defineConfig({
         stats: fileURLToPath(new URL("./stats.html", import.meta.url)),
         fan: fileURLToPath(new URL("./fan.html", import.meta.url)),
         fanGuide: fileURLToPath(new URL("./fan-guide.html", import.meta.url)),
+        prizes: fileURLToPath(new URL("./prizes.html", import.meta.url)),
         fanLeaderboard: fileURLToPath(new URL("./fan-leaderboard.html", import.meta.url)),
         fanAccount: fileURLToPath(new URL("./fan-account.html", import.meta.url)),
       },
