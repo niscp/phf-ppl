@@ -47,6 +47,17 @@ const banners = [
     statLabel: "home for match stories & stats",
     emblem: "VS",
   },
+  {
+    theme: "partners",
+    kicker: "Proud Season 5 partners",
+    title: "A great season takes a team.",
+    body: "Meet GetMeCab, Viseshta Avenues, and MONIN—the partners supporting PHF Premier League Season 5.",
+    action: "Meet our partners",
+    href: "prizes.html#partners",
+    stat: "3",
+    statLabel: "partners · one PHF community",
+    emblem: "PHF",
+  },
 ];
 
 function localPage(path: string) {

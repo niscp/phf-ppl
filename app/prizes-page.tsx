@@ -72,7 +72,28 @@ export default function PrizesPage() {
             <span className="award-star" aria-hidden="true">✳</span>
           </article>)}
         </div>
-        <div className="sponsor-line"><span>AWARDS MADE POSSIBLE WITH</span><b>PHF</b><i /><b>Monin</b><i /><b>GetMeCab</b><i /><b>Zomoz</b></div>
+        <div className="sponsor-line"><span>PRIZES INCLUDE GIFTS AND COUPONS FROM</span><b>Monin</b><i /><b>GetMeCab</b><i /><b>Zomoz</b></div>
+      </section>
+
+      <section className="partners-section" id="partners" aria-labelledby="partners-title">
+        <div className="partners-heading"><div><span className="section-index">03 / THE PEOPLE BEHIND THE SEASON</span><h2 id="partners-title">Good company.<br/><em>Great season.</em></h2></div><p>PHF Premier League Season 5 is proud to welcome the partners supporting our players and community.</p></div>
+        <div className="partners-grid">
+          <article className="partner-card partner-mobility">
+            <span className="partner-role">START-UP SPONSOR · MOBILITY PARTNER</span><h3>GetMeCab</h3>
+            <p>Intercity cab travel made simple. Book one-way trips, round trips, airport transfers, weekend getaways and family journeys across multiple cities and routes.</p>
+            <a href="https://www.getmecab.com/?utm_source=phf&utm_medium=sponsorship&utm_campaign=phf_ppl_s5" target="_blank" rel="noreferrer">Explore GetMeCab <span aria-hidden="true">↗</span></a>
+          </article>
+          <article className="partner-card partner-land">
+            <span className="partner-role">ASSOCIATE SPONSOR</span><h3>Viseshta Avenues</h3>
+            <p>Introducing Palm Valley: an agricultural land project combining oil palm, agarwood intercropping and resort-style amenities. Oil palm may offer recurring agricultural income through FFB production; agarwood brings long-term value potential.</p>
+            <div className="partner-features"><span>Oil palm & agarwood</span><span>Farmhouses & clubhouse</span><span>Pool · gated entry · 24/7 security</span></div>
+          </article>
+          <article className="partner-card partner-beverage">
+            <span className="partner-role">BEVERAGE PARTNER</span><h3>MONIN</h3>
+            <p>A French brand and a world leader in flavourful syrups—bringing more ways to add flavour to drinks and desserts throughout the PHF Premier League season.</p>
+            <span className="partner-note">Flavour partner for Season 5</span>
+          </article>
+        </div>
       </section>
 
       <section className="fan-picks-callout">
