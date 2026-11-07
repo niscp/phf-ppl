@@ -6,12 +6,12 @@ const banners = [
   {
     theme: "prizes",
     kicker: "Season 5 · Prizes announced",
-    title: "The finish is worth ₹85,000.",
+    title: "The finish is worth ₹105,000.",
     body: "Team prize money, trophies, and individual honours. See what the season is playing for.",
     action: "See prizes & awards",
     href: "prizes.html",
-    stat: "₹85K",
-    statLabel: "team cash prizes",
+    stat: "₹105K",
+    statLabel: "total prizes this season",
     emblem: "★",
   },
   {

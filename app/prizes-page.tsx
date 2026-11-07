@@ -19,11 +19,11 @@ export default function PrizesPage() {
         <div className="prizes-hero-copy">
           <p className="prizes-eyebrow">PHF Premier League · Season 5</p>
           <h1>Every run<br/>has a <em>reward.</em></h1>
-          <p className="prizes-lede">The season ends with silverware, individual honours, and <strong>₹85,000 in team prize money.</strong></p>
+          <p className="prizes-lede">The season ends with silverware, individual honours, and <strong>₹105,000 in prizes.</strong></p>
           <a className="prizes-hero-cta" href={`${base}fixtures.html`}>See the season schedule <span aria-hidden="true">↗</span></a>
         </div>
         <div className="prizes-hero-cup" aria-hidden="true"><div className="cup-handles"/><div className="cup-bowl"><span>PHF</span><i>★</i></div><div className="cup-stem"/><div className="cup-base"/></div>
-        <div className="prizes-total"><span>Team cash prize pool</span><strong>₹85,000</strong><small>Plus trophies for the top three teams</small></div>
+        <div className="prizes-total"><span>Total prizes this season</span><strong>₹105,000</strong><small>Team cash awards, trophies, and individual honours</small></div>
       </section>
 
       <section className="team-prizes" aria-labelledby="team-prizes-title">
