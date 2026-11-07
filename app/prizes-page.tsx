@@ -4,48 +4,87 @@ import "./prizes-page.css";
 const base = import.meta.env.BASE_URL;
 
 const awards = [
-  { name: "Man of the Match", mark: "MOM", prize: "Customized PHF cap, Monin gift, and Zomoz coupons." },
-  { name: "Man of the Series", mark: "SERIES", prize: "PHF kitbag, Monin gift hamper, GetMeCab coupons, Zomoz coupons, and a trophy." },
-  { name: "Purple Cap · Best Bowler", mark: "BOWLER", prize: "Shoes, customized Purple Cap, Monin gift hamper, GetMeCab coupons, and Zomoz coupons." },
-  { name: "Orange Cap · Best Batter", mark: "BATTER", prize: "Batting gloves, customized Orange Cap, Monin gift hamper, GetMeCab coupons, and Zomoz coupons." },
+  { name: "Player of the Match", tag: "MATCH DAY", prize: "A customized PHF cap, Monin gift, and Zomoz coupons." },
+  { name: "Player of the Series", tag: "THE SEASON", prize: "PHF kitbag, Monin gift hamper, GetMeCab and Zomoz coupons, plus a trophy." },
+  { name: "Purple Cap · Best Bowler", tag: "BOWLING", prize: "Shoes, customized Purple Cap, Monin gift hamper, GetMeCab and Zomoz coupons." },
+  { name: "Orange Cap · Best Batter", tag: "BATTING", prize: "Batting gloves, customized Orange Cap, Monin gift hamper, GetMeCab and Zomoz coupons." },
 ];
 
 export default function PrizesPage() {
   return <>
     <SiteHeader active="prizes" />
     <main className="phf-prizes-page">
-      <section className="prizes-hero">
-        <div className="prizes-hero-lights" aria-hidden="true" />
-        <div className="prizes-hero-copy">
-          <p className="prizes-eyebrow">PHF Premier League · Season 5</p>
-          <h1>Every run<br/>has a <em>reward.</em></h1>
-          <p className="prizes-lede">The season ends with silverware, individual honours, and <strong>₹105,000 in prizes.</strong></p>
-          <a className="prizes-hero-cta" href={`${base}fixtures.html`}>See the season schedule <span aria-hidden="true">↗</span></a>
+      <section className="prizes-stage" aria-labelledby="prizes-title">
+        <div className="stadium-glow" aria-hidden="true" />
+        <div className="prizes-stage-copy">
+          <p className="season-mark"><span>PHF</span> Premier League <i /> Season 5</p>
+          <h1 id="prizes-title">Play for<br /><em>the prize.</em></h1>
+          <p className="stage-deck">A season of big moments, silverware and rewards for the players who make it count.</p>
+          <div className="grand-prize"><span>Total prizes announced</span><strong>₹105,000</strong><small>Team cash awards + trophies + individual honours</small></div>
+          <a className="stage-link" href={`${base}fixtures.html`}>Follow the road to the final <span aria-hidden="true">↗</span></a>
         </div>
-        <div className="prizes-hero-cup" aria-hidden="true"><div className="cup-handles"/><div className="cup-bowl"><span>PHF</span><i>★</i></div><div className="cup-stem"/><div className="cup-base"/></div>
-        <div className="prizes-total"><span>Total prizes this season</span><strong>₹105,000</strong><small>Team cash awards, trophies, and individual honours</small></div>
+        <a className="stage-poster" href={`${base}phf-season-5-prize-announcement.jpg`} target="_blank" rel="noreferrer" aria-label="Open the full-size Season 5 prize poster">
+          <img src={`${base}phf-season-5-prize-announcement.jpg`} alt="PHF Premier League Season 5 prize announcement poster showing the ₹45,000 winner prize, ₹25,000 runner-up prize, ₹15,000 second runner-up prize, and player awards." />
+          <span>THE SEASON 5 PRIZE BOARD</span>
+        </a>
+        <div className="stage-bottomline"><span>Six teams</span><i /><span>One champion</span><i /><span>₹105K in prizes</span></div>
       </section>
 
-      <section className="team-prizes" aria-labelledby="team-prizes-title">
-        <header className="prizes-section-heading"><div><p className="prizes-eyebrow">The team finish</p><h2 id="team-prizes-title">Three places.<br/><em>One big finish.</em></h2></div><p>Every league match brings teams closer to Finals Day—and a share of the prize pool.</p></header>
-        <div className="team-prize-grid">
-          <article className="team-prize-card champion"><span className="prize-place">CHAMPIONS</span><div className="medal medallion-gold" aria-hidden="true">1</div><strong>₹45,000</strong><span className="prize-extra">+ Winners’ trophy</span><i className="prize-rule"/></article>
-          <article className="team-prize-card runner"><span className="prize-place">RUNNER-UP</span><div className="medal medallion-silver" aria-hidden="true">2</div><strong>₹25,000</strong><span className="prize-extra">+ Runners-up trophy</span><i className="prize-rule"/></article>
-          <article className="team-prize-card third"><span className="prize-place">SECOND RUNNER-UP</span><div className="medal medallion-copper" aria-hidden="true">3</div><strong>₹15,000</strong><span className="prize-extra">+ Trophy</span><i className="prize-rule"/></article>
+      <section className="podium-section" aria-labelledby="podium-title">
+        <div className="prize-section-intro">
+          <div><span className="section-index">01 / THE FINISH</span><h2 id="podium-title">Three places.<br /><em>One final climb.</em></h2></div>
+          <p>The cash prizes go to the top three teams. Every place comes with a trophy—and the title belongs to the team that finishes first.</p>
         </div>
+        <div className="podium">
+          <article className="podium-card podium-winner">
+            <div className="podium-rank"><span>01</span><i>CHAMPIONS</i></div>
+            <div className="podium-cup" aria-hidden="true">✦</div>
+            <strong>₹45,000</strong>
+            <p>Winner + championship trophy</p>
+            <span className="podium-step">THE TITLE</span>
+          </article>
+          <article className="podium-card podium-runner">
+            <div className="podium-rank"><span>02</span><i>RUNNER-UP</i></div>
+            <strong>₹25,000</strong>
+            <p>Runner-up + trophy</p>
+            <span className="podium-step">SECOND PLACE</span>
+          </article>
+          <article className="podium-card podium-third">
+            <div className="podium-rank"><span>03</span><i>SECOND RUNNER-UP</i></div>
+            <strong>₹15,000</strong>
+            <p>Second runner-up + trophy</p>
+            <span className="podium-step">THIRD PLACE</span>
+          </article>
+        </div>
+        <p className="payout-note"><span aria-hidden="true">↳</span> ₹85,000 in team cash prizes. The total announcement also includes trophies and individual awards.</p>
       </section>
 
-      <section className="individual-prizes" aria-labelledby="individual-prizes-title">
-        <header className="prizes-section-heading"><div><p className="prizes-eyebrow">Big moments deserve their own spotlight</p><h2 id="individual-prizes-title">Individual honours.</h2></div><p>Recognising the players who change a match, lead the season, and make the tournament memorable.</p></header>
-        <div className="individual-award-grid">{awards.map((award) => <article className="individual-award" key={award.name}><span className="award-mark">{award.mark}</span><div><h3>{award.name}</h3><p>{award.prize}</p></div></article>)}</div>
+      <section className="awards-section" aria-labelledby="awards-title">
+        <div className="prize-section-intro awards-intro">
+          <div><span className="section-index">02 / THE INDIVIDUALS</span><h2 id="awards-title">Make your<br /><em>moment count.</em></h2></div>
+          <p>Big performances earn their own spotlight. Four ways to leave your mark on Season 5.</p>
+        </div>
+        <div className="awards-list">
+          {awards.map((award, index) => <article className="award-row" key={award.name}>
+            <span className="award-number">0{index + 1}</span>
+            <div className="award-name"><small>{award.tag}</small><h3>{award.name}</h3></div>
+            <p>{award.prize}</p>
+            <span className="award-star" aria-hidden="true">✳</span>
+          </article>)}
+        </div>
+        <div className="sponsor-line"><span>AWARDS MADE POSSIBLE WITH</span><b>PHF</b><i /><b>Monin</b><i /><b>GetMeCab</b><i /><b>Zomoz</b></div>
       </section>
 
-      <section className="poster-feature" aria-labelledby="poster-feature-title">
-        <div className="poster-feature-copy"><p className="prizes-eyebrow">The announcement, all in one place</p><h2 id="poster-feature-title">Save it. Share it.<br/>Bring the whole society in.</h2><p>Open the original Season 5 prize poster to see every prize and partner in the announcement.</p><a href={`${base}phf-season-5-prize-announcement.jpg`} target="_blank" rel="noreferrer">Open full-size poster <span aria-hidden="true">↗</span></a></div>
-        <a className="poster-preview" href={`${base}phf-season-5-prize-announcement.jpg`} target="_blank" rel="noreferrer" aria-label="Open the full-size PHF Premier League Season 5 prize announcement poster"><img src={`${base}phf-season-5-prize-announcement.jpg`} alt="PHF Premier League Season 5 prize announcement: ₹45,000 for the winner, ₹25,000 for runner-up, ₹15,000 for second runner-up, plus individual player awards." loading="lazy"/></a>
+      <section className="fan-picks-callout">
+        <div className="fan-picks-ball" aria-hidden="true">P</div>
+        <div><span className="section-index">FOR EVERYONE IN THE STANDS</span><h2>Pick the winners.<br /><em>Win from home.</em></h2><p>Fan Picks is a separate challenge for PHF residents, with its own leaderboard and surprise prizes for the top three fans.</p></div>
+        <a href={`${base}fan-guide.html`}>See how Fan Picks works <span aria-hidden="true">↗</span></a>
       </section>
 
-      <section className="fan-prizes-note"><span className="fan-prizes-icon" aria-hidden="true">F</span><div><p className="prizes-eyebrow">A separate race for residents</p><h2>Fan Picks has its own prizes.</h2><p>The cash awards above are for the cricket tournament. The Fan Picks leaderboard is a separate resident challenge, with surprise awards for the top three fans.</p></div><a href={`${base}fan-guide.html`}>How Fan Picks works <span aria-hidden="true">↗</span></a></section>
+      <footer className="prize-poster-footer">
+        <span>KEEP THE PRIZE BOARD CLOSE</span>
+        <a href={`${base}phf-season-5-prize-announcement.jpg`} target="_blank" rel="noreferrer">Open or save the full poster ↗</a>
+      </footer>
     </main>
   </>;
 }
