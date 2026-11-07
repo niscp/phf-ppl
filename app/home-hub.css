@@ -31,3 +31,5 @@
 @media(prefers-reduced-motion:reduce){.home-banner-slide,.home-banner-slide *{scroll-behavior:auto;transition:none!important;animation:none!important}}
 
 .home-banner-slide.theme-partners{--banner-accent:#eac553;--banner-deep:#17382d}.home-banner-slide.theme-school{--banner-accent:#edbe69;--banner-deep:#6b2e24}
+.home-banner-art{min-height:200px}.home-banner-image{display:block;position:relative;z-index:1;width:min(100%,390px);height:158px;padding:10px 14px;object-fit:contain;background:#fff;border-radius:3px;box-shadow:0 14px 38px #0006}.home-banner-image.portrait{width:auto;max-width:min(100%,270px);height:190px;padding:0}.home-banner-slide.theme-getmecab{--banner-accent:#f4d520}.home-banner-slide.theme-viseshta{--banner-accent:#9bc57b}.home-banner-slide.theme-monin{--banner-accent:#d8b17d}.home-banner-slide.theme-kotak{--banner-accent:#ed4547}.home-banner-slide.theme-arthah{--banner-accent:#efbe70}.home-banner-slide.theme-prizes{--banner-accent:#f1c84e}
+@media(max-width:700px){.home-banner-art{min-height:145px}.home-banner-image{height:105px;padding:6px 8px}.home-banner-image.portrait{height:140px;width:auto;max-width:100%;padding:0}}

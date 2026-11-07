@@ -4,10 +4,10 @@ import "./prizes-page.css";
 const base = import.meta.env.BASE_URL;
 
 const awards = [
-  { name: "Player of the Match", tag: "MATCH DAY", prize: "A customized PHF cap, Monin gift, and Zomoz coupons." },
-  { name: "Player of the Series", tag: "THE SEASON", prize: "PHF kitbag, Monin gift hamper, GetMeCab and Zomoz coupons, plus a trophy." },
-  { name: "Purple Cap · Best Bowler", tag: "BOWLING", prize: "Shoes, customized Purple Cap, Monin gift hamper, GetMeCab and Zomoz coupons." },
-  { name: "Orange Cap · Best Batter", tag: "BATTING", prize: "Batting gloves, customized Orange Cap, Monin gift hamper, GetMeCab and Zomoz coupons." },
+  { name: "Player of the Match", tag: "MATCH DAY", feature: "Customized PHF cap", prize: "Plus a Monin gift and Zomoz coupons." },
+  { name: "Player of the Series", tag: "THE SEASON", feature: "PHF kitbag + trophy", prize: "Plus a Monin gift hamper, GetMeCab and Zomoz coupons." },
+  { name: "Purple Cap · Best Bowler", tag: "BOWLING", feature: "Shoes + customized Purple Cap", prize: "Plus a Monin gift hamper, GetMeCab and Zomoz coupons." },
+  { name: "Orange Cap · Best Batter", tag: "BATTING", feature: "Batting gloves + customized Orange Cap", prize: "Plus a Monin gift hamper, GetMeCab and Zomoz coupons." },
 ];
 
 export default function PrizesPage() {
@@ -18,10 +18,10 @@ export default function PrizesPage() {
         <div className="stadium-glow" aria-hidden="true" />
         <div className="prizes-stage-copy">
           <p className="season-mark"><span>PHF</span> Premier League <i /> Season 5</p>
-          <h1 id="prizes-title">Play for<br /><em>the prize.</em></h1>
+          <h1 id="prizes-title">Play for<br /><em>the pride.</em></h1>
           <p className="stage-deck">A season of big moments, silverware and rewards for the players who make it count.</p>
           <div className="grand-prize"><span>Total prizes announced</span><strong>₹105,000</strong><small>Team cash awards + trophies + individual honours</small></div>
-          <a className="stage-link" href={`${base}fixtures.html`}>Follow the road to the final <span aria-hidden="true">↗</span></a>
+          <a className="stage-link" href={`${base}fixtures.html`}>Follow the season <span aria-hidden="true">↗</span></a>
         </div>
         <a className="stage-poster" href={`${base}phf-season-5-prize-announcement.jpg`} target="_blank" rel="noreferrer" aria-label="Open the full-size Season 5 prize poster">
           <img src={`${base}phf-season-5-prize-announcement.jpg`} alt="PHF Premier League Season 5 prize announcement poster showing the ₹45,000 winner prize, ₹25,000 runner-up prize, ₹15,000 second runner-up prize, and player awards." />
@@ -68,47 +68,11 @@ export default function PrizesPage() {
           {awards.map((award, index) => <article className="award-row" key={award.name}>
             <span className="award-number">0{index + 1}</span>
             <div className="award-name"><small>{award.tag}</small><h3>{award.name}</h3></div>
-            <p>{award.prize}</p>
+            <div className="award-details"><strong>{award.feature}</strong><p>{award.prize}</p></div>
             <span className="award-star" aria-hidden="true">✳</span>
           </article>)}
         </div>
-        <div className="sponsor-line"><span>PRIZES INCLUDE GIFTS AND COUPONS FROM</span><b>Monin</b><i /><b>GetMeCab</b><i /><b>Zomoz</b></div>
-      </section>
 
-      <section className="partners-section" id="partners" aria-labelledby="partners-title">
-        <div className="partners-heading"><div><span className="section-index">03 / THE PEOPLE BEHIND THE SEASON</span><h2 id="partners-title">Good company.<br/><em>Great season.</em></h2></div><p>PHF Premier League Season 5 is proud to welcome the partners supporting our players and community.</p></div>
-        <div className="partners-grid">
-          <article className="partner-card partner-mobility">
-            <span className="partner-role">START-UP SPONSOR · MOBILITY PARTNER</span><div className="partner-logo partner-logo-gmc"><img src={`${base}partner-getmecab.jpg`} alt="GetMeCab logo" loading="lazy"/></div>
-            <p>Intercity cab travel made simple. Book one-way trips, round trips, airport transfers, weekend getaways and family journeys across multiple cities and routes.</p>
-            <a href="https://www.getmecab.com/?utm_source=phf&utm_medium=sponsorship&utm_campaign=phf_ppl_s5" target="_blank" rel="noreferrer">Explore GetMeCab <span aria-hidden="true">↗</span></a>
-          </article>
-          <article className="partner-card partner-land">
-            <span className="partner-role">ASSOCIATE SPONSOR</span><div className="partner-logo partner-logo-viseshta"><img src={`${base}partner-viseshta.jpg`} alt="Viseshta Avenues Palm Valley logo" loading="lazy"/></div>
-            <p>Introducing Palm Valley: an agricultural land project combining oil palm, agarwood intercropping and resort-style amenities. Oil palm may offer recurring agricultural income through FFB production; agarwood brings long-term value potential.</p>
-            <div className="partner-features"><span>Farmhouses & clubhouse</span><span>Pool · gated entry</span><span>Drip irrigation · 24/7 security</span></div>
-          </article>
-          <article className="partner-card partner-beverage">
-            <span className="partner-role">BEVERAGE PARTNER</span><div className="partner-logo partner-logo-monin"><img src={`${base}partner-monin.jpg`} alt="MONIN logo" loading="lazy"/></div>
-            <p>A French brand and a world leader in flavourful syrups—bringing more ways to add flavour to drinks and desserts throughout the PHF Premier League season.</p>
-            <span className="partner-note">Flavour partner for Season 5</span>
-          </article>
-          <article className="partner-card partner-banking">
-            <span className="partner-role">BANKING PARTNER · FINANCIAL DISTRICT BRANCH</span><div className="partner-logo partner-logo-kotak"><img src={`${base}partner-kotak.jpg`} alt="Kotak Mahindra Bank logo" loading="lazy"/></div>
-            <p>Banking solutions for the community, from savings and current accounts to loans, investments, credit cards and insurance. The Financial District branch is close to the society.</p>
-            <span className="partner-note">Here for your banking needs</span>
-          </article>
-        </div>
-        <article className="school-spotlight">
-          <div className="school-copy"><span className="partner-role">COMMUNITY ANNOUNCEMENT · ADMISSIONS 2027–28</span><h3>The Arthah School</h3><p>A learning environment for tomorrow, bringing together academic rigour, contemporary teaching, technology, creativity and holistic development.</p><p className="school-offer">Early-bird admission privileges include an admission fee waiver, extended tuition privilege and enrolment benefits. Limited admissions and limited-time offers.</p><span className="school-location">Kollur, Hyderabad</span><div className="school-actions"><a href="https://thearthahschool.com" target="_blank" rel="noreferrer">Visit school website ↗</a><a href="tel:+919513188978">Call 95131 88978</a></div></div>
-          <a className="school-poster" href={`${base}partner-arthah-school-admissions.jpg`} target="_blank" rel="noreferrer" aria-label="Open The Arthah School admissions poster"><img src={`${base}partner-arthah-school-admissions.jpg`} alt="The Arthah School admissions open for 2027–28 in Kollur, Hyderabad. Call 9513188978." loading="lazy"/></a>
-        </article>
-      </section>
-
-      <section className="fan-picks-callout">
-        <div className="fan-picks-ball" aria-hidden="true">P</div>
-        <div><span className="section-index">FOR EVERYONE IN THE STANDS</span><h2>Pick the winners.<br /><em>Win from home.</em></h2><p>Fan Picks is a separate challenge for PHF residents, with its own leaderboard and surprise prizes for the top three fans.</p></div>
-        <a href={`${base}fan-guide.html`}>See how Fan Picks works <span aria-hidden="true">↗</span></a>
       </section>
 
       <footer className="prize-poster-footer">

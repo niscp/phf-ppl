@@ -22,7 +22,7 @@ const moreLinks: Array<{ key: PageKey; label: string; href: string }> = [
   { key: "auction", label: "Auction archive", href: "auction.html" },
   { key: "history", label: "Bid history", href: "bid-history.html" },
   { key: "results", label: "Results", href: "highlights.html" },
-  { key: "sponsors", label: "Sponsors", href: "index.html#sponsors" },
+  { key: "sponsors", label: "Sponsors", href: "sponsors.html" },
 ];
 
 function pageLink(path: string) {
