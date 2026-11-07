@@ -101,7 +101,7 @@ export default function PrizesPage() {
         </div>
         <article className="school-spotlight">
           <div className="school-copy"><span className="partner-role">COMMUNITY ANNOUNCEMENT · ADMISSIONS 2027–28</span><h3>The Arthah School</h3><p>A learning environment for tomorrow, bringing together academic rigour, contemporary teaching, technology, creativity and holistic development.</p><p className="school-offer">Early-bird admission privileges include an admission fee waiver, extended tuition privilege and enrolment benefits. Limited admissions and limited-time offers.</p><span className="school-location">Kollur, Hyderabad</span><div className="school-actions"><a href="https://thearthahschool.com" target="_blank" rel="noreferrer">Visit school website ↗</a><a href="tel:+919513188978">Call 95131 88978</a></div></div>
-          <a className="school-poster" href="https://thearthahschool.com" target="_blank" rel="noreferrer" aria-label="View The Arthah School admissions information"><img src={`${base}partner-arthah-school-admissions.jpg`} alt="The Arthah School admissions open for 2027–28 in Kollur, Hyderabad. Call 9513188978." loading="lazy"/></a>
+          <a className="school-poster" href={`${base}partner-arthah-school-admissions.jpg`} target="_blank" rel="noreferrer" aria-label="Open The Arthah School admissions poster"><img src={`${base}partner-arthah-school-admissions.jpg`} alt="The Arthah School admissions open for 2027–28 in Kollur, Hyderabad. Call 9513188978." loading="lazy"/></a>
         </article>
       </section>
 
