@@ -51,16 +51,28 @@ const banners = [
     theme: "partners",
     kicker: "Proud Season 5 partners",
     title: "A great season takes a team.",
-    body: "Meet GetMeCab, Viseshta Avenues, and MONIN—the partners supporting PHF Premier League Season 5.",
+    body: "Meet GetMeCab, Viseshta Avenues, Kotak Mahindra Bank, and MONIN—the partners supporting PHF Premier League Season 5.",
     action: "Meet our partners",
     href: "prizes.html#partners",
-    stat: "3",
-    statLabel: "partners · one PHF community",
+    stat: "4",
+    statLabel: "official Season 5 sponsors",
     emblem: "PHF",
+  },
+  {
+    theme: "school",
+    kicker: "Community announcement · Kollur, Hyderabad",
+    title: "A brighter tomorrow starts here.",
+    body: "Admissions open for 2027–28 at The Arthah School. Ask about early-bird admission privileges.",
+    action: "Explore The Arthah School",
+    href: "https://thearthahschool.com",
+    stat: "2027",
+    statLabel: "admissions open · academic year",
+    emblem: "A",
   },
 ];
 
 function localPage(path: string) {
+  if (/^https?:\/\//.test(path)) return path;
   const base = typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/";
   return `${base}${path}`;
 }
@@ -92,7 +104,7 @@ export default function HomeBannerCarousel() {
         <p className="home-banner-kicker"><span/>{banner.kicker}</p>
         <h2>{banner.title}</h2>
         <p className="home-banner-body">{banner.body}</p>
-        <a className="home-banner-link" href={localPage(banner.href)}>{banner.action}<b aria-hidden="true">↗</b></a>
+        <a className="home-banner-link" href={localPage(banner.href)} target={banner.href.startsWith("https://") ? "_blank" : undefined} rel={banner.href.startsWith("https://") ? "noreferrer" : undefined}>{banner.action}<b aria-hidden="true">↗</b></a>
       </div>
       <div className="home-banner-art" aria-hidden="true">
         <span className="home-banner-orbit orbit-one"/><span className="home-banner-orbit orbit-two"/>
