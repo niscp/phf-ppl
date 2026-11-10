@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import playersJson from "./season5-players.json";
+import replacementProfilesJson from "./season5-replacement-profiles.json";
 import { getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionPlayer, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
 import { announcedTeams } from "./season5-teams";
 import SiteHeader from "./site-header";
@@ -15,6 +16,7 @@ type DirectoryPlayer = {
   role: string;
   photo: string | null;
   statsSource?: string;
+  cricheroesUrl?: string;
   statsChecked?: string;
   stats?: {
     batting?: { runs?: number | string | null; average?: number | string | null; strikeRate?: number | string | null };
@@ -22,7 +24,7 @@ type DirectoryPlayer = {
   } | null;
 };
 
-const directory = playersJson as DirectoryPlayer[];
+const directory = [...playersJson, ...replacementProfilesJson] as DirectoryPlayer[];
 const emptyTournament: TournamentSnapshot = { matches: [], standings: [], player_stats: [] };
 
 function localLink(path: string) {
@@ -165,7 +167,7 @@ function PlayerByPlayerScouting({ team, auction, tournament }: { team: AuctionTe
         {stats.metrics.map((row) => {
           const record = recordFor(row);
           return <tr key={row.player.id}>
-            <th scope="row"><strong>{row.player.name}{row.player.status === "captain" ? <span className="match-player-captain">C</span> : null}</strong><small>{row.player.role || "Role not listed"}</small>{row.profile?.statsSource && <a href={row.profile.statsSource} target="_blank" rel="noopener noreferrer">Profile source ↗</a>}</th>
+            <th scope="row"><strong>{row.player.name}{row.player.status === "captain" ? <span className="match-player-captain">C</span> : null}</strong><small>{row.player.role || "Role not listed"}</small>{(row.profile?.statsSource || row.profile?.cricheroesUrl) && <a href={row.profile.statsSource ?? row.profile.cricheroesUrl} target="_blank" rel="noopener noreferrer">CricHeroes profile ↗</a>}</th>
             <td><strong>{number(record.runs)}</strong><small>Avg {number(record.average, 2)} · SR {number(record.strikeRate, 2)}</small></td>
             <td><strong>{number(record.wickets)} wickets</strong><small>Economy {number(record.economy, 2)}</small></td>
             <td><span className="match-player-scope">{record.scope}</span><small>{record.note}</small></td>
