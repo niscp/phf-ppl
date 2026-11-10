@@ -223,7 +223,7 @@ function SquadList({ team, auction }: { team: AuctionTeam; auction: AuctionSnaps
     <h3>{team.name}<span>{squad.length} players</span></h3>
     {squad.length ? <ol>{squad.map((player: AuctionPlayer) => <li key={player.id}>
       {player.photo ? <img src={asset(player.photo)} alt="" loading="lazy" /> : <b className="match-player-initials">{initials(player.name)}</b>}
-      <span><strong>{player.name}{player.status === "captain" ? " (C)" : ""}</strong><small>{player.replacement_for_player_id ? `Post-auction replacement · ${player.role || "Role not listed"}` : player.role || "Role not listed"}</small></span>
+      <span><strong>{player.name}{player.status === "captain" ? " (C)" : ""}</strong><small>{player.replacement_for_player_id ? `Replacement · ${player.role || "Role not listed"}` : player.role || "Role not listed"}</small></span>
       <em>{directory.find((item) => item.id === player.id)?.statsSource ? "Career stats" : ""}</em>
     </li>)}</ol> : <p>Squad list is not available yet.</p>}
   </article>;
