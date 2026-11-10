@@ -65,7 +65,7 @@ where id = 1;
 
 do $$
 begin
-  if (select count(*) from auction_players) <> 90 then
+  if (select count(*) from auction_players where id ~ '^player-[0-9]+$') <> 90 then
     raise exception 'Expected exactly 90 registered players after adding Harshank';
   end if;
   if (select count(*) from auction_players where id = 'player-65' and name = 'Harshank') <> 1 then

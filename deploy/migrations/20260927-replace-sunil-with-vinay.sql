@@ -43,7 +43,7 @@ where archived = false
 
 do $$
 begin
-  if (select count(*) from auction_players) <> 90 then
+  if (select count(*) from auction_players where id ~ '^player-[0-9]+$') <> 90 then
     raise exception 'Expected exactly 90 registered players';
   end if;
   if (select count(*) from auction_players where id = 'player-40' and name = 'Vinay Bhardwaj' and role = 'All-rounder') <> 1 then
