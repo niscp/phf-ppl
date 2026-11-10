@@ -27,7 +27,7 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
       const [config, teams, players, events, auction] = await Promise.all([
         pool.query("select status,current_player_id,minimum_increment::float8 minimum_increment,increment_threshold::float8 increment_threshold,increment_above_threshold::float8 increment_above_threshold,default_base_price::float8 default_base_price,min_squad_size,max_squad_size,money_label from auction_config where id=1"),
         pool.query("select id,name,logo_url,purse::float8 purse,spent::float8 spent from auction_teams order by name"),
-        pool.query("select id,name,role,photo,status,team_id,sold_price::float8 sold_price,current_bid::float8 current_bid,current_bid_team_id,base_price::float8 base_price from auction_players order by name"),
+        pool.query("select id,name,role,photo,status,team_id,sold_price::float8 sold_price,current_bid::float8 current_bid,current_bid_team_id,base_price::float8 base_price,replacement_for_player_id from auction_players order by name"),
         pool.query("select id::float8 id,event_type,player_id,team_id,amount::float8 amount,created_at from auction_events order by id desc limit 12"),
         pool.query("select id,name,kind from auction_instances where active=true"),
       ]);
@@ -43,15 +43,16 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
   app.post("/api/auction/view", async (req, res, next) => {
     try {
       const auctionId = String(req.body?.auctionId || "").trim();
+      const historicalSnapshot = req.body?.historicalSnapshot === true;
       if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(auctionId)) return res.status(400).json({ error: "Invalid auction ID" });
       const { rows } = await pool.query("select id,name,kind,active,archived,state_data from auction_instances where id=$1", [auctionId]);
       const selected = rows[0];
       if (!selected || selected.archived) return res.status(404).json({ error: "Auction not found" });
-      if (selected.active) {
+      if (selected.active && !historicalSnapshot) {
         const [config, teams, players, events] = await Promise.all([
           pool.query("select status,current_player_id,minimum_increment::float8 minimum_increment,increment_threshold::float8 increment_threshold,increment_above_threshold::float8 increment_above_threshold,default_base_price::float8 default_base_price,min_squad_size,max_squad_size,money_label from auction_config where id=1"),
           pool.query("select id,name,logo_url,purse::float8 purse,spent::float8 spent from auction_teams order by name"),
-          pool.query("select id,name,role,photo,status,team_id,sold_price::float8 sold_price,current_bid::float8 current_bid,current_bid_team_id,base_price::float8 base_price from auction_players order by name"),
+          pool.query("select id,name,role,photo,status,team_id,sold_price::float8 sold_price,current_bid::float8 current_bid,current_bid_team_id,base_price::float8 base_price,replacement_for_player_id from auction_players order by name"),
           pool.query("select id::float8 id,event_type,player_id,team_id,amount::float8 amount,created_at from auction_events order by id desc limit 12"),
         ]);
         return res.set("Cache-Control", "no-store").json(normalizeAuctionState({ auction: { id: selected.id, name: selected.name, kind: selected.kind }, config: config.rows[0] || null, teams: teams.rows, players: players.rows, events: events.rows }));

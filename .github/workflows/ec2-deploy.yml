@@ -91,7 +91,8 @@ jobs:
             package.json package-lock.json Dockerfile.auction server deploy/docker-compose.yml \
             deploy/migrations/20260926-replace-duplicate-shravan-with-harshank.sql \
             deploy/migrations/20260927-replace-sunil-with-vinay.sql \
-            deploy/migrations/20261104-rename-phf-super-kings.sql
+            deploy/migrations/20261104-rename-phf-super-kings.sql \
+            deploy/migrations/20261110-post-auction-squad-replacements.sql
           aws s3 cp "/tmp/phfppl-api-${GITHUB_SHA}.tgz" \
             "s3://${DEPLOY_BUCKET}/releases/api-${GITHUB_SHA}.tgz" \
             --only-show-errors
@@ -191,6 +192,7 @@ jobs:
               "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20260926-replace-duplicate-shravan-with-harshank.sql\"",
               "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20260927-replace-sunil-with-vinay.sql\"",
               "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20261104-rename-phf-super-kings.sql\"",
+              "docker exec -i \"$db_id\" psql -v ON_ERROR_STOP=1 -U phf_auction -d phf_auction < \"$release/deploy/migrations/20261110-post-auction-squad-replacements.sql\"",
               "cp \"$release/deploy/docker-compose.yml\" \"$old_config\"",
               "docker build -f \"$release/Dockerfile.auction\" -t \"${project}-api:latest\" \"$release\"",
               "docker compose --project-name \"$project\" --project-directory \"$old_workdir\" --env-file \"$old_workdir/.env\" -f \"$old_config\" up -d --no-deps --no-build --force-recreate api",

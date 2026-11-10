@@ -98,7 +98,7 @@ export type AuctionInstance = { id: string; name: string; kind: "official" | "de
 export type PlayerStatus = "queued" | "captain" | "up" | "sold" | "unsold";
 export type AuctionConfig = { status: AuctionStatus; current_player_id: string | null; minimum_increment: number | null; increment_threshold: number | null; increment_above_threshold: number | null; default_base_price: number | null; min_squad_size: number; max_squad_size: number | null; money_label: string | null };
 export type AuctionTeam = { id: string; name: string; logo_url: string | null; purse: number; spent: number };
-export type AuctionPlayer = { id: string; name: string; role: string; photo: string | null; status: PlayerStatus; team_id: string | null; sold_price: number | null; current_bid: number | null; current_bid_team_id: string | null; base_price: number | null };
+export type AuctionPlayer = { id: string; name: string; role: string; photo: string | null; status: PlayerStatus; team_id: string | null; sold_price: number | null; current_bid: number | null; current_bid_team_id: string | null; base_price: number | null; replacement_for_player_id?: string | null };
 export type AuctionEvent = { id: number; event_type: string; player_id: string; team_id: string | null; amount: number | null; created_at: string };
 export type AuctionSnapshot = { auction?: { id: string; name: string; kind: "official" | "demo" } | null; config: AuctionConfig | null; teams: AuctionTeam[]; players: AuctionPlayer[]; events: AuctionEvent[] };
 export type TournamentMatch = { id: number; match_number: number; match_date: string; match_time: string; venue: string; status: "scheduled" | "completed"; home_team_id: string; away_team_id: string; home_team: string; away_team: string; home_runs: number | null; home_wickets: number | null; home_overs: number | null; away_runs: number | null; away_wickets: number | null; away_overs: number | null; winner_team_id: string | null; winner_team: string | null; result_text: string | null };
@@ -107,12 +107,12 @@ export type TournamentPlayerStat = { player_id: string; name: string; role: stri
 export type TournamentSnapshot = { matches: TournamentMatch[]; standings: TournamentStanding[]; player_stats: TournamentPlayerStat[] };
 
 export const preAuctionSnapshot: AuctionSnapshot = { config: null, teams: announcedTeams, players: announcedCaptains, events: [] };
-export async function getAuctionSnapshot(explicitAuctionId = ""): Promise<AuctionSnapshot> {
+export async function getAuctionSnapshot(explicitAuctionId = "", options: { historicalSnapshot?: boolean } = {}): Promise<AuctionSnapshot> {
   if (!auctionClient) return preAuctionSnapshot;
   const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
   const auctionId = explicitAuctionId || params?.get("auction") || params?.get("id");
   return auctionId
-    ? request("/api/auction/view", { method: "POST", body: JSON.stringify({ auctionId }) }) as Promise<AuctionSnapshot>
+    ? request("/api/auction/view", { method: "POST", body: JSON.stringify({ auctionId, ...options }) }) as Promise<AuctionSnapshot>
     : request("/api/auction") as Promise<AuctionSnapshot>;
 }
 

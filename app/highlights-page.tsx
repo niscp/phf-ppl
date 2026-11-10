@@ -102,7 +102,7 @@ export default function HighlightsPage() {
   useEffect(() => {
     let active = true;
     const auctionId = new URLSearchParams(window.location.search).get("auction") || officialSeasonFiveAuctionId;
-    getAuctionSnapshot(auctionId).then((next) => { if (active) setSnapshot(next); }).catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Highlights could not be loaded"); });
+    getAuctionSnapshot(auctionId, { historicalSnapshot: true }).then((next) => { if (active) setSnapshot(next); }).catch((reason) => { if (active) setError(reason instanceof Error ? reason.message : "Highlights could not be loaded"); });
     return () => { active = false; };
   }, []);
   const highlights = useMemo(() => snapshot ? buildAuctionHighlights(snapshot) : null, [snapshot]);

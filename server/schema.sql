@@ -69,8 +69,10 @@ create table if not exists auction_players (
   current_bid numeric(12,2),
   current_bid_team_id uuid references auction_teams(id),
   base_price numeric(12,2),
+  replacement_for_player_id text references auction_players(id),
   updated_at timestamptz not null default now()
 );
+alter table auction_players add column if not exists replacement_for_player_id text references auction_players(id);
 create unique index if not exists auction_one_captain_per_team on auction_players(team_id) where status = 'captain';
 
 do $$ begin
