@@ -167,7 +167,7 @@ function PlayerByPlayerScouting({ team, auction, tournament }: { team: AuctionTe
         {stats.metrics.map((row) => {
           const record = recordFor(row);
           return <tr key={row.player.id}>
-            <th scope="row"><strong>{row.player.name}{row.player.status === "captain" ? <span className="match-player-captain">C</span> : null}</strong><small>{row.player.role || "Role not listed"}</small>{(row.profile?.statsSource || row.profile?.cricheroesUrl) && <a href={row.profile.statsSource ?? row.profile.cricheroesUrl} target="_blank" rel="noopener noreferrer">CricHeroes profile ↗</a>}</th>
+            <th scope="row"><strong>{row.player.name}{row.player.status === "captain" ? <span className="match-player-captain">C</span> : null}</strong><small>{row.player.role || "Role not listed"}</small>{(row.profile?.statsSource || row.profile?.cricheroesUrl) && <a href={row.profile.statsSource ?? row.profile.cricheroesUrl} target="_blank" rel="noopener noreferrer">Player details ↗</a>}</th>
             <td><strong>{number(record.runs)}</strong><small>Avg {number(record.average, 2)} · SR {number(record.strikeRate, 2)}</small></td>
             <td><strong>{number(record.wickets)} wickets</strong><small>Economy {number(record.economy, 2)}</small></td>
             <td><span className="match-player-scope">{record.scope}</span><small>{record.note}</small></td>
@@ -223,7 +223,7 @@ function SquadList({ team, auction }: { team: AuctionTeam; auction: AuctionSnaps
     <h3>{team.name}<span>{squad.length} players</span></h3>
     {squad.length ? <ol>{squad.map((player: AuctionPlayer) => <li key={player.id}>
       {player.photo ? <img src={asset(player.photo)} alt="" loading="lazy" /> : <b className="match-player-initials">{initials(player.name)}</b>}
-      <span><strong>{player.name}{player.status === "captain" ? " (C)" : ""}</strong><small>{player.replacement_for_player_id ? `Replacement for ${directory.find((item) => item.id === player.replacement_for_player_id)?.name ?? "outgoing player"} · ${player.role || "Role not listed"}` : player.role || "Role not listed"}</small></span>
+      <span><strong>{player.name}{player.status === "captain" ? " (C)" : ""}</strong><small>{player.replacement_for_player_id ? `Post-auction replacement · ${player.role || "Role not listed"}` : player.role || "Role not listed"}</small></span>
       <em>{directory.find((item) => item.id === player.id)?.statsSource ? "Career stats" : ""}</em>
     </li>)}</ol> : <p>Squad list is not available yet.</p>}
   </article>;
