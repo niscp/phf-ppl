@@ -2,7 +2,7 @@ const round2 = (value) => Math.round(Number(value) * 100) / 100;
 
 export async function tournamentSnapshot(db) {
   const [matches, stats, teams] = await Promise.all([
-    db.query(`select m.id,m.match_number,m.match_date,m.match_time,m.venue,m.status,
+    db.query(`select m.id,m.match_number,m.match_date,m.match_time,m.report_time,m.venue,m.status,
       m.home_team_id,m.away_team_id,m.home_runs,m.home_wickets,m.home_overs,
       m.away_runs,m.away_wickets,m.away_overs,m.winner_team_id,m.result_text,
       ht.name home_team,at.name away_team,wt.name winner_team

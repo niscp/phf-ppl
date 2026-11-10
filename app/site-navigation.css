@@ -112,6 +112,9 @@
 .fixtures-page .fixture-card:hover{transform:translateY(-2px);border-color:#0c765e}
 .fixtures-page .fixture-card-top{padding:10px 13px;background:#e9eee8;color:#52665b;font:700 10px var(--font-mono);letter-spacing:.04em;text-transform:uppercase}
 .fixtures-page .fixture-card-top b{color:#153f33;font-size:12px}
+.fixtures-page .fixture-card-top .fixture-time{display:grid;gap:2px;text-align:right}
+.fixtures-page .fixture-card-top .fixture-time small{color:#64746b;font:700 8px var(--font-mono);letter-spacing:.08em}
+.fixtures-page .fixture-card-top .fixture-time b{font-size:11px;white-space:nowrap}
 .fixtures-page .fixture-versus{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr);gap:6px;min-height:0;padding:16px 10px 12px}
 .fixtures-page .fixture-versus>i{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#f2d76f;color:#27362d;font:700 9px var(--font-mono)}
 .fixtures-page .fixture-team{min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center}

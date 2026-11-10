@@ -8,21 +8,21 @@ export const fixtureTeamOrder = [
 ] as const;
 
 export const seasonFiveFixtures = [
-  { match_number: 1, date: "2026-11-21", time: "7:15 AM", home_slot: 1, away_slot: 6 },
-  { match_number: 2, date: "2026-11-21", time: "10:30 AM", home_slot: 2, away_slot: 5 },
-  { match_number: 3, date: "2026-11-21", time: "2:00 PM", home_slot: 3, away_slot: 4 },
-  { match_number: 4, date: "2026-11-22", time: "7:15 AM", home_slot: 1, away_slot: 5 },
-  { match_number: 5, date: "2026-11-22", time: "10:30 AM", home_slot: 6, away_slot: 4 },
-  { match_number: 6, date: "2026-11-22", time: "2:00 PM", home_slot: 2, away_slot: 3 },
-  { match_number: 7, date: "2026-11-28", time: "7:15 AM", home_slot: 6, away_slot: 2 },
-  { match_number: 8, date: "2026-11-28", time: "10:30 AM", home_slot: 1, away_slot: 4 },
-  { match_number: 9, date: "2026-11-28", time: "2:00 PM", home_slot: 5, away_slot: 3 },
-  { match_number: 10, date: "2026-11-29", time: "7:15 AM", home_slot: 4, away_slot: 2 },
-  { match_number: 11, date: "2026-11-29", time: "10:30 AM", home_slot: 1, away_slot: 3 },
-  { match_number: 12, date: "2026-11-29", time: "2:00 PM", home_slot: 5, away_slot: 6 },
-  { match_number: 13, date: "2026-12-05", time: "7:15 AM", home_slot: 3, away_slot: 6 },
-  { match_number: 14, date: "2026-12-05", time: "10:30 AM", home_slot: 4, away_slot: 5 },
-  { match_number: 15, date: "2026-12-05", time: "2:00 PM", home_slot: 1, away_slot: 2 },
+  { match_number: 1, date: "2026-11-21", reportTime: "6:45 AM", time: "7:00 AM", home_slot: 1, away_slot: 6 },
+  { match_number: 2, date: "2026-11-21", reportTime: "10:00 AM", time: "10:15 AM", home_slot: 2, away_slot: 5 },
+  { match_number: 3, date: "2026-11-21", reportTime: "1:30 PM", time: "1:45 PM", home_slot: 3, away_slot: 4 },
+  { match_number: 4, date: "2026-11-22", reportTime: "6:45 AM", time: "7:00 AM", home_slot: 1, away_slot: 5 },
+  { match_number: 5, date: "2026-11-22", reportTime: "10:00 AM", time: "10:15 AM", home_slot: 6, away_slot: 4 },
+  { match_number: 6, date: "2026-11-22", reportTime: "1:30 PM", time: "1:45 PM", home_slot: 2, away_slot: 3 },
+  { match_number: 7, date: "2026-11-28", reportTime: "6:45 AM", time: "7:00 AM", home_slot: 6, away_slot: 2 },
+  { match_number: 8, date: "2026-11-28", reportTime: "10:00 AM", time: "10:15 AM", home_slot: 1, away_slot: 4 },
+  { match_number: 9, date: "2026-11-28", reportTime: "1:30 PM", time: "1:45 PM", home_slot: 5, away_slot: 3 },
+  { match_number: 10, date: "2026-11-29", reportTime: "6:45 AM", time: "7:00 AM", home_slot: 4, away_slot: 2 },
+  { match_number: 11, date: "2026-11-29", reportTime: "10:00 AM", time: "10:15 AM", home_slot: 1, away_slot: 3 },
+  { match_number: 12, date: "2026-11-29", reportTime: "1:30 PM", time: "1:45 PM", home_slot: 5, away_slot: 6 },
+  { match_number: 13, date: "2026-12-05", reportTime: "6:45 AM", time: "7:00 AM", home_slot: 3, away_slot: 6 },
+  { match_number: 14, date: "2026-12-05", reportTime: "10:00 AM", time: "10:15 AM", home_slot: 4, away_slot: 5 },
+  { match_number: 15, date: "2026-12-05", reportTime: "1:30 PM", time: "1:45 PM", home_slot: 1, away_slot: 2 },
 ] as const;
 
 export const seasonFiveFixtureDays = [
