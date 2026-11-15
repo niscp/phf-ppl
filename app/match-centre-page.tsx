@@ -10,6 +10,19 @@ const basePath = () => typeof window !== "undefined" && window.location.pathname
 const link = (path: string) => `${basePath()}${path}`;
 const image = (path: string | null | undefined) => path ? `${basePath()}${path.replace(/^\//, "")}` : "";
 
+function youtubeEmbedUrl(streamUrl: string | null | undefined) {
+  if (!streamUrl) return null;
+  try {
+    const url = new URL(streamUrl);
+    const host = url.hostname.replace(/^www\./, "").toLowerCase();
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (host === "youtu.be") return parts[0] ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(parts[0])}` : null;
+    if (host !== "youtube.com" && host !== "m.youtube.com" && host !== "youtube-nocookie.com") return null;
+    const id = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:live|embed|shorts)\/([^/?]+)/)?.[1];
+    return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
+  } catch { return null; }
+}
+
 type MatchCentreItem = {
   number: number; date: string; time: string; home: string; away: string; homeId: string; awayId: string;
   status: "scheduled" | "completed"; homeRuns: number | null; homeWickets: number | null;
@@ -50,6 +63,7 @@ function fromPublished(number: number): MatchCentreItem | null {
 
 export default function MatchCentrePage() {
   const [snapshot, setSnapshot] = useState<TournamentSnapshot>({ matches: [], standings: [], player_stats: [] });
+  const [watching, setWatching] = useState(false);
   useEffect(() => {
     let active = true;
     const refresh = async () => { try { const next = await getTournamentSnapshot(); if (active) setSnapshot(next); } catch { /* Published fixtures still render below. */ } };
@@ -68,6 +82,8 @@ export default function MatchCentrePage() {
   const upcoming = matches.filter((match) => match.status === "scheduled");
   const teamImage = (id: string) => image(announcedTeams.find((team) => team.id === id)?.logo_url);
   const matchLink = (number: number) => link(`match.html?match=${number}`);
+  const focusEmbedUrl = youtubeEmbedUrl(focus?.streamUrl);
+  useEffect(() => { setWatching(false); }, [focus?.number, focus?.streamUrl]);
 
   return <main className="match-centre-page">
     <SiteHeader active="match-center" />
@@ -85,20 +101,22 @@ export default function MatchCentrePage() {
       <div className="mc-watch-card">
         <div className="mc-watch-atmosphere" aria-hidden="true" />
         <div className="mc-watch-topline"><span><i className={focus.streamUrl ? "is-live" : ""}/>{focus.streamUrl ? "Broadcast available" : "PHF Premier League · Season 5"}</span><b>{focus.streamUrl ? "YouTube" : "Matchday broadcast"}</b></div>
-        <div className="mc-watch-content">
-          <div className="mc-watch-match">
-            <span className="mc-watch-kicker">{focus.streamUrl ? "Watch the match" : "The next match, up close"} · Match {String(focus.number).padStart(2, "0")}</span>
-            <div className="mc-watch-teams">
-              <div>{teamImage(focus.homeId) && <img src={teamImage(focus.homeId)} alt=""/>}<strong>{focus.home}</strong></div>
-              <span>VS</span>
-              <div>{teamImage(focus.awayId) && <img src={teamImage(focus.awayId)} alt=""/>}<strong>{focus.away}</strong></div>
+        {watching && focusEmbedUrl ? <div className="mc-watch-iframe-wrap"><iframe src={`${focusEmbedUrl}?autoplay=1&rel=0`} title={`${focus.home} vs ${focus.away} · PHF Premier League Season 5`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div> : <>
+          <div className="mc-watch-content">
+            <div className="mc-watch-match">
+              <span className="mc-watch-kicker">{focusEmbedUrl ? "Watch the match" : "The next match, up close"} · Match {String(focus.number).padStart(2, "0")}</span>
+              <div className="mc-watch-teams">
+                <div>{teamImage(focus.homeId) && <img src={teamImage(focus.homeId)} alt=""/>}<strong>{focus.home}</strong></div>
+                <span>VS</span>
+                <div>{teamImage(focus.awayId) && <img src={teamImage(focus.awayId)} alt=""/>}<strong>{focus.away}</strong></div>
+              </div>
+              <p>{focus.date} <i>·</i> {focus.time}</p>
             </div>
-            <p>{focus.date} <i>·</i> {focus.time}</p>
+            <button className="mc-watch-play" type="button" disabled={!focusEmbedUrl} onClick={() => setWatching(true)} aria-label={focusEmbedUrl ? `Play ${focus.home} versus ${focus.away} stream` : "The match stream will be available here soon"}><span>▶</span></button>
+            <div className="mc-watch-caption"><strong>{focusEmbedUrl ? "Play match stream" : "Stream coming soon"}</strong><span>{focusEmbedUrl ? "Official YouTube broadcast · plays here" : "The YouTube broadcast will play here when its stream link is published."}</span></div>
           </div>
-          <a className="mc-watch-play" href={matchLink(focus.number)} aria-label={`${focus.streamUrl ? "Watch" : "Preview"} ${focus.home} versus ${focus.away}`}><span>▶</span></a>
-          <div className="mc-watch-caption"><strong>{focus.streamUrl ? "Play match stream" : "Stream coming soon"}</strong><span>{focus.streamUrl ? "Official YouTube broadcast" : "Open the match page for squads, analysis and stream updates."}</span></div>
-        </div>
-        <div className="mc-watch-controls" aria-hidden="true"><span className="mc-watch-control-play">▶</span><span className="mc-watch-progress"><i/></span><span>PHF PREMIER LEAGUE</span><span>Season 5</span><b>⛶</b></div>
+          <div className="mc-watch-controls" aria-hidden="true"><span className="mc-watch-control-play">▶</span><span className="mc-watch-progress"><i/></span><span>PHF PREMIER LEAGUE</span><span>Season 5</span><b>⛶</b></div>
+        </>}
       </div>
     </section>}
     <section className="mc-content">
