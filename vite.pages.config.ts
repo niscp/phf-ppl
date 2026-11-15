@@ -30,6 +30,7 @@ export default defineConfig({
         sponsors: fileURLToPath(new URL("./sponsors.html", import.meta.url)),
         fanLeaderboard: fileURLToPath(new URL("./fan-leaderboard.html", import.meta.url)),
         fanAccount: fileURLToPath(new URL("./fan-account.html", import.meta.url)),
+        trailer: fileURLToPath(new URL("./trailer.html", import.meta.url)),
       },
     },
   },

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 const banners = [
+  { theme: "trailer", kicker: "PHF Premier League · Season 5", title: "Six teams. One trophy. One season to remember.", body: "Meet the squads, see the matchdays, and get ready to make your Fan Picks from home.", action: "Watch the Season 5 trailer", href: "trailer.html", image: "phf-season-5-trailer-poster.jpg", emblem: "▶" },
   { theme: "getmecab", kicker: "Start-up sponsor · Mobility partner", title: "GetMeCab makes every journey simpler.", body: "One-way trips, round trips, airport transfers and family getaways across multiple cities.", action: "Explore GetMeCab", href: "https://www.getmecab.com/?utm_source=phf&utm_medium=sponsorship&utm_campaign=phf_ppl_s5", image: "partner-getmecab.jpg", emblem: "G" },
   { theme: "viseshta", kicker: "Associate sponsor", title: "Discover Palm Valley.", body: "An agricultural land project by Viseshta Avenues, bringing together oil palm, agarwood intercropping and resort-style amenities.", action: "Meet Viseshta Avenues", href: "sponsors.html#viseshta", image: "partner-viseshta.jpg", emblem: "V" },
   { theme: "monin", kicker: "Beverage partner", title: "A little more flavour for the season.", body: "MONIN, the French flavourful syrup brand, joins PHF Premier League Season 5 as our Beverage Partner.", action: "Meet MONIN", href: "sponsors.html#monin", image: "partner-monin.jpg", emblem: "M" },

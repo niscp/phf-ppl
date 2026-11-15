@@ -71,6 +71,8 @@ jobs:
           test -s gh-pages/phf-season-5-prize-announcement.jpg
           test -s gh-pages/fan-leaderboard.html
           test -s gh-pages/fan-account.html
+          test -s gh-pages/trailer.html
+          test -s gh-pages/phf-premier-league-season-5-residents-trailer-v2.mp4
 
       - name: Assume AWS deployment role through OIDC
         uses: aws-actions/configure-aws-credentials@v5

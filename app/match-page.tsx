@@ -55,6 +55,21 @@ function initials(name: string) {
   return name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("");
 }
 
+function youtubeEmbedUrl(streamUrl: string | null | undefined) {
+  if (!streamUrl) return null;
+  try {
+    const url = new URL(streamUrl);
+    const host = url.hostname.replace(/^www\./, "").toLowerCase();
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (host === "youtu.be") return parts[0] ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(parts[0])}` : null;
+    if (host !== "youtube.com" && host !== "m.youtube.com" && host !== "youtube-nocookie.com") return null;
+    const id = url.searchParams.get("v") ?? url.pathname.match(/^\/(?:live|embed|shorts)\/([^/?]+)/)?.[1];
+    return id ? `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}` : null;
+  } catch {
+    return null;
+  }
+}
+
 function getTeamStatSummary(team: AuctionTeam, auction: AuctionSnapshot, tournament: TournamentSnapshot) {
   const squad = auction.players.filter((player) => player.team_id === team.id && (player.status === "sold" || player.status === "captain"));
   const seasonStatsExist = squad.some((player) => tournament.player_stats.some((stat) => stat.player_id === player.id && stat.matches > 0));
@@ -264,6 +279,7 @@ export default function MatchDetailsPage() {
 
   const analysisSources = tournament.player_stats.some((stat) => stat.matches > 0) ? "Season 5 scorecards" : "verified CricHeroes career profiles";
   const hasComparables = Boolean(resolvedHome && resolvedAway && auction.players.some((player) => player.team_id === resolvedHome.id) && auction.players.some((player) => player.team_id === resolvedAway.id));
+  const streamEmbedUrl = youtubeEmbedUrl(liveMatch?.stream_url);
 
   return <main className="match-page">
     <SiteHeader active="match-center" />
@@ -280,9 +296,18 @@ export default function MatchDetailsPage() {
         {liveMatch?.status === "completed" && <div className="match-result"><span>Final score</span><strong>{liveMatch.home_runs}/{liveMatch.home_wickets} · {liveMatch.away_runs}/{liveMatch.away_wickets}</strong><b>{liveMatch.result_text ?? `${liveMatch.winner_team} won`}</b></div>}
       </section>
 
+      <section className="match-broadcast" aria-labelledby="match-broadcast-title">
+        <div className="match-broadcast-heading"><div><span>Watch Season 5</span><h2 id="match-broadcast-title">Match stream</h2></div><b><i/> YouTube</b></div>
+        {streamEmbedUrl ? <div className="match-broadcast-player"><iframe src={streamEmbedUrl} title={`${homeName} vs ${awayName} · PHF Premier League Season 5 live stream`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>
+          : liveMatch?.stream_url ? <div className="match-broadcast-placeholder"><span className="match-broadcast-play">▶</span><div><strong>Stream link published</strong><p>Open the official match broadcast.</p></div><a href={liveMatch.stream_url} target="_blank" rel="noopener noreferrer">Watch stream ↗</a></div>
+          : <div className="match-broadcast-placeholder"><span className="match-broadcast-play">▶</span><div><strong>This match will be streamed on YouTube.</strong><p>The live player will appear here when the match stream is published.</p></div><span className="match-broadcast-upcoming">Stream link coming soon</span></div>}
+      </section>
+
       {loadIssue && <p className="match-load-issue" role="status">{loadIssue}</p>}
 
       <FanMatchActivity matchNumber={matchNumber} />
+
+      {liveMatch?.status === "completed" && <section className="match-scorecard-section"><div className="match-section-title"><div><span>Official match record</span><h2>Scorecard</h2></div><p>Innings totals and player figures submitted by the match recorder.</p></div><div className="match-scorecard-innings"><article><span>{homeName}</span><strong>{liveMatch.home_runs ?? "—"}/{liveMatch.home_wickets ?? "—"}</strong><small>{liveMatch.home_overs ?? "—"} overs</small></article><article><span>{awayName}</span><strong>{liveMatch.away_runs ?? "—"}/{liveMatch.away_wickets ?? "—"}</strong><small>{liveMatch.away_overs ?? "—"} overs</small></article></div>{liveMatch.player_scorecard?.length ? <div className="match-scorecard-players"><div><span>Player</span><span>Runs (balls)</span><span>Wickets · overs</span></div>{liveMatch.player_scorecard.map((player) => <div key={player.player_id}><strong>{player.player_name}<small>{player.role}</small></strong><b>{player.runs} ({player.balls})</b><span>{player.wickets} · {player.overs}</span></div>)}</div> : <p className="match-scorecard-empty">Player figures have not been submitted for this match. Ball-by-ball commentary is not part of the current match record.</p>}</section>}
 
       <MatchRules variant="match" />
 
