@@ -26,6 +26,10 @@ type DirectoryPlayer = {
 
 const directory = [...playersJson, ...replacementProfilesJson] as DirectoryPlayer[];
 const emptyTournament: TournamentSnapshot = { matches: [], standings: [], player_stats: [] };
+const finalsFixtures = [
+  { match_number: 16, date: "2026-12-06", reportTime: "9:15 AM", time: "9:30 AM", home_slot: 0, away_slot: 0 },
+  { match_number: 17, date: "2026-12-06", reportTime: "12:45 PM", time: "1:00 PM", home_slot: 0, away_slot: 0 },
+] as const;
 
 function localLink(path: string) {
   return typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? `/phf-ppl/${path}` : `/${path}`;
@@ -250,7 +254,7 @@ export default function MatchDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [loadIssue, setLoadIssue] = useState("");
   const matchNumber = typeof window === "undefined" ? 0 : Number(new URLSearchParams(window.location.search).get("match"));
-  const fixture = seasonFiveFixtures.find((item) => item.match_number === matchNumber);
+  const fixture = seasonFiveFixtures.find((item) => item.match_number === matchNumber) ?? finalsFixtures.find((item) => item.match_number === matchNumber);
 
   useEffect(() => {
     let active = true;
@@ -265,11 +269,11 @@ export default function MatchDetailsPage() {
   }, []);
 
   const teams = useMemo(() => auction.teams.length ? auction.teams : announcedTeams, [auction.teams]);
-  const homeTeam = fixture ? teams.find((team) => team.name === teamNameForSlot(fixture.home_slot, teams)) : undefined;
-  const awayTeam = fixture ? teams.find((team) => team.name === teamNameForSlot(fixture.away_slot, teams)) : undefined;
+  const homeTeam = fixture && fixture.home_slot > 0 ? teams.find((team) => team.name === teamNameForSlot(fixture.home_slot, teams)) : undefined;
+  const awayTeam = fixture && fixture.away_slot > 0 ? teams.find((team) => team.name === teamNameForSlot(fixture.away_slot, teams)) : undefined;
   const liveMatch = tournament.matches.find((match) => match.match_number === matchNumber);
-  const homeName = liveMatch?.home_team ?? (fixture ? teamNameForSlot(fixture.home_slot, teams) : "Home team");
-  const awayName = liveMatch?.away_team ?? (fixture ? teamNameForSlot(fixture.away_slot, teams) : "Away team");
+  const homeName = liveMatch?.home_team ?? (matchNumber === 16 ? "3rd place" : matchNumber === 17 ? "1st place" : fixture ? teamNameForSlot(fixture.home_slot, teams) : "Home team");
+  const awayName = liveMatch?.away_team ?? (matchNumber === 16 ? "4th place" : matchNumber === 17 ? "2nd place" : fixture ? teamNameForSlot(fixture.away_slot, teams) : "Away team");
   const resolvedHome = teams.find((team) => team.name === homeName) ?? homeTeam;
   const resolvedAway = teams.find((team) => team.name === awayName) ?? awayTeam;
   const homeSquadStats = resolvedHome ? <TeamAnalysis team={resolvedHome} auction={auction} tournament={tournament} /> : null;
@@ -305,29 +309,29 @@ export default function MatchDetailsPage() {
 
       {loadIssue && <p className="match-load-issue" role="status">{loadIssue}</p>}
 
-      <FanMatchActivity matchNumber={matchNumber} />
+      {matchNumber <= 15 && <FanMatchActivity matchNumber={matchNumber} />}
 
       {liveMatch?.status === "completed" && <section className="match-scorecard-section"><div className="match-section-title"><div><span>Official match record</span><h2>Scorecard</h2></div><p>Innings totals and player figures submitted by the match recorder.</p></div><div className="match-scorecard-innings"><article><span>{homeName}</span><strong>{liveMatch.home_runs ?? "—"}/{liveMatch.home_wickets ?? "—"}</strong><small>{liveMatch.home_overs ?? "—"} overs</small></article><article><span>{awayName}</span><strong>{liveMatch.away_runs ?? "—"}/{liveMatch.away_wickets ?? "—"}</strong><small>{liveMatch.away_overs ?? "—"} overs</small></article></div>{liveMatch.player_scorecard?.length ? <div className="match-scorecard-players"><div><span>Player</span><span>Runs (balls)</span><span>Wickets · overs</span></div>{liveMatch.player_scorecard.map((player) => <div key={player.player_id}><strong>{player.player_name}<small>{player.role}</small></strong><b>{player.runs} ({player.balls})</b><span>{player.wickets} · {player.overs}</span></div>)}</div> : <p className="match-scorecard-empty">Player figures have not been submitted for this match. Ball-by-ball commentary is not part of the current match record.</p>}</section>}
 
       <MatchRules variant="match" />
 
-      <section className="match-analysis-section">
+      {matchNumber <= 15 && <section className="match-analysis-section">
         <div className="match-section-title"><div><span>Pre-match analysis</span><h2>The numbers<br/><em>to watch.</em></h2></div><p>Built from {analysisSources}. It describes recorded player performance; it does not predict the result.</p></div>
         {loading ? <p className="match-loading">Loading squads and available stats…</p> : hasComparables ? <>
           {resolvedHome && resolvedAway && <PreMatchRead home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
           <div className="match-analysis-grid">{homeSquadStats}{awaySquadStats}</div>
           <div className="match-analysis-note"><strong>How to read this</strong><p>Season 5 figures use recorded scorecards once players have appeared. Before then, available player comparisons use linked career profiles. Missing records are left blank rather than estimated.</p></div>
         </> : <div className="match-analysis-empty"><h3>Analysis will sharpen when squads are available</h3><p>Once both team rosters and verified player figures are connected, this section will surface each side’s leading run scorer, wicket taker, and relevant batting rates.</p></div>}
-      </section>
+      </section>}
 
       {matchNumber === 2 && !loading && resolvedHome && resolvedAway && <MatchTwoBrief home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
 
-      <section className="match-squads-section">
+      {matchNumber <= 15 && <section className="match-squads-section">
         <div className="match-section-title"><div><span>Season 5 squads</span><h2>Meet the<br/><em>squads.</em></h2></div><p>Player roles and current team assignments from the official Season 5 roster. Final playing XIs will be confirmed separately.</p></div>
         {loading ? <p className="match-loading">Loading team squads…</p> : <div className="match-squads-grid">{resolvedHome && <SquadList team={resolvedHome} auction={auction} />}{resolvedAway && <SquadList team={resolvedAway} auction={auction} />}</div>}
-      </section>
+      </section>}
 
-      <section className="match-facts"><span>Match information</span><div><b>Date</b><strong>{displayDate(fixture.date)}</strong></div><div><b>Team reporting</b><strong>{fixture.reportTime}</strong></div><div><b>Match start</b><strong>{fixture.time}</strong></div><div><b>Venue</b><strong>{liveMatch?.venue ?? "Melbourne Cricket Ground"}</strong></div><div><b>Format</b><strong>Season 5 round robin · 2 points for a win</strong></div></section>
+      <section className="match-facts"><span>Match information</span><div><b>Date</b><strong>{displayDate(fixture.date)}</strong></div><div><b>Team reporting</b><strong>{fixture.reportTime}</strong></div><div><b>Match start</b><strong>{fixture.time}</strong></div><div><b>Venue</b><strong>{liveMatch?.venue ?? "Melbourne Cricket Ground"}</strong></div><div><b>Format</b><strong>{matchNumber >= 16 ? "Season 5 finals · knockout match" : "Season 5 round robin · 2 points for a win"}</strong></div></section>
       <footer className="match-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={localLink("fixtures.html")}>Return to schedule ↑</a></footer>
     </div>
   </main>;

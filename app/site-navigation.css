@@ -69,6 +69,7 @@
 .finals-day article>b{color:#e8bd48;font-size:12px}
 .finals-day article>strong{font-size:18px}
 .finals-day article>span{color:rgba(255,255,255,.68);font-size:13px}
+.finals-day article>a{justify-self:start;margin-top:7px;color:#f0ca55;font-size:11px;font-weight:800;text-decoration:none}.finals-day article>a:hover,.finals-day article>a:focus-visible{text-decoration:underline;outline:2px solid #f0ca55;outline-offset:3px}
 .finals-day article i{padding:0 5px;color:#e8bd48;font-style:normal}
 
 .sponsor-banner-section{padding:52px max(5vw,22px);background:#e9ece5;color:#152821}
