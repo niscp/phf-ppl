@@ -2,9 +2,10 @@ const round2 = (value) => Math.round(Number(value) * 100) / 100;
 
 export async function tournamentSnapshot(db) {
   const [matches, stats, teams] = await Promise.all([
-    db.query(`select m.id,m.match_number,m.match_date,m.match_time,m.report_time,m.venue,m.status,
+    db.query(`select m.id,m.match_number,m.match_date,m.match_time,m.report_time,m.venue,m.status,m.stream_url,
+      m.cricheroes_match_id,m.cricheroes_match_url,m.cricheroes_status,m.cricheroes_live_score,m.cricheroes_stream_url,m.cricheroes_synced_at,
       m.home_team_id,m.away_team_id,m.home_runs,m.home_wickets,m.home_overs,
-      m.away_runs,m.away_wickets,m.away_overs,m.winner_team_id,m.result_text,
+      m.away_runs,m.away_wickets,m.away_overs,m.winner_team_id,m.result_text,m.player_scorecard,
       ht.name home_team,at.name away_team,wt.name winner_team
       from tournament_matches m
       join auction_teams ht on ht.id=m.home_team_id
@@ -59,15 +60,18 @@ export async function recordTournamentMatch(db, actorId, payload = {}) {
 
   const stats = Array.isArray(payload.p_player_stats) ? payload.p_player_stats : [];
   const seenPlayers = new Set();
+  const scorecard = [];
   for (const item of stats) {
     const playerId = String(item.player_id || "").trim();
     if (!playerId) continue;
     if (seenPlayers.has(playerId)) throw new Error(`Player ${playerId} appears more than once in the scorecard`);
     seenPlayers.add(playerId);
-    const player = (await db.query("select team_id from auction_players where id=$1", [playerId])).rows[0];
+    const player = (await db.query("select name,role,team_id from auction_players where id=$1", [playerId])).rows[0];
     if (!player || ![match.home_team_id, match.away_team_id].includes(player.team_id)) throw new Error(`Player ${playerId} is not in this match`);
     const values = [Number(item.runs || 0), Number(item.balls || 0), Number(item.wickets || 0), Number(item.runs_conceded || 0), Number(item.overs || 0), Number(item.catches || 0), item.potm ? 1 : 0];
     if (!values.every(Number.isFinite) || values.some((value) => value < 0)) throw new Error("Player statistics must be non-negative numbers");
+    scorecard.push({ player_id: playerId, player_name: player.name, role: player.role, team_id: player.team_id,
+      runs: values[0], balls: values[1], wickets: values[2], runs_conceded: values[3], overs: values[4], catches: values[5], potm: Boolean(item.potm) });
     await db.query(`insert into tournament_player_stats(player_id,matches,runs,balls,wickets,runs_conceded,overs,catches,potm_count)
       values($1,1,$2,$3,$4,$5,$6,$7,$8,$9)
       on conflict(player_id) do update set matches=tournament_player_stats.matches+1,runs=tournament_player_stats.runs+excluded.runs,
@@ -75,6 +79,7 @@ export async function recordTournamentMatch(db, actorId, payload = {}) {
       runs_conceded=tournament_player_stats.runs_conceded+excluded.runs_conceded,overs=tournament_player_stats.overs+excluded.overs,
       catches=tournament_player_stats.catches+excluded.catches,potm_count=tournament_player_stats.potm_count+excluded.potm_count,updated_at=now()`, [playerId, ...values]);
   }
+  await db.query("update tournament_matches set player_scorecard=$1,updated_at=now() where id=$2", [JSON.stringify(scorecard), matchId]);
   await db.query("insert into auction_audit(actor_id,action,details) values($1,$2,$3)", [actorId, "tournament_record_match", { match_id: matchId, stats_count: stats.length }]);
   return { match_id: matchId, winner_team_id: winner };
 }

@@ -120,6 +120,35 @@ create table if not exists tournament_matches (
   updated_at timestamptz not null default now(),
   check (home_team_id <> away_team_id)
 );
+alter table tournament_matches add column if not exists stream_url text;
+alter table tournament_matches add column if not exists player_scorecard jsonb not null default '[]'::jsonb;
+alter table tournament_matches add column if not exists cricheroes_match_id bigint unique;
+alter table tournament_matches add column if not exists cricheroes_match_url text;
+alter table tournament_matches add column if not exists cricheroes_status text;
+alter table tournament_matches add column if not exists cricheroes_live_score jsonb;
+alter table tournament_matches add column if not exists cricheroes_stream_url text;
+alter table tournament_matches add column if not exists cricheroes_synced_at timestamptz;
+
+-- CricHeroes match IDs and canonical links for the 15 published Season 5 league fixtures.
+update tournament_matches set cricheroes_match_id=v.external_id,cricheroes_match_url=v.external_url
+from (values
+  (1,28355809::bigint,'https://cricheroes.com/scorecard/28355809/phf-premier-league-season-5/phf-super-kings-vs-phf-super-giants/upcoming'),
+  (2,28355850::bigint,'https://cricheroes.com/scorecard/28355850/phf-premier-league-season-5/the-high-flyers-vs-phf-blasterz/upcoming'),
+  (3,28355858::bigint,'https://cricheroes.com/scorecard/28355858/phf-premier-league-season-5/phf-amigos-vs-phf-avengers/upcoming'),
+  (4,28355879::bigint,'https://cricheroes.com/scorecard/28355879/phf-premier-league-season-5/phf-super-giants-vs-phf-blasterz/upcoming'),
+  (5,28355897::bigint,'https://cricheroes.com/scorecard/28355897/phf-premier-league-season-5/phf-super-kings-vs-phf-avengers/upcoming'),
+  (6,28356094::bigint,'https://cricheroes.com/scorecard/28356094/phf-premier-league-season-5/phf-amigos-vs-the-high-flyers/upcoming'),
+  (7,28355931::bigint,'https://cricheroes.com/scorecard/28355931/phf-premier-league-season-5/the-high-flyers-vs-phf-super-kings/upcoming'),
+  (8,28355935::bigint,'https://cricheroes.com/scorecard/28355935/phf-premier-league-season-5/phf-avengers-vs-phf-super-giants/upcoming'),
+  (9,28355938::bigint,'https://cricheroes.com/scorecard/28355938/phf-premier-league-season-5/phf-amigos-vs-phf-blasterz/upcoming'),
+  (10,28355943::bigint,'https://cricheroes.com/scorecard/28355943/phf-premier-league-season-5/the-high-flyers-vs-phf-avengers/upcoming'),
+  (11,28355952::bigint,'https://cricheroes.com/scorecard/28355952/phf-premier-league-season-5/phf-amigos-vs-phf-super-giants/upcoming'),
+  (12,28355964::bigint,'https://cricheroes.com/scorecard/28355964/phf-premier-league-season-5/phf-super-kings-vs-phf-blasterz/upcoming'),
+  (13,28355988::bigint,'https://cricheroes.com/scorecard/28355988/phf-premier-league-season-5/phf-amigos-vs-phf-super-kings/upcoming'),
+  (14,28355998::bigint,'https://cricheroes.com/scorecard/28355998/phf-premier-league-season-5/phf-avengers-vs-phf-blasterz/upcoming'),
+  (15,28356000::bigint,'https://cricheroes.com/scorecard/28356000/phf-premier-league-season-5/the-high-flyers-vs-phf-super-giants/upcoming')
+) as v(match_number,external_id,external_url)
+where tournament_matches.match_number=v.match_number and tournament_matches.cricheroes_match_id is null;
 
 create table if not exists tournament_player_stats (
   player_id text primary key references auction_players(id) on delete cascade,

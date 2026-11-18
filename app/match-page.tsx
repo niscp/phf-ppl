@@ -283,7 +283,9 @@ export default function MatchDetailsPage() {
 
   const analysisSources = tournament.player_stats.some((stat) => stat.matches > 0) ? "Season 5 scorecards" : "verified CricHeroes career profiles";
   const hasComparables = Boolean(resolvedHome && resolvedAway && auction.players.some((player) => player.team_id === resolvedHome.id) && auction.players.some((player) => player.team_id === resolvedAway.id));
-  const streamEmbedUrl = youtubeEmbedUrl(liveMatch?.stream_url);
+  const availableStreamUrl = liveMatch?.stream_url ?? liveMatch?.cricheroes_stream_url ?? null;
+  const streamEmbedUrl = youtubeEmbedUrl(availableStreamUrl);
+  const cricVenue = [liveMatch?.cricheroes_live_score?.venue, liveMatch?.cricheroes_live_score?.city].filter(Boolean).join(", ");
 
   return <main className="match-page">
     <SiteHeader active="match-center" />
@@ -296,14 +298,16 @@ export default function MatchDetailsPage() {
           <b>vs</b>
           <div>{resolvedAway?.logo_url && <img src={logo(resolvedAway)} alt="" />}<span>{awayName}</span></div>
         </div>
-        <div className="match-meta"><span>{displayDate(fixture.date)}</span><span>Team report {fixture.reportTime} · Start {fixture.time}</span><span>{liveMatch?.venue ?? "Melbourne Cricket Ground"}</span></div>
+        <div className="match-meta"><span>{displayDate(fixture.date)}</span><span>Team report {fixture.reportTime} · Start {fixture.time}</span><span>{cricVenue || liveMatch?.venue || "Melbourne Cricket Ground"}</span></div>
+        {liveMatch?.cricheroes_status && ["live", "completed"].includes(liveMatch.cricheroes_status) && <div className={`match-result${liveMatch.cricheroes_status === "live" ? " match-live-result" : ""}`}><span>{liveMatch.cricheroes_status === "live" ? "● LIVE · CricHeroes score" : "CricHeroes match result"}</span><strong>{liveMatch.cricheroes_live_score?.team_a || homeName}: {liveMatch.cricheroes_live_score?.team_a_summary || "Score updating"} · {liveMatch.cricheroes_live_score?.team_b || awayName}: {liveMatch.cricheroes_live_score?.team_b_summary || ""}</strong><b>{liveMatch.cricheroes_live_score?.match_summary?.short_summary || (liveMatch.cricheroes_status === "live" ? "Live match in progress" : "Match completed")}</b></div>}
         {liveMatch?.status === "completed" && <div className="match-result"><span>Final score</span><strong>{liveMatch.home_runs}/{liveMatch.home_wickets} · {liveMatch.away_runs}/{liveMatch.away_wickets}</strong><b>{liveMatch.result_text ?? `${liveMatch.winner_team} won`}</b></div>}
+        {liveMatch?.cricheroes_match_url && <a className="match-source-link" href={liveMatch.cricheroes_match_url} target="_blank" rel="noopener noreferrer">Open official CricHeroes match page ↗</a>}
       </section>
 
       <section className="match-broadcast" aria-labelledby="match-broadcast-title">
         <div className="match-broadcast-heading"><div><span>Watch Season 5</span><h2 id="match-broadcast-title">Match stream</h2></div><b><i/> YouTube</b></div>
         {streamEmbedUrl ? <div className="match-broadcast-player"><iframe src={streamEmbedUrl} title={`${homeName} vs ${awayName} · PHF Premier League Season 5 live stream`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div>
-          : liveMatch?.stream_url ? <div className="match-broadcast-placeholder"><span className="match-broadcast-play">▶</span><div><strong>Stream link published</strong><p>Open the official match broadcast.</p></div><a href={liveMatch.stream_url} target="_blank" rel="noopener noreferrer">Watch stream ↗</a></div>
+          : availableStreamUrl ? <div className="match-broadcast-placeholder"><span className="match-broadcast-play">▶</span><div><strong>Stream link published</strong><p>Open the official match broadcast.</p></div><a href={availableStreamUrl} target="_blank" rel="noopener noreferrer">Watch stream ↗</a></div>
           : <div className="match-broadcast-placeholder"><span className="match-broadcast-play">▶</span><div><strong>This match will be streamed on YouTube.</strong><p>The live player will appear here when the match stream is published.</p></div><span className="match-broadcast-upcoming">Stream link coming soon</span></div>}
       </section>
 
@@ -331,7 +335,7 @@ export default function MatchDetailsPage() {
         {loading ? <p className="match-loading">Loading team squads…</p> : <div className="match-squads-grid">{resolvedHome && <SquadList team={resolvedHome} auction={auction} />}{resolvedAway && <SquadList team={resolvedAway} auction={auction} />}</div>}
       </section>}
 
-      <section className="match-facts"><span>Match information</span><div><b>Date</b><strong>{displayDate(fixture.date)}</strong></div><div><b>Team reporting</b><strong>{fixture.reportTime}</strong></div><div><b>Match start</b><strong>{fixture.time}</strong></div><div><b>Venue</b><strong>{liveMatch?.venue ?? "Melbourne Cricket Ground"}</strong></div><div><b>Format</b><strong>{matchNumber >= 16 ? "Season 5 finals · knockout match" : "Season 5 round robin · 2 points for a win"}</strong></div></section>
+      <section className="match-facts"><span>Match information</span><div><b>Date</b><strong>{displayDate(fixture.date)}</strong></div><div><b>Team reporting</b><strong>{fixture.reportTime}</strong></div><div><b>Match start</b><strong>{fixture.time}</strong></div><div><b>Venue</b><strong>{cricVenue || liveMatch?.venue || "Melbourne Cricket Ground"}</strong></div><div><b>Format</b><strong>{liveMatch?.cricheroes_live_score?.overs ? `${liveMatch.cricheroes_live_score.overs} overs · ` : ""}{matchNumber >= 16 ? "Season 5 finals · knockout match" : "Season 5 round robin · 2 points for a win"}</strong></div></section>
       <footer className="match-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={localLink("fixtures.html")}>Return to schedule ↑</a></footer>
     </div>
   </main>;

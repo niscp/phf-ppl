@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import { WebSocketServer } from "ws";
 import { createApp } from "./app.mjs";
 import { migrateActiveAuctionToCr, normalizeAuctionState } from "./auction-units.mjs";
+import { syncCricHeroesMatches } from "./cricheroes.mjs";
 
 for (const name of ["DATABASE_URL", "JWT_SECRET"]) if (!process.env[name]) throw new Error(`${name} is required`);
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 10 });
@@ -91,3 +92,24 @@ if (process.env.CLOUD_SYNC_URL && process.env.SYNC_SECRET) {
   setInterval(() => { void flushAuctionSync(); }, 5000).unref();
   void flushAuctionSync();
 }
+
+let syncingCricHeroes = false;
+async function refreshCricHeroes() {
+  if (syncingCricHeroes) return;
+  syncingCricHeroes = true;
+  let delay = 5 * 60_000;
+  try {
+    const { rows } = await pool.query(`select exists(select 1 from tournament_matches
+      where match_date=(timezone('Asia/Kolkata',now()))::date and match_time::time between
+      (timezone('Asia/Kolkata',now()))::time - interval '15 minutes' and (timezone('Asia/Kolkata',now()))::time + interval '3 hours') active_window`);
+    delay = rows[0]?.active_window ? 30_000 : delay;
+    const result = await syncCricHeroesMatches(pool);
+    if (result.errors) console.warn(`CricHeroes sync partial: ${result.synced} matches updated, ${result.errors} source requests failed`);
+  } catch (error) {
+    console.warn("CricHeroes sync failed:", error instanceof Error ? error.message : error);
+  } finally {
+    syncingCricHeroes = false;
+    setTimeout(() => { void refreshCricHeroes(); }, delay).unref();
+  }
+}
+void refreshCricHeroes();
