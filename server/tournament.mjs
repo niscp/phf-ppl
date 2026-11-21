@@ -1,7 +1,105 @@
 const round2 = (value) => Math.round(Number(value) * 100) / 100;
 
+function normalizedPlayerName(value) {
+  return String(value ?? "").toLowerCase().replace(/[†‡]/g, "").replace(/\([^)]*\)/g, "")
+    .replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function normalizedTeamName(value) {
+  return normalizedPlayerName(value).replace(/\b(phf|the|prestige)\b/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function numeric(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function cricketOvers(value) {
+  const match = String(value ?? "").match(/^(\d+)(?:\.(\d+))?/);
+  if (!match) return 0;
+  const balls = Number(match[2] ?? 0);
+  return balls <= 5 ? Number(match[1]) + balls / 6 : 0;
+}
+
+function seasonPlayerStats(matches, teams) {
+  const teamNames = new Map(teams.map((team) => [String(team.id), team.name]));
+  const nameToTeam = new Map(teams.map((team) => [normalizedTeamName(team.name), String(team.id)]));
+  const players = new Map();
+
+  for (const match of matches) {
+    if (match.status !== "completed") continue;
+    const seenThisMatch = new Set();
+    const addPlayer = (name, teamId, figures = {}) => {
+      const cleanName = String(name ?? "").replace(/[†‡]/g, "").replace(/\s*\([^)]*\)\s*/g, " ").trim();
+      const normalized = normalizedPlayerName(cleanName);
+      if (!normalized) return null;
+      const resolvedTeamId = teamId == null ? null : String(teamId);
+      const key = `${resolvedTeamId ?? "unknown"}:${normalized}`;
+      let player = players.get(key);
+      if (!player) {
+        player = { player_id: `season:${key}`, name: cleanName, role: "", photo: null, team_id: resolvedTeamId,
+          team_name: resolvedTeamId ? teamNames.get(resolvedTeamId) ?? null : null,
+          matches: 0, runs: 0, balls: 0, wickets: 0, runs_conceded: 0, overs: 0, catches: 0, potm_count: 0 };
+        players.set(key, player);
+      }
+      if (!seenThisMatch.has(key)) {
+        player.matches += 1;
+        seenThisMatch.add(key);
+      }
+      player.runs += numeric(figures.runs);
+      player.balls += numeric(figures.balls);
+      player.wickets += numeric(figures.wickets);
+      player.runs_conceded += numeric(figures.runs_conceded);
+      player.overs += numeric(figures.overs);
+      player.catches += numeric(figures.catches);
+      player.potm_count += numeric(figures.potm_count);
+      return player;
+    };
+
+    const live = match.cricheroes_live_score ?? {};
+    const card = live.full_scorecard;
+    if (card?.team_a?.scorecard || card?.team_b?.scorecard) {
+      for (const [side, opposingSide] of [["team_a", "team_b"], ["team_b", "team_a"]]) {
+        const teamCard = card[side];
+        const teamId = nameToTeam.get(normalizedTeamName(teamCard?.name));
+        const opposingTeamId = nameToTeam.get(normalizedTeamName(card[opposingSide]?.name));
+        const innings = (teamCard?.scorecard ?? []).filter((inning) => Number(inning.inning) <= 2);
+        for (const inning of innings) {
+          for (const batter of inning.batting ?? []) {
+            addPlayer(batter.name, teamId, { runs: batter.runs, balls: batter.balls });
+            const dismissal = String(batter.dismissal ?? "");
+            const caught = dismissal.match(/\bc\s+†?(.+?)\s+b\s+/i);
+            const caughtAndBowled = dismissal.match(/\bc\s*&\s*b\s+(.+)$/i);
+            const fielder = caught?.[1]?.trim() ?? caughtAndBowled?.[1]?.trim();
+            if (fielder) addPlayer(fielder, opposingTeamId, { catches: 1 });
+          }
+          for (const bowler of inning.bowling ?? []) {
+            addPlayer(bowler.name, opposingTeamId, { wickets: bowler.wickets, runs_conceded: bowler.runs, overs: cricketOvers(bowler.overs) });
+          }
+        }
+
+      }
+      const awardName = live.match_awards?.player_of_match?.name;
+      const awardKey = normalizedPlayerName(awardName);
+      if (awardKey) {
+        const awardee = [...players.values()].find((player) => normalizedPlayerName(player.name) === awardKey);
+        if (awardee) awardee.potm_count += 1;
+        else addPlayer(awardName, null, { potm_count: 1 });
+      }
+      continue;
+    }
+
+    for (const player of match.player_scorecard ?? []) {
+      addPlayer(player.player_name, player.team_id, { runs: player.runs, balls: player.balls, wickets: player.wickets,
+        runs_conceded: player.runs_conceded, overs: player.overs, catches: player.catches, potm_count: player.potm ? 1 : 0 });
+    }
+  }
+
+  return [...players.values()].sort((a, b) => b.runs - a.runs || b.wickets - a.wickets || a.name.localeCompare(b.name));
+}
+
 export async function tournamentSnapshot(db) {
-  const [matches, stats, teams] = await Promise.all([
+  const [matches, teams] = await Promise.all([
     db.query(`select m.id,m.match_number,m.match_date,m.match_time,m.report_time,m.venue,m.status,m.stream_url,
       m.cricheroes_match_id,m.cricheroes_match_url,m.cricheroes_status,m.cricheroes_live_score,m.cricheroes_stream_url,m.cricheroes_synced_at,
       m.home_team_id,m.away_team_id,m.home_runs,m.home_wickets,m.home_overs,
@@ -12,11 +110,6 @@ export async function tournamentSnapshot(db) {
       join auction_teams at on at.id=m.away_team_id
       left join auction_teams wt on wt.id=m.winner_team_id
       order by m.match_number`),
-    db.query(`select s.player_id,p.name,p.role,p.photo,p.team_id,t.name team_name,
-      s.matches,s.runs,s.balls,s.wickets,s.runs_conceded,s.overs,s.catches,s.potm_count
-      from tournament_player_stats s join auction_players p on p.id=s.player_id
-      left join auction_teams t on t.id=p.team_id
-      order by s.runs desc,s.wickets desc,p.name`),
     db.query("select id,name,logo_url from auction_teams order by name"),
   ]);
 
@@ -33,7 +126,7 @@ export async function tournamentSnapshot(db) {
     return { team_id: team.id, team_name: team.name, played: played.length, wins, losses, points: wins * 2, runs_for: runsFor, runs_against: runsAgainst, nrr };
   }).sort((a, b) => b.points - a.points || b.nrr - a.nrr || b.wins - a.wins || a.team_name.localeCompare(b.team_name));
 
-  return { matches: matches.rows, standings, player_stats: stats.rows };
+  return { matches: matches.rows, standings, player_stats: seasonPlayerStats(matches.rows, teams.rows) };
 }
 
 export async function recordTournamentMatch(db, actorId, payload = {}) {
