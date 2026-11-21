@@ -275,6 +275,7 @@ export default function MatchDetailsPage() {
   const liveMatch = tournament.matches.find((match) => match.match_number === matchNumber);
   const cricStatus = String(liveMatch?.cricheroes_status ?? "").toLowerCase();
   const cricCompleted = ["past", "complete", "completed", "finished", "result"].includes(cricStatus);
+  const matchCompleted = cricCompleted || liveMatch?.status === "completed";
   const homeName = liveMatch?.home_team ?? (matchNumber === 16 ? "3rd place" : matchNumber === 17 ? "1st place" : fixture ? teamNameForSlot(fixture.home_slot, teams) : "Home team");
   const awayName = liveMatch?.away_team ?? (matchNumber === 16 ? "4th place" : matchNumber === 17 ? "2nd place" : fixture ? teamNameForSlot(fixture.away_slot, teams) : "Away team");
   const resolvedHome = teams.find((team) => team.name === homeName) ?? homeTeam;
@@ -322,7 +323,7 @@ export default function MatchDetailsPage() {
 
       <MatchRules variant="match" />
 
-      {matchNumber <= 15 && <section className="match-analysis-section">
+      {!matchCompleted && matchNumber <= 15 && <section className="match-analysis-section">
         <div className="match-section-title"><div><span>Pre-match analysis</span><h2>The numbers<br/><em>to watch.</em></h2></div><p>Built from {analysisSources}. It describes recorded player performance; it does not predict the result.</p></div>
         {loading ? <p className="match-loading">Loading squads and available stats…</p> : hasComparables ? <>
           {resolvedHome && resolvedAway && <PreMatchRead home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
@@ -331,7 +332,7 @@ export default function MatchDetailsPage() {
         </> : <div className="match-analysis-empty"><h3>Analysis will sharpen when squads are available</h3><p>Once both team rosters and verified player figures are connected, this section will surface each side’s leading run scorer, wicket taker, and relevant batting rates.</p></div>}
       </section>}
 
-      {matchNumber === 2 && !loading && resolvedHome && resolvedAway && <MatchTwoBrief home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
+      {!matchCompleted && matchNumber === 2 && !loading && resolvedHome && resolvedAway && <MatchTwoBrief home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
 
       {matchNumber <= 15 && <section className="match-squads-section">
         <div className="match-section-title"><div><span>Season 5 squads</span><h2>Meet the<br/><em>squads.</em></h2></div><p>Player roles and current team assignments from the official Season 5 roster. Final playing XIs will be confirmed separately.</p></div>
