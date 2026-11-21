@@ -72,6 +72,11 @@ function streamUrl(match) {
   return null;
 }
 
+function normalizedMatchStatus(value) {
+  const status = String(value ?? "unknown").trim().toLowerCase();
+  return ["past", "complete", "completed", "finished", "result"].includes(status) ? "completed" : status;
+}
+
 export async function syncCricHeroesMatches(db) {
   const sources = await Promise.allSettled([[1, 1], [2, 2], [3, 3]].map(([type, status]) => getMatches(type, status)));
   const errors = sources.filter((result) => result.status === "rejected");
@@ -83,7 +88,7 @@ export async function syncCricHeroesMatches(db) {
     const id = Number(match.match_id);
     if (!Number.isInteger(id)) continue;
     const score = {
-      status: match.status || "unknown",
+      status: normalizedMatchStatus(match.status),
       team_a: match.team_a ?? match.team_a_name ?? null,
       team_b: match.team_b ?? match.team_b_name ?? null,
       team_a_summary: match.team_a_summary ?? "",

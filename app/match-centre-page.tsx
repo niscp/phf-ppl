@@ -38,6 +38,12 @@ function dateLabel(value: string) {
 
 function fromLive(match: TournamentMatch): MatchCentreItem {
   const fallback = seasonFiveFixtures.find((item) => item.match_number === match.match_number);
+  const sourceStatus = String(match.cricheroes_status ?? "").toLowerCase();
+  const isCompleted = ["past", "complete", "completed", "finished", "result"].includes(sourceStatus);
+  const sourceResult = match.cricheroes_live_score?.match_summary?.short_summary
+    || match.cricheroes_live_score?.match_summary?.summary
+    || match.cricheroes_live_score?.match_summary?.full_summary
+    || null;
   return {
     number: match.match_number,
     date: dateLabel(match.match_date || fallback?.date || ""),
@@ -48,8 +54,8 @@ function fromLive(match: TournamentMatch): MatchCentreItem {
     awayId: match.away_team_id || (fallback ? fixtureTeamOrder[fallback.away_slot - 1] : ""),
     status: match.status,
     homeRuns: match.home_runs, homeWickets: match.home_wickets, awayRuns: match.away_runs, awayWickets: match.away_wickets,
-    result: match.result_text, streamUrl: match.stream_url ?? match.cricheroes_stream_url ?? null,
-    cricheroesUrl: match.cricheroes_match_url ?? null, cricheroesStatus: match.cricheroes_status ?? null, liveScore: match.cricheroes_live_score ?? null,
+    result: match.result_text || (isCompleted ? sourceResult : null), streamUrl: match.stream_url ?? match.cricheroes_stream_url ?? null,
+    cricheroesUrl: match.cricheroes_match_url ?? null, cricheroesStatus: isCompleted ? "completed" : match.cricheroes_status ?? null, liveScore: match.cricheroes_live_score ?? null,
   };
 }
 

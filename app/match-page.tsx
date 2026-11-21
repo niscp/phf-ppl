@@ -273,6 +273,8 @@ export default function MatchDetailsPage() {
   const homeTeam = fixture && fixture.home_slot > 0 ? teams.find((team) => team.name === teamNameForSlot(fixture.home_slot, teams)) : undefined;
   const awayTeam = fixture && fixture.away_slot > 0 ? teams.find((team) => team.name === teamNameForSlot(fixture.away_slot, teams)) : undefined;
   const liveMatch = tournament.matches.find((match) => match.match_number === matchNumber);
+  const cricStatus = String(liveMatch?.cricheroes_status ?? "").toLowerCase();
+  const cricCompleted = ["past", "complete", "completed", "finished", "result"].includes(cricStatus);
   const homeName = liveMatch?.home_team ?? (matchNumber === 16 ? "3rd place" : matchNumber === 17 ? "1st place" : fixture ? teamNameForSlot(fixture.home_slot, teams) : "Home team");
   const awayName = liveMatch?.away_team ?? (matchNumber === 16 ? "4th place" : matchNumber === 17 ? "2nd place" : fixture ? teamNameForSlot(fixture.away_slot, teams) : "Away team");
   const resolvedHome = teams.find((team) => team.name === homeName) ?? homeTeam;
@@ -300,8 +302,8 @@ export default function MatchDetailsPage() {
           <div>{resolvedAway?.logo_url && <img src={logo(resolvedAway)} alt="" />}<span>{awayName}</span></div>
         </div>
         <div className="match-meta"><span>{displayDate(fixture.date)}</span><span>Team report {fixture.reportTime} · Start {fixture.time}</span><span>{cricVenue || liveMatch?.venue || "Melbourne Cricket Ground"}</span></div>
-        {liveMatch?.cricheroes_status === "live" && <LiveScoreboard score={liveMatch.cricheroes_live_score} status={liveMatch.cricheroes_status} />}
-        {liveMatch?.status === "completed" && <div className="match-result"><span>Final score</span><strong>{liveMatch.home_runs}/{liveMatch.home_wickets} · {liveMatch.away_runs}/{liveMatch.away_wickets}</strong><b>{liveMatch.result_text ?? `${liveMatch.winner_team} won`}</b></div>}
+        {(liveMatch?.cricheroes_status === "live" || cricCompleted) && <LiveScoreboard score={liveMatch.cricheroes_live_score} status={cricCompleted ? "completed" : "live"} />}
+        {liveMatch?.status === "completed" && !cricCompleted && <div className="match-result"><span>Final score</span><strong>{liveMatch.home_runs}/{liveMatch.home_wickets} · {liveMatch.away_runs}/{liveMatch.away_wickets}</strong><b>{liveMatch.result_text ?? `${liveMatch.winner_team} won`}</b></div>}
         {liveMatch?.cricheroes_match_url && <a className="match-source-link" href={liveMatch.cricheroes_match_url} target="_blank" rel="noopener noreferrer">Open official CricHeroes match page ↗</a>}
       </section>
 
@@ -316,7 +318,7 @@ export default function MatchDetailsPage() {
 
       {matchNumber <= 15 && <FanMatchActivity matchNumber={matchNumber} />}
 
-      {liveMatch?.status === "completed" && <section className="match-scorecard-section"><div className="match-section-title"><div><span>Official match record</span><h2>Scorecard</h2></div><p>Innings totals and player figures submitted by the match recorder.</p></div><div className="match-scorecard-innings"><article><span>{homeName}</span><strong>{liveMatch.home_runs ?? "—"}/{liveMatch.home_wickets ?? "—"}</strong><small>{liveMatch.home_overs ?? "—"} overs</small></article><article><span>{awayName}</span><strong>{liveMatch.away_runs ?? "—"}/{liveMatch.away_wickets ?? "—"}</strong><small>{liveMatch.away_overs ?? "—"} overs</small></article></div>{liveMatch.player_scorecard?.length ? <div className="match-scorecard-players"><div><span>Player</span><span>Runs (balls)</span><span>Wickets · overs</span></div>{liveMatch.player_scorecard.map((player) => <div key={player.player_id}><strong>{player.player_name}<small>{player.role}</small></strong><b>{player.runs} ({player.balls})</b><span>{player.wickets} · {player.overs}</span></div>)}</div> : <p className="match-scorecard-empty">Player figures have not been submitted for this match. Ball-by-ball commentary is not part of the current match record.</p>}</section>}
+      {liveMatch?.status === "completed" && !cricCompleted && <section className="match-scorecard-section"><div className="match-section-title"><div><span>Official match record</span><h2>Scorecard</h2></div><p>Innings totals and player figures submitted by the match recorder.</p></div><div className="match-scorecard-innings"><article><span>{homeName}</span><strong>{liveMatch.home_runs ?? "—"}/{liveMatch.home_wickets ?? "—"}</strong><small>{liveMatch.home_overs ?? "—"} overs</small></article><article><span>{awayName}</span><strong>{liveMatch.away_runs ?? "—"}/{liveMatch.away_wickets ?? "—"}</strong><small>{liveMatch.away_overs ?? "—"} overs</small></article></div>{liveMatch.player_scorecard?.length ? <div className="match-scorecard-players"><div><span>Player</span><span>Runs (balls)</span><span>Wickets · overs</span></div>{liveMatch.player_scorecard.map((player) => <div key={player.player_id}><strong>{player.player_name}<small>{player.role}</small></strong><b>{player.runs} ({player.balls})</b><span>{player.wickets} · {player.overs}</span></div>)}</div> : <p className="match-scorecard-empty">Player figures have not been submitted for this match. Ball-by-ball commentary is not part of the current match record.</p>}</section>}
 
       <MatchRules variant="match" />
 
