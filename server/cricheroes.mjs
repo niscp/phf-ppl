@@ -191,8 +191,9 @@ export async function syncCricHeroesMatches(db) {
     const awayScore = awaySourceSide ? scoreParts(awaySourceSide === "team_a" ? score.team_a_summary : score.team_b_summary) : null;
     const homeInnings = homeSourceSide === "team_a" ? score.team_a_innings : score.team_b_innings;
     const awayInnings = awaySourceSide === "team_a" ? score.team_a_innings : score.team_b_innings;
-    const homeOvers = homeInnings?.at(-1)?.overs_played;
-    const awayOvers = awayInnings?.at(-1)?.overs_played;
+    const mainInning = (innings) => innings?.filter((inning) => !inning.super_over_number).at(-1) ?? innings?.at(-1);
+    const homeOvers = mainInning(homeInnings)?.overs_played;
+    const awayOvers = mainInning(awayInnings)?.overs_played;
     const synchronizedResult = score.status === "completed" && homeScore && awayScore && homeSourceSide;
     const winnerName = normalizedTeamName(sourceWinner);
     const homeWon = sourceWinner
