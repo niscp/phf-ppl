@@ -29,7 +29,14 @@ async function getMatches(type, status) {
 function streamUrl(match) {
   const candidates = [match.streaming_url, match.steaming_url, match.streaming_multiple_url,
     ...(Array.isArray(match.streaming_details) ? match.streaming_details.flatMap((item) => [item?.streaming_url, item?.url, item?.watch_url]) : [])];
-  return candidates.find((value) => typeof value === "string" && /^https:\/\//i.test(value)) || null;
+  for (const candidate of candidates) {
+    if (typeof candidate !== "string") continue;
+    const value = candidate.trim();
+    if (/^https:\/\//i.test(value)) return value;
+    // CricHeroes supplies YouTube video IDs in its streaming_url fields.
+    if (/^[A-Za-z0-9_-]{11}$/.test(value)) return `https://www.youtube.com/watch?v=${value}`;
+  }
+  return null;
 }
 
 export async function syncCricHeroesMatches(db) {

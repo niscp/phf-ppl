@@ -85,6 +85,7 @@ export default function MatchCentrePage() {
   const teamImage = (id: string) => image(announcedTeams.find((team) => team.id === id)?.logo_url);
   const matchLink = (number: number) => link(`match.html?match=${number}`);
   const focusEmbedUrl = youtubeEmbedUrl(focus?.streamUrl);
+  const showLivePlayer = focus?.cricheroesStatus === "live" && Boolean(focusEmbedUrl);
   useEffect(() => { setWatching(false); }, [focus?.number, focus?.streamUrl]);
 
   return <main className="match-centre-page">
@@ -103,7 +104,7 @@ export default function MatchCentrePage() {
       <div className="mc-watch-card">
         <div className="mc-watch-atmosphere" aria-hidden="true" />
         <div className="mc-watch-topline"><span><i className={focus.streamUrl ? "is-live" : ""}/>{focus.streamUrl ? "Broadcast available" : "PHF Premier League · Season 5"}</span><b>{focus.streamUrl ? "YouTube" : "Matchday broadcast"}</b></div>
-        {watching && focusEmbedUrl ? <div className="mc-watch-iframe-wrap"><iframe src={`${focusEmbedUrl}?autoplay=1&rel=0`} title={`${focus.home} vs ${focus.away} · PHF Premier League Season 5`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div> : <>
+        {(watching || showLivePlayer) && focusEmbedUrl ? <div className="mc-watch-iframe-wrap"><iframe src={`${focusEmbedUrl}?autoplay=${showLivePlayer ? "1&mute=1" : "1"}&rel=0`} title={`${focus.home} vs ${focus.away} · PHF Premier League Season 5`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /></div> : <>
           <div className="mc-watch-content">
             <div className="mc-watch-match">
               <span className="mc-watch-kicker">{focus.cricheroesStatus === "live" ? "LIVE NOW" : focusEmbedUrl ? "Watch the match" : "The next match, up close"} · Match {String(focus.number).padStart(2, "0")}</span>
