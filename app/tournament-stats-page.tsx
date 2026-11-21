@@ -1,11 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import SiteHeader from "./site-header";
 import { getTournamentSnapshot, type TournamentSnapshot } from "./auction-client";
 
 const pageBase = () => typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/";
 const pageLink = (path: string) => `${pageBase()}${path}`;
+
+function playerTeamColor(teamName?: string | null) {
+  const name = (teamName ?? "").toLowerCase().replace(/\b(phf|the|prestige)\b/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  if (name.includes("super kings")) return "#2459a8";
+  if (name.includes("super giants")) return "#65452d";
+  if (name.includes("high flyers")) return "#343b42";
+  if (name.includes("avengers")) return "#e3bd28";
+  if (name.includes("blasterz")) return "#b58a2d";
+  if (name.includes("amigos")) return "#4386c6";
+  return "#8a928c";
+}
 
 export default function TournamentStatsPage() {
   const [snapshot, setSnapshot] = useState<TournamentSnapshot>({ matches: [], standings: [], player_stats: [] });
@@ -44,13 +55,13 @@ export default function TournamentStatsPage() {
       {standings.length ? <div className="ts-table-wrap"><table className="ts-table"><thead><tr><th scope="col">Pos</th><th scope="col">Team</th><th scope="col">Played</th><th scope="col">Won</th><th scope="col">Lost</th><th scope="col">Points</th><th scope="col">NRR</th></tr></thead><tbody>{standings.map((team, index) => <tr key={team.team_id}><td>{String(index + 1).padStart(2, "0")}</td><th scope="row">{team.team_name}</th><td>{team.played}</td><td>{team.wins}</td><td>{team.losses}</td><td>{team.points}</td><td>{team.played ? team.nrr.toFixed(2) : "—"}</td></tr>)}</tbody></table></div> : <div className="ts-empty-row"><strong>Standings are not available yet.</strong><span>They will appear as soon as an official result is recorded.</span></div>}
 
       <div className="ts-player-grids">
-        <section className="ts-player-board"><header><div><span>Batting</span><h3>Most runs</h3></div><b>Runs</b></header>{batters.length ? <ol>{batters.map((player, index) => <li key={player.player_id}><i>{String(index + 1).padStart(2, "0")}</i><span><strong>{player.name}</strong><small>{player.team_name ?? "Team not listed"} · {player.matches} {player.matches === 1 ? "match" : "matches"}</small></span><b>{player.runs}</b></li>)}</ol> : <p className="ts-board-empty">Player batting records will appear after the first scorecard.</p>}</section>
-        <section className="ts-player-board"><header><div><span>Bowling</span><h3>Most wickets</h3></div><b>Wickets</b></header>{bowlers.length ? <ol>{bowlers.map((player, index) => <li key={player.player_id}><i>{String(index + 1).padStart(2, "0")}</i><span><strong>{player.name}</strong><small>{player.team_name ?? "Team not listed"} · {player.matches} {player.matches === 1 ? "match" : "matches"}</small></span><b>{player.wickets}</b></li>)}</ol> : <p className="ts-board-empty">Player bowling records will appear after the first scorecard.</p>}</section>
+        <section className="ts-player-board"><header><div><span>Batting</span><h3>Most runs</h3></div><b>Runs</b></header>{batters.length ? <ol>{batters.map((player, index) => <li key={player.player_id} style={{ "--player-team-color": playerTeamColor(player.team_name) } as CSSProperties}><i>{String(index + 1).padStart(2, "0")}</i><span><strong>{player.name}</strong><small>{player.team_name ?? "Team not listed"} · {player.matches} {player.matches === 1 ? "match" : "matches"}</small></span><b>{player.runs}</b></li>)}</ol> : <p className="ts-board-empty">Player batting records will appear after the first scorecard.</p>}</section>
+        <section className="ts-player-board"><header><div><span>Bowling</span><h3>Most wickets</h3></div><b>Wickets</b></header>{bowlers.length ? <ol>{bowlers.map((player, index) => <li key={player.player_id} style={{ "--player-team-color": playerTeamColor(player.team_name) } as CSSProperties}><i>{String(index + 1).padStart(2, "0")}</i><span><strong>{player.name}</strong><small>{player.team_name ?? "Team not listed"} · {player.matches} {player.matches === 1 ? "match" : "matches"}</small></span><b>{player.wickets}</b></li>)}</ol> : <p className="ts-board-empty">Player bowling records will appear after the first scorecard.</p>}</section>
       </div>
 
       <div className="ts-extra-records">
-        <section><span>Fielding</span><h3>Most catches</h3>{catches.length ? <ol>{catches.map((player) => <li key={player.player_id}><b>{player.name}</b><span>{player.catches} catches</span></li>)}</ol> : <p>Catch records will appear with match scorecards.</p>}</section>
-        <section><span>Match awards</span><h3>Player of the Match</h3>{awards.length ? <ol>{awards.map((player) => <li key={player.player_id}><b>{player.name}</b><span>{player.potm_count} {player.potm_count === 1 ? "award" : "awards"}</span></li>)}</ol> : <p>Award records will appear after the first match.</p>}</section>
+        <section><span>Fielding</span><h3>Most catches</h3>{catches.length ? <ol>{catches.map((player) => <li key={player.player_id} style={{ "--player-team-color": playerTeamColor(player.team_name) } as CSSProperties}><b>{player.name}</b><span>{player.catches} catches</span></li>)}</ol> : <p>Catch records will appear with match scorecards.</p>}</section>
+        <section><span>Match awards</span><h3>Player of the Match</h3>{awards.length ? <ol>{awards.map((player) => <li key={player.player_id} style={{ "--player-team-color": playerTeamColor(player.team_name) } as CSSProperties}><b>{player.name}</b><span>{player.potm_count} {player.potm_count === 1 ? "award" : "awards"}</span></li>)}</ol> : <p>Award records will appear after the first match.</p>}</section>
       </div>
 
       <div className="ts-section-heading ts-results-heading"><div><span>Official scorecards</span><h2>Match results</h2></div><a href={pageLink("match-centre.html")}>Open Match Centre ↗</a></div>
