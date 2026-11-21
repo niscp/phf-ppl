@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 
-type PageKey = "home" | "fixtures" | "match-center" | "stats" | "teams" | "players" | "auction" | "history" | "results" | "sponsors" | "fan" | "fan-guide" | "leaderboard" | "fan-account" | "prizes";
+type PageKey = "home" | "fixtures" | "match-center" | "stats" | "gallery" | "teams" | "players" | "auction" | "history" | "results" | "sponsors" | "fan" | "fan-guide" | "leaderboard" | "fan-account" | "prizes";
 
 const primaryLinks: Array<{ key: PageKey; label: string; href: string }> = [
   { key: "home", label: "Home", href: "" },
@@ -14,6 +14,7 @@ const primaryLinks: Array<{ key: PageKey; label: string; href: string }> = [
 ];
 
 const moreLinks: Array<{ key: PageKey; label: string; href: string }> = [
+  { key: "gallery", label: "Tournament gallery", href: "gallery.html" },
   { key: "prizes", label: "Prizes & Awards", href: "prizes.html" },
   { key: "fan-guide", label: "How Fan Picks works", href: "fan-guide.html" },
   { key: "fan-account", label: "Fan account", href: "fan-account.html" },

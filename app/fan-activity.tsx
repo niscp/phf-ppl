@@ -221,7 +221,22 @@ export function FanLeaderboardPage() {
   const [leaderboard, setLeaderboard] = useState<FanLeaderboardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  useEffect(() => { let active = true; fanRequest("/api/fan/leaderboard").then((body) => { if (active) setLeaderboard(body.leaderboard as FanLeaderboardRow[]); }).catch((reason: Error) => { if (active) setError(reason.message); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, []);
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      try {
+        const body = await fanRequest("/api/fan/leaderboard");
+        if (active) { setLeaderboard(body.leaderboard as FanLeaderboardRow[]); setError(""); }
+      } catch (reason) {
+        if (active && !leaderboard.length) setError((reason as Error).message);
+      } finally { if (active) setLoading(false); }
+    };
+    void refresh();
+    const timer = window.setInterval(() => { if (document.visibilityState === "visible") void refresh(); }, 30000);
+    const onVisible = () => { if (document.visibilityState === "visible") void refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { active = false; window.clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+  }, []);
   return <main className="fan-page fan-standings-page"><header className="fan-hero"><div className="fan-hero-inner"><span>PHF Premier League · Season 5</span><h1>Fan Race</h1><p>Two ways to climb the standings: show up for every match, or make the calls that score.</p><div className="fan-page-actions"><a className="fan-button" href={fanPath()}>Make match picks</a><a className="fan-button secondary" href={fanAccountPath(fanLeaderboardPath())}>Fan account / Sign in</a></div></div></header><section className="fan-standings-content"><FanLeaderboardCard leaderboard={leaderboard} loading={loading} error={error}/><p className="fan-standings-privacy">Fan accounts appear automatically. Display names are public; phone numbers are never shown.</p></section></main>;
 }
 

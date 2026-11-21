@@ -24,6 +24,7 @@ export default defineConfig({
         fixtures: fileURLToPath(new URL("./fixtures.html", import.meta.url)),
         matchCentre: fileURLToPath(new URL("./match-centre.html", import.meta.url)),
         stats: fileURLToPath(new URL("./stats.html", import.meta.url)),
+        gallery: fileURLToPath(new URL("./gallery.html", import.meta.url)),
         fan: fileURLToPath(new URL("./fan.html", import.meta.url)),
         fanGuide: fileURLToPath(new URL("./fan-guide.html", import.meta.url)),
         prizes: fileURLToPath(new URL("./prizes.html", import.meta.url)),

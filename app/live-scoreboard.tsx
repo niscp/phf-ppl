@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { announcedTeams } from "./season5-teams";
 import type { CricHeroesFullScorecard, CricHeroesInningsSummary, CricHeroesLiveScore, CricHeroesTeamScorecard } from "./auction-client";
 
@@ -9,6 +10,17 @@ function teamLogo(name?: string | null) {
   if (!name) return "";
   const team = announcedTeams.find((item) => normalize(item.name) === normalize(name));
   return team?.logo_url ? asset(team.logo_url) : "";
+}
+
+function teamAccent(name: string) {
+  const value = normalize(name);
+  if (value.includes("super kings")) return "#2459a8";
+  if (value.includes("super giants")) return "#762d46";
+  if (value.includes("high flyers")) return "#bf7136";
+  if (value.includes("avengers")) return "#368354";
+  if (value.includes("blasterz")) return "#b58a2d";
+  if (value.includes("amigos")) return "#3572ac";
+  return "#9a792d";
 }
 
 function latest<T extends CricHeroesInningsSummary>(innings?: T[]) {
@@ -28,7 +40,7 @@ function scoreFor(name: string | null | undefined, summary: string | undefined, 
 function TeamScore({ name, summary, innings, side }: { name: string | null | undefined; summary: string | undefined; innings?: CricHeroesInningsSummary[]; side: string }) {
   const team = scoreFor(name, summary, innings);
   const logo = teamLogo(team.name);
-  return <div className={`live-score-team ${side}`}>
+  return <div className={`live-score-team ${side}`} style={{ "--team-accent": teamAccent(team.name) } as CSSProperties & { "--team-accent": string } }>
     {logo ? <img src={logo} alt="" /> : <span className="live-score-monogram">{team.name.slice(0, 2)}</span>}
     <div className="live-score-team-copy"><span>{team.name}</span><strong>{team.score}</strong><small>{[team.overs, team.rr].filter(Boolean).join(" · ") || "Innings"}</small></div>
   </div>;
