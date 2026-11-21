@@ -104,7 +104,7 @@ export async function syncCricHeroesMatches(db) {
   const matchIds = matches.map((match) => Number(match.match_id)).filter(Number.isInteger);
   const priorRows = matchIds.length
     ? await db.query(`select m.cricheroes_match_id,m.cricheroes_status,m.cricheroes_live_score,
-        m.home_team_id,m.away_team_id,m.overs,ht.name home_team,at.name away_team
+        m.home_team_id,m.away_team_id,ht.name home_team,at.name away_team
       from tournament_matches m join auction_teams ht on ht.id=m.home_team_id
       join auction_teams at on at.id=m.away_team_id
       where m.cricheroes_match_id=any($1::bigint[])`, [matchIds])
