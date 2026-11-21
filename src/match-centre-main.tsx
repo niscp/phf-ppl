@@ -4,5 +4,6 @@ import MatchCentrePage from "../app/match-centre-page";
 import "../app/globals.css";
 import "../app/site-navigation.css";
 import "../app/season-hub-pages.css";
+import "../app/live-scoreboard.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<React.StrictMode><MatchCentrePage /></React.StrictMode>);

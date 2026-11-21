@@ -5,6 +5,7 @@ import SiteHeader from "./site-header";
 import { getTournamentSnapshot, type TournamentMatch, type TournamentSnapshot } from "./auction-client";
 import { announcedTeams } from "./season5-teams";
 import { fixtureTeamOrder, seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
+import LiveScoreboard from "./live-scoreboard";
 
 const basePath = () => typeof window !== "undefined" && window.location.pathname.startsWith("/phf-ppl/") ? "/phf-ppl/" : "/";
 const link = (path: string) => `${basePath()}${path}`;
@@ -92,13 +93,13 @@ export default function MatchCentrePage() {
     <SiteHeader active="match-center" />
     <section className="mc-hero">
       <div className="mc-hero-heading"><span>Season 5 · Match Centre</span><h1>Follow every<br/>turning point.</h1><p>Match previews, squads, player analysis, and scorecards in one place.</p></div>
-      {focus && <a className={`mc-feature${focus.status === "completed" ? " is-result" : ""}`} href={matchLink(focus.number)}>
+      {focus && <article className={`mc-feature${focus.status === "completed" ? " is-result" : ""}`}>
         <div className="mc-feature-top"><span>{focus.cricheroesStatus === "live" ? "Live now" : focus.status === "completed" || focus.cricheroesStatus === "completed" ? "Latest result" : "Next match"}</span><b>Match {String(focus.number).padStart(2, "0")}</b></div>
         <p className="mc-feature-date">{focus.date} · {focus.time}</p>
         <div className="mc-feature-teams"><div>{teamImage(focus.homeId) && <img src={teamImage(focus.homeId)} alt=""/>}<strong>{focus.home}</strong></div><i>VS</i><div>{teamImage(focus.awayId) && <img src={teamImage(focus.awayId)} alt=""/>}<strong>{focus.away}</strong></div></div>
-        {focus.status === "completed" || focus.cricheroesStatus === "completed" ? <div className="mc-feature-score">{focus.cricheroesStatus === "completed" ? <><b>{focus.liveScore?.team_a_summary || "Final"}</b><span>·</span><b>{focus.liveScore?.team_b_summary || "Final"}</b><small>{focus.liveScore?.match_summary?.short_summary || focus.result || "Final score"}</small></> : <><b>{focus.homeRuns ?? "—"}/{focus.homeWickets ?? "—"}</b><span>·</span><b>{focus.awayRuns ?? "—"}/{focus.awayWickets ?? "—"}</b><small>{focus.result ?? "Final score"}</small></>}</div> : focus.cricheroesStatus === "live" ? <div className="mc-feature-score mc-live-score"><b>LIVE</b><span>{focus.liveScore?.team_a || focus.home}: {focus.liveScore?.team_a_summary || "Score updating"}</span><span>{focus.liveScore?.team_b || focus.away}: {focus.liveScore?.team_b_summary || ""}</span><small>{focus.liveScore?.match_summary?.short_summary || "Live on CricHeroes"}</small></div> : <p className="mc-feature-prompt">Preview squads, players, and the key matchup.</p>}
-        <span className="mc-feature-link">Open match details <b>↗</b></span>
-      </a>}
+        {focus.cricheroesStatus === "live" || focus.cricheroesStatus === "completed" ? <LiveScoreboard score={focus.liveScore} status={focus.cricheroesStatus} /> : <p className="mc-feature-prompt">Preview squads, players, and the key matchup.</p>}
+        <a className="mc-feature-link" href={matchLink(focus.number)}>{focus.cricheroesStatus === "live" ? "Squads & match details" : "Open match details"} <b>↗</b></a>
+      </article>}
     </section>
     {focus && <section className="mc-watch-section" aria-label="Match video player">
       <div className="mc-watch-card">
@@ -114,7 +115,6 @@ export default function MatchCentrePage() {
                 <div>{teamImage(focus.awayId) && <img src={teamImage(focus.awayId)} alt=""/>}<strong>{focus.away}</strong></div>
               </div>
               <p>{focus.date} <i>·</i> {focus.time}</p>
-              {focus.cricheroesStatus === "live" && <p className="mc-live-score-inline"><strong>{focus.liveScore?.team_a || focus.home}: {focus.liveScore?.team_a_summary || "Score updating"}</strong><strong>{focus.liveScore?.team_b || focus.away}: {focus.liveScore?.team_b_summary || ""}</strong>{focus.liveScore?.match_summary?.short_summary && <small>{focus.liveScore.match_summary.short_summary}</small>}</p>}
             </div>
             <button className="mc-watch-play" type="button" disabled={!focusEmbedUrl} onClick={() => setWatching(true)} aria-label={focusEmbedUrl ? `Play ${focus.home} versus ${focus.away} stream` : "The match stream will be available here soon"}><span>▶</span></button>
             <div className="mc-watch-caption"><strong>{focusEmbedUrl ? "Play match stream" : focus.cricheroesStatus === "live" ? "Match is live" : "Stream coming soon"}</strong><span>{focusEmbedUrl ? "Official broadcast · plays here" : focus.cricheroesStatus === "live" ? "Live score updates automatically from CricHeroes." : "The YouTube broadcast will play here when its stream link is published."}</span>{focus.cricheroesUrl && <a href={focus.cricheroesUrl} target="_blank" rel="noreferrer">Open CricHeroes scorecard ↗</a>}</div>

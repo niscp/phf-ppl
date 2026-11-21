@@ -9,6 +9,7 @@ import SiteHeader from "./site-header";
 import { seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
 import MatchRules from "./match-rules";
 import { FanMatchActivity } from "./fan-activity";
+import LiveScoreboard from "./live-scoreboard";
 
 type DirectoryPlayer = {
   id: string;
@@ -299,7 +300,7 @@ export default function MatchDetailsPage() {
           <div>{resolvedAway?.logo_url && <img src={logo(resolvedAway)} alt="" />}<span>{awayName}</span></div>
         </div>
         <div className="match-meta"><span>{displayDate(fixture.date)}</span><span>Team report {fixture.reportTime} · Start {fixture.time}</span><span>{cricVenue || liveMatch?.venue || "Melbourne Cricket Ground"}</span></div>
-        {liveMatch?.cricheroes_status && ["live", "completed"].includes(liveMatch.cricheroes_status) && <div className={`match-result${liveMatch.cricheroes_status === "live" ? " match-live-result" : ""}`}><span>{liveMatch.cricheroes_status === "live" ? "● LIVE · CricHeroes score" : "CricHeroes match result"}</span><strong>{liveMatch.cricheroes_live_score?.team_a || homeName}: {liveMatch.cricheroes_live_score?.team_a_summary || "Score updating"} · {liveMatch.cricheroes_live_score?.team_b || awayName}: {liveMatch.cricheroes_live_score?.team_b_summary || ""}</strong><b>{liveMatch.cricheroes_live_score?.match_summary?.short_summary || (liveMatch.cricheroes_status === "live" ? "Live match in progress" : "Match completed")}</b></div>}
+        {liveMatch?.cricheroes_status === "live" && <LiveScoreboard score={liveMatch.cricheroes_live_score} status={liveMatch.cricheroes_status} />}
         {liveMatch?.status === "completed" && <div className="match-result"><span>Final score</span><strong>{liveMatch.home_runs}/{liveMatch.home_wickets} · {liveMatch.away_runs}/{liveMatch.away_wickets}</strong><b>{liveMatch.result_text ?? `${liveMatch.winner_team} won`}</b></div>}
         {liveMatch?.cricheroes_match_url && <a className="match-source-link" href={liveMatch.cricheroes_match_url} target="_blank" rel="noopener noreferrer">Open official CricHeroes match page ↗</a>}
       </section>

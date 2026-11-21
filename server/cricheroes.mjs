@@ -26,6 +26,39 @@ async function getMatches(type, status) {
   return Array.isArray(body.data) ? body.data : [];
 }
 
+async function getLiveScorecard(matchId) {
+  const response = await fetch(`${API_BASE}/scorecard/v2/get-scorecard/${encodeURIComponent(matchId)}`, {
+    headers: headers(), signal: AbortSignal.timeout(12_000),
+  });
+  if (!response.ok) return null;
+  const body = await response.json();
+  if (!body.status || !body.data) return null;
+  const side = (value) => ({
+    name: value?.name ?? "",
+    innings: (value?.innings ?? []).map((inning) => ({
+      inning: inning.inning,
+      score: inning.summary?.score ?? `${inning.total_run ?? 0}/${inning.total_wicket ?? 0}`,
+      overs: inning.overs_played ?? "",
+      run_rate: inning.summary?.rr ?? "",
+    })),
+    scorecard: (value?.scorecard ?? []).map((inning) => ({
+      inning: inning.inning,
+      batting: (inning.batting ?? []).map((player) => ({
+        name: player.name ?? "", runs: player.runs ?? 0, balls: player.balls ?? 0,
+        fours: player["4s"] ?? 0, sixes: player["6s"] ?? 0, strike_rate: player.SR ?? "",
+        dismissal: player.how_to_out ?? "",
+      })),
+      bowling: (inning.bowling ?? []).map((player) => ({
+        name: player.name ?? "", overs: player.overs ?? 0, maidens: player.maidens ?? 0,
+        runs: player.runs ?? 0, wickets: player.wickets ?? 0, economy: player.economy_rate ?? "",
+      })),
+      extras: inning.extras?.summary ?? "",
+      fall_of_wickets: inning.fall_of_wicket?.summary ?? "",
+    })),
+  });
+  return { team_a: side(body.data.team_a), team_b: side(body.data.team_b) };
+}
+
 function streamUrl(match) {
   const candidates = [match.streaming_url, match.steaming_url, match.streaming_multiple_url,
     ...(Array.isArray(match.streaming_details) ? match.streaming_details.flatMap((item) => [item?.streaming_url, item?.url, item?.watch_url]) : [])];
@@ -78,7 +111,15 @@ export async function syncCricHeroesMatches(db) {
       stream_url: streamUrl(match),
       source_updated_at: match.last_updated_date ?? null,
     };
-    const updated = await db.query(`update tournament_matches set cricheroes_status=$1,cricheroes_live_score=$2,
+    if (score.status === "live") {
+      try {
+        const fullScorecard = await getLiveScorecard(id);
+        if (fullScorecard) score.full_scorecard = fullScorecard;
+      } catch { /* Keep the compact live score; scorecard details can retry on the next sync. */ }
+    }
+    const updated = await db.query(`update tournament_matches set cricheroes_status=$1,
+      cricheroes_live_score=case when $2::jsonb ? 'full_scorecard' then $2::jsonb
+        else $2::jsonb || jsonb_build_object('full_scorecard',cricheroes_live_score->'full_scorecard') end,
       cricheroes_stream_url=$3,cricheroes_synced_at=now(),updated_at=now()
       where cricheroes_match_id=$4`, [score.status, score, score.stream_url, id]);
     synced += updated.rowCount || 0;

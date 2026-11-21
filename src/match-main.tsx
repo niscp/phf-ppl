@@ -6,6 +6,7 @@ import "../app/auction.css";
 import "../app/auction-live.css";
 import "../app/site-navigation.css";
 import "../app/match-details.css";
+import "../app/live-scoreboard.css";
 import "../app/match-analysis.css";
 import "../app/match2-analysis.css";
 import "../app/match-player-scouting.css";
