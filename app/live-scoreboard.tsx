@@ -70,6 +70,8 @@ export default function LiveScoreboard({ score, status }: { score?: CricHeroesLi
   const home = scoreFor(score.team_a, score.team_a_summary, (score.team_a_innings ?? []) as CricHeroesInningsSummary[]);
   const away = scoreFor(score.team_b, score.team_b_summary, (score.team_b_innings ?? []) as CricHeroesInningsSummary[]);
   const chase = score.match_summary;
+  const resultText = chase?.summary || chase?.full_summary || chase?.short_summary;
+  const awards = score.match_awards;
   const details = score.full_scorecard;
   const scorecardReady = Boolean(details?.team_a?.scorecard?.length || details?.team_b?.scorecard?.length);
   return <section className={`live-scoreboard${live ? " is-live" : " is-final"}`} aria-label={live ? "Live match score" : "Final match score"}>
@@ -80,6 +82,14 @@ export default function LiveScoreboard({ score, status }: { score?: CricHeroesLi
       <TeamScore name={score.team_b} summary={score.team_b_summary} innings={score.team_b_innings as CricHeroesInningsSummary[]} side="second" />
     </div>
     {live && chase && (chase.summary || chase.target || chase.rrr) && <div className="live-chase-line"><strong>{chase.summary || `Target ${chase.target}`}</strong><span>{chase.target ? `Target ${chase.target}` : ""}{chase.rrr ? ` · RRR ${chase.rrr}` : ""}</span></div>}
+    {!live && (resultText || awards) && <div className="live-result-wrap">
+      {resultText && <div className="live-result-banner"><span>Match result</span><strong>🏆 {resultText}</strong></div>}
+      {awards && <div className="live-match-awards">
+        {awards.player_of_match && <div className="is-player-of-match"><span>Player of the Match</span><strong>{awards.player_of_match.name}</strong></div>}
+        {awards.best_batter && <div><span>Best Batter</span><strong>{awards.best_batter.name}</strong>{awards.best_batter.detail && <small>{awards.best_batter.detail}</small>}</div>}
+        {awards.best_bowler && <div><span>Best Bowler</span><strong>{awards.best_bowler.name}</strong>{awards.best_bowler.detail && <small>{awards.best_bowler.detail}</small>}</div>}
+      </div>}
+    </div>}
     <details className="live-scorecard-details">
       <summary><span>{scorecardReady ? "Open full scorecard" : "Scorecard details"}</span><small>{scorecardReady ? "Batting · bowling · innings" : "Figures load as they are recorded"}</small><b aria-hidden="true">+</b></summary>
       {scorecardReady ? <div className="live-scorecard-body"><FullInnings team={details?.team_a}/><FullInnings team={details?.team_b}/></div> : <p className="live-scorecard-pending">The live total is available. Player-by-player scorecard figures will appear here when CricHeroes publishes them.</p>}

@@ -26,7 +26,7 @@ async function getMatches(type, status) {
   return Array.isArray(body.data) ? body.data : [];
 }
 
-async function getLiveScorecard(matchId) {
+async function getMatchScorecard(matchId) {
   const response = await fetch(`${API_BASE}/scorecard/v2/get-scorecard/${encodeURIComponent(matchId)}`, {
     headers: headers(), signal: AbortSignal.timeout(12_000),
   });
@@ -44,12 +44,12 @@ async function getLiveScorecard(matchId) {
     scorecard: (value?.scorecard ?? []).map((inning) => ({
       inning: inning.inning,
       batting: (inning.batting ?? []).map((player) => ({
-        name: player.name ?? "", runs: player.runs ?? 0, balls: player.balls ?? 0,
+        player_id: player.player_id ?? null, name: player.name ?? "", runs: player.runs ?? 0, balls: player.balls ?? 0,
         fours: player["4s"] ?? 0, sixes: player["6s"] ?? 0, strike_rate: player.SR ?? "",
         dismissal: player.how_to_out ?? "",
       })),
       bowling: (inning.bowling ?? []).map((player) => ({
-        name: player.name ?? "", overs: player.overs ?? 0, maidens: player.maidens ?? 0,
+        player_id: player.player_id ?? null, name: player.name ?? "", overs: player.overs ?? 0, maidens: player.maidens ?? 0,
         runs: player.runs ?? 0, wickets: player.wickets ?? 0, economy: player.economy_rate ?? "",
       })),
       extras: inning.extras?.summary ?? "",
@@ -82,6 +82,13 @@ export async function syncCricHeroesMatches(db) {
   const errors = sources.filter((result) => result.status === "rejected");
   const matches = sources.flatMap((result) => result.status === "fulfilled" ? result.value : []);
   if (!matches.length && errors.length === sources.length) throw errors[0].reason;
+
+  const matchIds = matches.map((match) => Number(match.match_id)).filter(Number.isInteger);
+  const priorRows = matchIds.length
+    ? await db.query(`select cricheroes_match_id,cricheroes_status,cricheroes_live_score
+      from tournament_matches where cricheroes_match_id=any($1::bigint[])`, [matchIds])
+    : { rows: [] };
+  const priorById = new Map(priorRows.rows.map((row) => [Number(row.cricheroes_match_id), row]));
 
   let synced = 0;
   for (const match of matches) {
@@ -116,10 +123,37 @@ export async function syncCricHeroesMatches(db) {
       stream_url: streamUrl(match),
       source_updated_at: match.last_updated_date ?? null,
     };
-    if (score.status === "live") {
+    const previous = priorById.get(id);
+    const previousScore = previous?.cricheroes_live_score ?? {};
+    const previousCard = previousScore.full_scorecard;
+    const finalCardStale = score.status === "completed" && (
+      previous?.cricheroes_status !== "completed"
+      || !previousCard
+      || !previousScore.match_awards
+      || previousCard.team_a?.innings?.at(-1)?.score !== score.team_a_summary
+      || previousCard.team_b?.innings?.at(-1)?.score !== score.team_b_summary
+    );
+    if (score.status === "live" || finalCardStale) {
       try {
-        const fullScorecard = await getLiveScorecard(id);
-        if (fullScorecard) score.full_scorecard = fullScorecard;
+        const fullScorecard = await getMatchScorecard(id);
+        if (fullScorecard) {
+          score.full_scorecard = fullScorecard;
+          score.match_awards = {};
+          const batting = [fullScorecard.team_a, fullScorecard.team_b].flatMap((team) => team.scorecard.flatMap((inning) => inning.batting));
+          const bowling = [fullScorecard.team_a, fullScorecard.team_b].flatMap((team) => team.scorecard.flatMap((inning) => inning.bowling));
+          const findPlayer = (playerId, rows, detail) => {
+            const player = rows.find((row) => String(row.player_id) === String(playerId));
+            return player ? { name: player.name, ...(detail(player) ? { detail: detail(player) } : {}) } : undefined;
+          };
+          const bestBatter = findPlayer(match.bba_player_id, batting, (player) => `${player.runs} runs`);
+          const bestBowler = findPlayer(match.bbo_player_id, bowling, (player) => `${player.wickets}/${player.runs}`);
+          const playerOfMatch = findPlayer(match.pom_player_id, [...batting, ...bowling], () => "");
+          if (playerOfMatch || bestBatter || bestBowler) score.match_awards = {
+            ...(playerOfMatch ? { player_of_match: playerOfMatch } : {}),
+            ...(bestBatter ? { best_batter: bestBatter } : {}),
+            ...(bestBowler ? { best_bowler: bestBowler } : {}),
+          };
+        }
       } catch { /* Keep the compact live score; scorecard details can retry on the next sync. */ }
     }
     const updated = await db.query(`update tournament_matches set cricheroes_status=$1,
