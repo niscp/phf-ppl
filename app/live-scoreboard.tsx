@@ -47,15 +47,15 @@ function FullInnings({ team }: { team?: CricHeroesTeamScorecard }) {
       return <article className="live-full-innings" key={`${inning.inning ?? index}-${index}`}>
         <div className="live-full-innings-heading"><strong>{inningLabel(inning.inning)}</strong><span>{total?.score ?? "Score unavailable"}{total?.overs ? ` · ${total.overs} ov` : ""}{total?.run_rate ? ` · RR ${total.run_rate}` : ""}</span></div>
         {inning.batting?.length > 0 && <div className="live-table-scroll" role="region" aria-label={`${team.name} batting scorecard`} tabIndex={0}>
-          <table className="live-score-table"><thead><tr><th colSpan={2}>Batting</th><th>R</th><th>B</th><th>4s</th><th>6s</th><th>SR</th></tr></thead><tbody>
-            {inning.batting.map((batter, row) => <tr key={`${batter.name}-${row}`}><th scope="row"><strong>{batter.name || "Batter"}</strong><small>{batter.dismissal || "not out"}</small></th><td className="live-dismissal">{batter.dismissal ? "out" : "not out"}</td><td>{batter.runs}</td><td>{batter.balls}</td><td>{batter.fours}</td><td>{batter.sixes}</td><td>{batter.strike_rate}</td></tr>)}
+          <table className="live-score-table live-batting-table"><thead><tr><th scope="col">Batter</th><th scope="col">R</th><th scope="col">B</th><th scope="col">4s</th><th scope="col">6s</th><th scope="col">SR</th></tr></thead><tbody>
+            {inning.batting.map((batter, row) => <tr key={`${batter.name}-${row}`}><th scope="row"><strong>{batter.name || "Batter"}</strong><small>{batter.dismissal || "not out"}</small></th><td>{batter.runs}</td><td>{batter.balls}</td><td>{batter.fours}</td><td>{batter.sixes}</td><td>{batter.strike_rate}</td></tr>)}
           </tbody></table>
         </div>}
         {inning.extras && <p className="live-innings-note"><b>Extras</b> {inning.extras}</p>}
         {inning.fall_of_wickets && <p className="live-innings-note"><b>Fall of wickets</b> {inning.fall_of_wickets}</p>}
         {inning.bowling?.length > 0 && <div className="live-table-scroll live-bowling-scroll" role="region" aria-label={`${team.name} bowling scorecard`} tabIndex={0}>
-          <table className="live-score-table live-bowling-table"><thead><tr><th colSpan={2}>Bowling</th><th>O</th><th>M</th><th>R</th><th>W</th><th>Econ</th></tr></thead><tbody>
-            {inning.bowling.map((bowler, row) => <tr key={`${bowler.name}-${row}`}><th scope="row" colSpan={2}>{bowler.name || "Bowler"}</th><td>{bowler.overs}</td><td>{bowler.maidens}</td><td>{bowler.runs}</td><td>{bowler.wickets}</td><td>{bowler.economy}</td></tr>)}
+          <table className="live-score-table live-bowling-table"><thead><tr><th scope="col">Bowler</th><th scope="col">O</th><th scope="col">M</th><th scope="col">R</th><th scope="col">W</th><th scope="col">Econ</th></tr></thead><tbody>
+            {inning.bowling.map((bowler, row) => <tr key={`${bowler.name}-${row}`}><th scope="row">{bowler.name || "Bowler"}</th><td>{bowler.overs}</td><td>{bowler.maidens}</td><td>{bowler.runs}</td><td>{bowler.wickets}</td><td>{bowler.economy}</td></tr>)}
           </tbody></table>
         </div>}
       </article>;
