@@ -179,10 +179,10 @@ create table if not exists fan_users (
 create table if not exists fan_dugout_posts (
   id bigserial primary key,
   fan_id uuid not null references fan_users(id) on delete cascade,
-  category text not null check (category in ('player','matchday','team','other')),
   body text not null check (char_length(body) between 3 and 500),
   created_at timestamptz not null default now()
 );
+alter table fan_dugout_posts drop column if exists category;
 create index if not exists fan_dugout_posts_recent_idx on fan_dugout_posts(created_at desc);
 create table if not exists fan_dugout_likes (
   post_id bigint not null references fan_dugout_posts(id) on delete cascade,

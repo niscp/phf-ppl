@@ -214,7 +214,7 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
       const values = fanId ? [fanId] : [null];
       const filter = id ? "where p.id=$2" : "";
       if (id) values.push(id);
-      const { rows } = await pool.query(`select p.id,p.category,p.body,p.created_at,
+      const { rows } = await pool.query(`select p.id,p.body,p.created_at,
         u.display_name,(select count(*)::int from fan_dugout_likes l where l.post_id=p.id) likes_count,
         (select count(*)::int from fan_dugout_comments c where c.post_id=p.id) comments_count,
         exists(select 1 from fan_dugout_likes l where l.post_id=p.id and l.fan_id=$1) liked_by_me
@@ -233,11 +233,9 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
   app.post("/api/dugout/posts", fanAuth, async (req, res, next) => {
     try {
       if (!fanRateLimit(req, res, "dugout-post")) return;
-      const category = String(req.body?.category || "");
       const body = String(req.body?.body || "").trim();
-      if (!["player", "matchday", "team", "other"].includes(category)) return res.status(400).json({ error: "Choose a post category." });
       if (body.length < 3 || body.length > 500) return res.status(400).json({ error: "Write 3 to 500 characters." });
-      const { rows } = await pool.query("insert into fan_dugout_posts(fan_id,category,body) values($1,$2,$3) returning id,category,body,created_at", [req.fan.id, category, body]);
+      const { rows } = await pool.query("insert into fan_dugout_posts(fan_id,body) values($1,$2) returning id,body,created_at", [req.fan.id, body]);
       res.status(201).json({ post: rows[0] });
     } catch (error) { next(error); }
   });
