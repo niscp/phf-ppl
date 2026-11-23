@@ -12,6 +12,7 @@ import "../app/match2-analysis.css";
 import "../app/match-player-scouting.css";
 import "../app/match-rules.css";
 import "../app/fan-activity.css";
+import "../app/matchup-preview.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode><MatchDetailsPage /></React.StrictMode>,

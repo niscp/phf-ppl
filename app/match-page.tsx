@@ -133,6 +133,38 @@ function PreMatchRead({ home, away, auction, tournament }: { home: AuctionTeam; 
   </article>;
 }
 
+function MatchupPreview({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
+  const homeStats = getTeamStatSummary(home, auction, tournament);
+  const awayStats = getTeamStatSummary(away, auction, tournament);
+  const matchups = [
+    { batterTeam: home, batter: homeStats.topScorer, bowlerTeam: away, bowler: awayStats.topBowler },
+    { batterTeam: away, batter: awayStats.topScorer, bowlerTeam: home, bowler: homeStats.topBowler },
+  ];
+  const statLine = (row: NonNullable<typeof homeStats.topScorer>, kind: "bat" | "bowl") => {
+    const profile = row.profile;
+    if (kind === "bat") {
+      const average = profile?.statsSource ? numeric(profile.stats?.batting?.average) : null;
+      const rate = row.strikeRate;
+      return [row.runs === null ? null : `${row.runs} runs`, average === null ? null : `${average.toFixed(1)} avg`, rate === null ? null : `${rate.toFixed(1)} SR`].filter(Boolean).join(" · ");
+    }
+    const economy = row.economy;
+    return [row.wickets === null ? null : `${row.wickets} wkts`, economy === null ? null : `${economy.toFixed(1)} econ`].filter(Boolean).join(" · ");
+  };
+  return <section className="matchup-preview" aria-labelledby="matchup-preview-title">
+    <div className="matchup-preview-heading"><div><span>Stats-based scouting · {homeStats.statsScope === awayStats.statsScope ? homeStats.statsScope : "available records"}</span><h3 id="matchup-preview-title">Matchup preview</h3></div><p>Two player matchups to watch from the announced squads. The scorecards don’t include ball-by-ball batter-versus-bowler history, so these are role-and-record comparisons, not direct head-to-head stats.</p></div>
+    <div className="matchup-preview-grid">{matchups.map(({ batterTeam, batter, bowlerTeam, bowler }) => <article className="matchup-preview-card" key={`${batterTeam.id}-${bowlerTeam.id}`}>
+      <div className="matchup-preview-label"><span>{batterTeam.name}</span><b>BATTER</b></div>
+      <strong>{batter?.player.name ?? "No verified batter record yet"}</strong>
+      <small>{batter ? statLine(batter, "bat") || "Recorded batting totals unavailable" : "A comparable run record is not available"}</small>
+      <div className="matchup-preview-versus">VS</div>
+      <div className="matchup-preview-label"><span>{bowlerTeam.name}</span><b>BOWLER</b></div>
+      <strong>{bowler?.player.name ?? "No verified bowler record yet"}</strong>
+      <small>{bowler ? statLine(bowler, "bowl") || "Recorded bowling totals unavailable" : "A comparable wicket record is not available"}</small>
+      <footer>{batter || bowler ? `${batter?.profile?.statsSource || bowler?.profile?.statsSource ? "Verified CricHeroes profile and season records" : "Season 5 scorecards"}` : "Stats will appear when verified records are available"}</footer>
+    </article>)}</div>
+  </section>;
+}
+
 function TeamAnalysis({ team, auction, tournament }: { team: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
   const { squad, statsScope, topScorer, topBowler, averageStrikeRate } = getTeamStatSummary(team, auction, tournament);
   return <article className="match-team-analysis">
@@ -327,6 +359,7 @@ export default function MatchDetailsPage() {
         <div className="match-section-title"><div><span>Pre-match analysis</span><h2>The numbers<br/><em>to watch.</em></h2></div><p>Built from {analysisSources}. It describes recorded player performance; it does not predict the result.</p></div>
         {loading ? <p className="match-loading">Loading squads and available stats…</p> : hasComparables ? <>
           {resolvedHome && resolvedAway && <PreMatchRead home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
+          {resolvedHome && resolvedAway && <MatchupPreview home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
           <div className="match-analysis-grid">{homeSquadStats}{awaySquadStats}</div>
           <div className="match-analysis-note"><strong>How to read this</strong><p>Season 5 figures use recorded scorecards once players have appeared. Before then, available player comparisons use linked career profiles. Missing records are left blank rather than estimated.</p></div>
         </> : <div className="match-analysis-empty"><h3>Analysis will sharpen when squads are available</h3><p>Once both team rosters and verified player figures are connected, this section will surface each side’s leading run scorer, wicket taker, and relevant batting rates.</p></div>}

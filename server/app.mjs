@@ -205,6 +205,69 @@ export function createApp(pool, broadcast = () => {}, queueSync = async () => {}
     } catch (error) { next(error); }
   });
 
+  app.get("/api/dugout/posts", async (req, res, next) => {
+    try {
+      const fanId = optionalFanId(req);
+      const requested = String(req.query.post || "").trim();
+      const id = /^\d+$/.test(requested) ? Number(requested) : null;
+      if (requested && !id) return res.status(400).json({ error: "That post link is not valid." });
+      const values = fanId ? [fanId] : [null];
+      const filter = id ? "where p.id=$2" : "";
+      if (id) values.push(id);
+      const { rows } = await pool.query(`select p.id,p.category,p.body,p.created_at,
+        u.display_name,(select count(*)::int from fan_dugout_likes l where l.post_id=p.id) likes_count,
+        (select count(*)::int from fan_dugout_comments c where c.post_id=p.id) comments_count,
+        exists(select 1 from fan_dugout_likes l where l.post_id=p.id and l.fan_id=$1) liked_by_me
+        from fan_dugout_posts p join fan_users u on u.id=p.fan_id ${filter}
+        order by p.created_at desc ${id ? "" : "limit 40"}`, values);
+      const postIds = rows.map((row) => row.id);
+      const comments = postIds.length ? await pool.query(`select c.id,c.post_id,c.body,c.created_at,u.display_name
+        from fan_dugout_comments c join fan_users u on u.id=c.fan_id where c.post_id=any($1::bigint[])
+        order by c.created_at asc`, [postIds]) : { rows: [] };
+      const grouped = new Map();
+      for (const comment of comments.rows) grouped.set(String(comment.post_id), [...(grouped.get(String(comment.post_id)) || []), comment]);
+      res.set("Cache-Control", "no-store").json({ posts: rows.map((post) => ({ ...post, comments: grouped.get(String(post.id)) || [] })) });
+    } catch (error) { next(error); }
+  });
+
+  app.post("/api/dugout/posts", fanAuth, async (req, res, next) => {
+    try {
+      if (!fanRateLimit(req, res, "dugout-post")) return;
+      const category = String(req.body?.category || "");
+      const body = String(req.body?.body || "").trim();
+      if (!["player", "matchday", "team", "other"].includes(category)) return res.status(400).json({ error: "Choose a post category." });
+      if (body.length < 3 || body.length > 500) return res.status(400).json({ error: "Write 3 to 500 characters." });
+      const { rows } = await pool.query("insert into fan_dugout_posts(fan_id,category,body) values($1,$2,$3) returning id,category,body,created_at", [req.fan.id, category, body]);
+      res.status(201).json({ post: rows[0] });
+    } catch (error) { next(error); }
+  });
+
+  app.post("/api/dugout/posts/:postId/likes", fanAuth, async (req, res, next) => {
+    try {
+      if (!fanRateLimit(req, res, "dugout-like")) return;
+      const postId = /^\d+$/.test(req.params.postId) ? Number(req.params.postId) : 0;
+      const { rows: posts } = await pool.query("select id from fan_dugout_posts where id=$1", [postId]);
+      if (!posts[0]) return res.status(404).json({ error: "Post not found." });
+      const existing = await pool.query("delete from fan_dugout_likes where post_id=$1 and fan_id=$2 returning post_id", [postId, req.fan.id]);
+      const liked = !existing.rowCount;
+      if (liked) await pool.query("insert into fan_dugout_likes(post_id,fan_id) values($1,$2) on conflict do nothing", [postId, req.fan.id]);
+      const { rows } = await pool.query("select count(*)::int likes_count from fan_dugout_likes where post_id=$1", [postId]);
+      res.json({ liked, likes_count: rows[0].likes_count });
+    } catch (error) { next(error); }
+  });
+
+  app.post("/api/dugout/posts/:postId/comments", fanAuth, async (req, res, next) => {
+    try {
+      if (!fanRateLimit(req, res, "dugout-comment")) return;
+      const postId = /^\d+$/.test(req.params.postId) ? Number(req.params.postId) : 0;
+      const body = String(req.body?.body || "").trim();
+      if (body.length < 1 || body.length > 280) return res.status(400).json({ error: "Comments can be up to 280 characters." });
+      const { rows } = await pool.query(`insert into fan_dugout_comments(post_id,fan_id,body)
+        select p.id,$2,$3 from fan_dugout_posts p where p.id=$1 returning id`, [postId, req.fan.id, body]);
+      if (!rows[0]) return res.status(404).json({ error: "Post not found." });
+      res.status(201).json({ ok: true });
+    } catch (error) { next(error); }
+  });
   app.get("/api/fan/matches", async (req, res, next) => {
     try {
       const fanId = optionalFanId(req);

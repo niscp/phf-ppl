@@ -175,6 +175,30 @@ create table if not exists fan_users (
   created_at timestamptz not null default now()
 );
 
+-- Public fan posts. Reading is open; writing, liking, and commenting require a fan account.
+create table if not exists fan_dugout_posts (
+  id bigserial primary key,
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  category text not null check (category in ('player','matchday','team','other')),
+  body text not null check (char_length(body) between 3 and 500),
+  created_at timestamptz not null default now()
+);
+create index if not exists fan_dugout_posts_recent_idx on fan_dugout_posts(created_at desc);
+create table if not exists fan_dugout_likes (
+  post_id bigint not null references fan_dugout_posts(id) on delete cascade,
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key(post_id,fan_id)
+);
+create table if not exists fan_dugout_comments (
+  id bigserial primary key,
+  post_id bigint not null references fan_dugout_posts(id) on delete cascade,
+  fan_id uuid not null references fan_users(id) on delete cascade,
+  body text not null check (char_length(body) between 1 and 280),
+  created_at timestamptz not null default now()
+);
+create index if not exists fan_dugout_comments_post_idx on fan_dugout_comments(post_id,created_at);
+
 create table if not exists fan_match_picks (
   id bigserial primary key,
   fan_id uuid not null references fan_users(id) on delete cascade,
