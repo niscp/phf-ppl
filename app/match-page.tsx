@@ -3,11 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import playersJson from "./season5-players.json";
 import replacementProfilesJson from "./season5-replacement-profiles.json";
-import { getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionPlayer, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
+import { getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
 import { announcedTeams } from "./season5-teams";
 import SiteHeader from "./site-header";
 import { seasonFiveFixtures, teamNameForSlot } from "./season5-fixtures";
-import MatchRules from "./match-rules";
 import { FanMatchActivity } from "./fan-activity";
 import LiveScoreboard from "./live-scoreboard";
 
@@ -133,38 +132,6 @@ function PreMatchRead({ home, away, auction, tournament }: { home: AuctionTeam; 
   </article>;
 }
 
-function MatchupPreview({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
-  const homeStats = getTeamStatSummary(home, auction, tournament);
-  const awayStats = getTeamStatSummary(away, auction, tournament);
-  const matchups = [
-    { batterTeam: home, batter: homeStats.topScorer, bowlerTeam: away, bowler: awayStats.topBowler },
-    { batterTeam: away, batter: awayStats.topScorer, bowlerTeam: home, bowler: homeStats.topBowler },
-  ];
-  const statLine = (row: NonNullable<typeof homeStats.topScorer>, kind: "bat" | "bowl") => {
-    const profile = row.profile;
-    if (kind === "bat") {
-      const average = profile?.statsSource ? numeric(profile.stats?.batting?.average) : null;
-      const rate = row.strikeRate;
-      return [row.runs === null ? null : `${row.runs} runs`, average === null ? null : `${average.toFixed(1)} avg`, rate === null ? null : `${rate.toFixed(1)} SR`].filter(Boolean).join(" · ");
-    }
-    const economy = row.economy;
-    return [row.wickets === null ? null : `${row.wickets} wkts`, economy === null ? null : `${economy.toFixed(1)} econ`].filter(Boolean).join(" · ");
-  };
-  return <section className="matchup-preview" aria-labelledby="matchup-preview-title">
-    <div className="matchup-preview-heading"><div><span>Stats-based scouting · {homeStats.statsScope === awayStats.statsScope ? homeStats.statsScope : "available records"}</span><h3 id="matchup-preview-title">Matchup preview</h3></div><p>Two player matchups to watch from the announced squads. The scorecards don’t include ball-by-ball batter-versus-bowler history, so these are role-and-record comparisons, not direct head-to-head stats.</p></div>
-    <div className="matchup-preview-grid">{matchups.map(({ batterTeam, batter, bowlerTeam, bowler }) => <article className="matchup-preview-card" key={`${batterTeam.id}-${bowlerTeam.id}`}>
-      <div className="matchup-preview-label"><span>{batterTeam.name}</span><b>BATTER</b></div>
-      <strong>{batter?.player.name ?? "No verified batter record yet"}</strong>
-      <small>{batter ? statLine(batter, "bat") || "Recorded batting totals unavailable" : "A comparable run record is not available"}</small>
-      <div className="matchup-preview-versus">VS</div>
-      <div className="matchup-preview-label"><span>{bowlerTeam.name}</span><b>BOWLER</b></div>
-      <strong>{bowler?.player.name ?? "No verified bowler record yet"}</strong>
-      <small>{bowler ? statLine(bowler, "bowl") || "Recorded bowling totals unavailable" : "A comparable wicket record is not available"}</small>
-      <footer>{batter || bowler ? `${batter?.profile?.statsSource || bowler?.profile?.statsSource ? "Verified CricHeroes profile and season records" : "Season 5 scorecards"}` : "Stats will appear when verified records are available"}</footer>
-    </article>)}</div>
-  </section>;
-}
-
 function TeamAnalysis({ team, auction, tournament }: { team: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
   const { squad, statsScope, topScorer, topBowler, averageStrikeRate } = getTeamStatSummary(team, auction, tournament);
   return <article className="match-team-analysis">
@@ -213,7 +180,7 @@ function PlayerByPlayerScouting({ team, auction, tournament }: { team: AuctionTe
   };
   return <details className="match-player-scouting" open>
     <summary><span>Player-by-player record</span><b>{stats.squad.length} listed</b><i aria-hidden="true" /></summary>
-    <div className="match-player-scouting-intro"><p>All listed players are covered below. Batting and bowling totals are kept to the same profile scope; ranks compare available records within this squad. A dash means no comparable figure is available.</p><span>{stats.statsScope === "Season 5" ? "Season scorecards where recorded · career baseline otherwise" : "Verified career profile totals"}</span></div>
+    <div className="match-player-scouting-intro"><p>Every listed player is covered below. Season 5 figures appear where recorded; linked career totals fill in where available. Ranks compare each available record within this squad. A dash means the figure is unavailable.</p><span>{stats.statsScope === "Season 5" ? "Season scorecards where recorded · career baseline otherwise" : "Verified career profile totals"}</span></div>
     <div className="match-player-table-scroll" role="region" aria-label={`${team.name} player-by-player stats`} tabIndex={0}>
       <table className="match-player-table"><thead><tr><th scope="col">Player &amp; role</th><th scope="col">Batting · runs / avg / SR</th><th scope="col">Bowling · wickets / econ</th><th scope="col">Scouting read</th></tr></thead><tbody>
         {stats.metrics.map((row) => {
@@ -231,54 +198,37 @@ function PlayerByPlayerScouting({ team, auction, tournament }: { team: AuctionTe
   </details>;
 }
 
-function MatchTwoBrief({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
+function MatchTacticalPreview({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
   const homeStats = getTeamStatSummary(home, auction, tournament);
   const awayStats = getTeamStatSummary(away, auction, tournament);
   const roleCount = (stats: ReturnType<typeof getTeamStatSummary>, role: string) => stats.squad.filter((player) => player.role.toLowerCase() === role.toLowerCase()).length;
-  const leader = (stats: ReturnType<typeof getTeamStatSummary>, kind: "bat" | "bowl") => kind === "bat" ? stats.topScorer : stats.topBowler;
-  const homeBat = leader(homeStats, "bat");
-  const awayBat = leader(awayStats, "bat");
-  const homeBowl = leader(homeStats, "bowl");
-  const awayBowl = leader(awayStats, "bowl");
-  const homeAllRounders = roleCount(homeStats, "All-rounder");
-  const awayAllRounders = roleCount(awayStats, "All-rounder");
-  const listedPlayerCount = homeStats.squad.length + awayStats.squad.length;
   const captainName = (stats: ReturnType<typeof getTeamStatSummary>) => stats.squad.find((player) => player.status === "captain")?.name ?? "the captain";
+  const allRounders = (stats: ReturnType<typeof getTeamStatSummary>) => roleCount(stats, "All-rounder");
   const scope = homeStats.statsScope === awayStats.statsScope ? homeStats.statsScope : "available recorded";
+  const teamBrief = (team: AuctionTeam, own: ReturnType<typeof getTeamStatSummary>, opponent: ReturnType<typeof getTeamStatSummary>, awaySide = false) => {
+    const opponentBowler = opponent.topBowler;
+    const ownBatter = own.topScorer;
+    const ownBowler = own.topBowler;
+    const ownBatDepth = roleCount(own, "Batter");
+    const ownAllRounders = allRounders(own);
+    return <article className={`match-two-team-card${awaySide ? " away" : ""}`} key={team.id}>
+      <header>{logo(team) ? <img src={logo(team)} alt="" /> : <b>{initials(team.name)}</b>}<div><span>Team plan · {own.squad.length} players listed</span><h3>{team.name}</h3></div></header>
+      <div className="match-two-plan"><span>Batting approach</span><p>{ownBatDepth ? `Use the ${ownBatDepth} listed batter${ownBatDepth === 1 ? "" : "s"} to set the innings structure, then keep the ${ownAllRounders} all-rounder${ownAllRounders === 1 ? "" : "s"} flexible for the middle and closing overs.` : `Build the innings around the confirmed XI and preserve batting options through the middle overs.`} {ownBatter ? `${ownBatter.player.name} leads the available ${own.statsScope.toLowerCase()} record with ${ownBatter.runs} runs; use that record to inform the order, then let match-day conditions and form guide the role.` : "No verified batting leader is available yet, so the final XI and recent form should drive the order."}</p></div>
+      <div className="match-two-plan"><span>Bowling approach</span><p>{ownBowler ? `Consider using ${ownBowler.player.name}, the squad’s leading recorded wicket taker (${ownBowler.wickets} ${own.statsScope.toLowerCase()} wickets), in a spell where a breakthrough matters. Keep the remaining bowling workload spread across the available options.` : "Choose the bowling order after the XI and conditions are known; no comparable wicket record is available for this squad yet."} With {ownAllRounders} all-rounder{ownAllRounders === 1 ? "" : "s"} listed, the captain has potential flexibility if the selected players bowl.</p></div>
+      <div className="match-two-plan watch"><span>What to watch</span><p>{opponentBowler ? `Watch how ${team.name}’s top recorded batter ${ownBatter?.player.name ?? "the top order"} handles ${opponentBowler.player.name} (${opponentBowler.wickets} ${opponent.statsScope.toLowerCase()} wickets).` : `Watch how ${team.name}’s confirmed batting group handles the opponent’s opening bowlers; verified wicket records are not available yet.`} Track whether partnerships form, how the side manages dot-ball pressure, and whether the captain, ${captainName(own)}, adjusts the plan as the innings develops.</p></div>
+      <div className="match-two-leader"><span>Key records · {own.statsScope}</span><strong>{ownBatter ? `${ownBatter.player.name} · ${ownBatter.runs} runs` : "Batting figure unavailable"}</strong><small>{ownBowler ? `${ownBowler.player.name} · ${ownBowler.wickets} wickets` : "Bowling figure unavailable"}</small></div>
+    </article>;
+  };
+  const listedPlayerCount = homeStats.squad.length + awayStats.squad.length;
 
-  return <section className="match-two-brief" aria-labelledby="match-two-brief-title">
-    <div className="match-two-brief-heading"><div><span>Match 02 · Tactical briefing</span><h2 id="match-two-brief-title">How each side<br/><em>can win.</em></h2></div><p>A scouting view for High Flyers vs PHF Blasterz, built from the listed squads and {scope.toLowerCase()} player records. These are discussion points, not a prediction or confirmed playing XI.</p></div>
-    <div className="match-two-teams">
-      <article className="match-two-team-card">
-        <header>{logo(home) ? <img src={logo(home)} alt="" /> : <b>{initials(home.name)}</b>}<div><span>Suggested game plan</span><h3>{home.name}</h3></div></header>
-        <div className="match-two-plan"><span>Route to a win</span><p>Build the innings around the squad’s strongest recorded run-makers{homeBat ? `, led by ${homeBat.player.name} (${homeBat.runs} ${homeStats.statsScope.toLowerCase()} runs)` : ""}. The {homeAllRounders}-player all-rounder group gives the captain options to balance batting and bowling once the XI is chosen.</p></div>
-        <div className="match-two-plan watch"><span>What to look out for</span><p>{awayBowl ? `How the batting group handles ${awayBowl.player.name} (${awayBowl.wickets} ${awayStats.statsScope.toLowerCase()} wickets)` : "Which PHF Blasterz bowlers make the XI"}. Watch how the final batting order supports captain {captainName(homeStats)}; the announced squad does not confirm batting positions.</p></div>
-        <div className="match-two-leader"><span>Recorded batting leader</span><strong>{homeBat?.player.name ?? "No verified figure yet"}</strong><small>{homeBat ? `${homeBat.runs} runs · ${homeStats.statsScope}` : "Player record unavailable"}</small></div>
-      </article>
-      <article className="match-two-team-card away">
-        <header>{logo(away) ? <img src={logo(away)} alt="" /> : <b>{initials(away.name)}</b>}<div><span>Suggested game plan</span><h3>{away.name}</h3></div></header>
-        <div className="match-two-plan"><span>Route to a win</span><p>Use the squad’s all-rounder depth ({awayAllRounders} listed) to keep both batting and bowling options available. Build around its leading recorded run-maker{awayBat ? `, ${awayBat.player.name} (${awayBat.runs} ${awayStats.statsScope.toLowerCase()} runs)` : ""}, while selecting a balanced XI for the match conditions.</p></div>
-        <div className="match-two-plan watch"><span>What to look out for</span><p>{homeBowl ? `Whether ${homeBowl.player.name} (${homeBowl.wickets} ${homeStats.statsScope.toLowerCase()} wickets) and the High Flyers attack can interrupt partnerships` : "Which High Flyers bowlers make the XI"}. Also watch the contribution from captain {captainName(awayStats)}; career or squad figures alone cannot establish his role in this match.</p></div>
-        <div className="match-two-leader"><span>Recorded bowling leader</span><strong>{awayBowl?.player.name ?? "No verified figure yet"}</strong><small>{awayBowl ? `${awayBowl.wickets} wickets · ${awayStats.statsScope}` : "Player record unavailable"}</small></div>
-      </article>
-    </div>
-    <div className="match-two-watchline"><span>Match watch</span><p>{homeBat && awayBowl ? `${homeBat.player.name}’s run record meets ${away.name}’s leading wicket record (${awayBowl?.wickets ?? "—"} wickets).` : "Compare the two sides’ leading batting and bowling records as the confirmed XI and scorecards become available."} {awayBat && homeBowl ? `${awayBat.player.name} is the corresponding batting name to watch for ${away.name}, with ${home.name}’s leading wicket record held by ${homeBowl.player.name}.` : ""}</p></div>
-    <small className="match-two-caveat">Figures are profile or scorecard totals, not head-to-head results. No player-versus-player history, pitch report, or confirmed XI is available here.</small>
-    <div className="match-two-full-scouting"><div><span>Complete squad view</span><h3>Every player.<br/><em>Every verified record.</em></h3></div><p>Review all {listedPlayerCount} players currently listed for this match. Profiles, batting totals, wicket records, and within-squad ranks appear where the data is available.</p></div>
+  return <section className="match-two-brief" aria-labelledby="match-preview-analysis-title">
+    <div className="match-two-brief-heading"><div><span>Matchday scouting · {scope} records</span><h2 id="match-preview-analysis-title">The match<br/><em>preview.</em></h2></div><p>Full-squad scouting, practical plans for both teams, and the moments to watch. Records describe past performance; they are not head-to-head data, confirmed roles, or a prediction.</p></div>
+    <div className="match-two-teams">{teamBrief(home, homeStats, awayStats)}{teamBrief(away, awayStats, homeStats, true)}</div>
+    <div className="match-two-watchline"><span>Match watch</span><p>Look for the first partnership that settles the innings, the first spell that changes its pace, and how each captain responds. Compare each player’s recorded runs, strike rate, wickets, and economy below where available. The final XI, pitch conditions, and match-day form will shape how these plans apply.</p></div>
+    <small className="match-two-caveat">Player records use linked CricHeroes career profiles or Season 5 scorecards, as labeled. They do not show direct batter-versus-bowler history. No pitch report or confirmed playing XI is available.</small>
+    <div className="match-two-full-scouting"><div><span>Complete squad analysis</span><h3>Every player.<br/><em>Every verified record.</em></h3></div><p>All {listedPlayerCount} players currently listed for this fixture, with batting and bowling figures, roles, and squad ranking where the data is available.</p></div>
     <div className="match-two-player-grids"><PlayerByPlayerScouting team={home} auction={auction} tournament={tournament} /><PlayerByPlayerScouting team={away} auction={auction} tournament={tournament} /></div>
   </section>;
-}
-
-function SquadList({ team, auction }: { team: AuctionTeam; auction: AuctionSnapshot }) {
-  const squad = auction.players.filter((player) => player.team_id === team.id && (player.status === "sold" || player.status === "captain"));
-  return <article className="match-squad-card">
-    <h3>{team.name}<span>{squad.length} players</span></h3>
-    {squad.length ? <ol>{squad.map((player: AuctionPlayer) => <li key={player.id}>
-      {player.photo ? <img src={asset(player.photo)} alt="" loading="lazy" /> : <b className="match-player-initials">{initials(player.name)}</b>}
-      <span><strong>{player.name}{player.status === "captain" ? " (C)" : ""}</strong><small>{player.replacement_for_player_id ? `Replacement · ${player.role || "Role not listed"}` : player.role || "Role not listed"}</small></span>
-      <em>{directory.find((item) => item.id === player.id)?.statsSource ? "Career stats" : ""}</em>
-    </li>)}</ol> : <p>Squad list is not available yet.</p>}
-  </article>;
 }
 
 export default function MatchDetailsPage() {
@@ -353,24 +303,16 @@ export default function MatchDetailsPage() {
 
       {liveMatch?.status === "completed" && !cricCompleted && <section className="match-scorecard-section"><div className="match-section-title"><div><span>Official match record</span><h2>Scorecard</h2></div><p>Innings totals and player figures submitted by the match recorder.</p></div><div className="match-scorecard-innings"><article><span>{homeName}</span><strong>{liveMatch.home_runs ?? "—"}/{liveMatch.home_wickets ?? "—"}</strong><small>{liveMatch.home_overs ?? "—"} overs</small></article><article><span>{awayName}</span><strong>{liveMatch.away_runs ?? "—"}/{liveMatch.away_wickets ?? "—"}</strong><small>{liveMatch.away_overs ?? "—"} overs</small></article></div>{liveMatch.player_scorecard?.length ? <div className="match-scorecard-players"><div><span>Player</span><span>Runs (balls)</span><span>Wickets · overs</span></div>{liveMatch.player_scorecard.map((player) => <div key={player.player_id}><strong>{player.player_name}<small>{player.role}</small></strong><b>{player.runs} ({player.balls})</b><span>{player.wickets} · {player.overs}</span></div>)}</div> : <p className="match-scorecard-empty">Player figures have not been submitted for this match. Ball-by-ball commentary is not part of the current match record.</p>}</section>}
 
-      <MatchRules variant="match" />
-
       {!matchCompleted && matchNumber <= 15 && <section className="match-analysis-section">
         <div className="match-section-title"><div><span>Pre-match analysis</span><h2>The numbers<br/><em>to watch.</em></h2></div><p>Built from {analysisSources}. It describes recorded player performance; it does not predict the result.</p></div>
         {loading ? <p className="match-loading">Loading squads and available stats…</p> : hasComparables ? <>
           {resolvedHome && resolvedAway && <PreMatchRead home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
-          {resolvedHome && resolvedAway && <MatchupPreview home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
           <div className="match-analysis-grid">{homeSquadStats}{awaySquadStats}</div>
           <div className="match-analysis-note"><strong>How to read this</strong><p>Season 5 figures use recorded scorecards once players have appeared. Before then, available player comparisons use linked career profiles. Missing records are left blank rather than estimated.</p></div>
         </> : <div className="match-analysis-empty"><h3>Analysis will sharpen when squads are available</h3><p>Once both team rosters and verified player figures are connected, this section will surface each side’s leading run scorer, wicket taker, and relevant batting rates.</p></div>}
       </section>}
 
-      {!matchCompleted && matchNumber === 2 && !loading && resolvedHome && resolvedAway && <MatchTwoBrief home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
-
-      {matchNumber <= 15 && <section className="match-squads-section">
-        <div className="match-section-title"><div><span>Season 5 squads</span><h2>Meet the<br/><em>squads.</em></h2></div><p>Player roles and current team assignments from the official Season 5 roster. Final playing XIs will be confirmed separately.</p></div>
-        {loading ? <p className="match-loading">Loading team squads…</p> : <div className="match-squads-grid">{resolvedHome && <SquadList team={resolvedHome} auction={auction} />}{resolvedAway && <SquadList team={resolvedAway} auction={auction} />}</div>}
-      </section>}
+      {!matchCompleted && matchNumber <= 15 && !loading && hasComparables && resolvedHome && resolvedAway && <MatchTacticalPreview home={resolvedHome} away={resolvedAway} auction={auction} tournament={tournament} />}
 
       <section className="match-facts"><span>Match information</span><div><b>Date</b><strong>{displayDate(fixture.date)}</strong></div><div><b>Team reporting</b><strong>{fixture.reportTime}</strong></div><div><b>Match start</b><strong>{fixture.time}</strong></div><div><b>Venue</b><strong>{cricVenue || liveMatch?.venue || "Melbourne Cricket Ground"}</strong></div><div><b>Format</b><strong>{liveMatch?.cricheroes_live_score?.overs ? `${liveMatch.cricheroes_live_score.overs} overs · ` : ""}{matchNumber >= 16 ? "Season 5 finals · knockout match" : "Season 5 round robin · 2 points for a win"}</strong></div></section>
       <footer className="match-footer"><a href={localLink("")}>PHF Premier League</a><span>Season 5 · 2026</span><a href={localLink("fixtures.html")}>Return to schedule ↑</a></footer>
