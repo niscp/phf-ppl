@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import playersJson from "./season5-players.json";
 import replacementProfilesJson from "./season5-replacement-profiles.json";
 import { getAuctionSnapshot, getTournamentSnapshot, preAuctionSnapshot, type AuctionSnapshot, type AuctionTeam, type TournamentSnapshot } from "./auction-client";
@@ -53,6 +53,17 @@ function displayDate(isoDate: string) {
 
 function logo(team: AuctionTeam) {
   return team.logo_url?.startsWith("/") ? asset(team.logo_url) : team.logo_url ?? "";
+}
+
+function teamColor(name: string) {
+  const key = name.toLowerCase();
+  if (key.includes("avengers")) return "#e9c52c";
+  if (key.includes("prestige super giants")) return "#74364f";
+  if (key.includes("super kings")) return "#285ba8";
+  if (key.includes("high flyers")) return "#8c969b";
+  if (key.includes("amigos")) return "#214a9a";
+  if (key.includes("blasterz")) return "#d7a352";
+  return "#d5b048";
 }
 
 function initials(name: string) {
@@ -154,48 +165,47 @@ function PlayerByPlayerScouting({ team, auction, tournament }: { team: AuctionTe
   const number = (value: number | null, digits = 0) => value === null ? "—" : value.toLocaleString("en-IN", { maximumFractionDigits: digits, minimumFractionDigits: digits });
   const recordFor = (row: typeof stats.metrics[number]) => {
     if (row.hasSeasonRecord) return {
-      scope: "Season 5 scorecard",
+      scope: "Season 5",
       runs: row.runs,
       average: null,
       strikeRate: row.strikeRate,
       wickets: row.wickets,
       economy: row.economy,
-      note: `${row.seasonMatches} Season 5 ${row.seasonMatches === 1 ? "appearance" : "appearances"} recorded.`,
+      note: `${row.seasonMatches} ${row.seasonMatches === 1 ? "appearance" : "appearances"} recorded.`,
     };
     const battingRank = row.careerRuns === null ? null : careerBatting.findIndex((item) => item.player.id === row.player.id) + 1;
     const bowlingRank = row.careerWickets === null ? null : careerBowling.findIndex((item) => item.player.id === row.player.id) + 1;
-    const ranks = [
-      battingRank ? `career runs ${battingRank}/${careerBatting.length}` : null,
-      bowlingRank ? `career wickets ${bowlingRank}/${careerBowling.length}` : null,
-    ].filter(Boolean);
+    const ranks = [battingRank ? `Squad batting rank ${battingRank}/${careerBatting.length}` : null, bowlingRank ? `Squad bowling rank ${bowlingRank}/${careerBowling.length}` : null].filter(Boolean);
     return {
-      scope: "Verified career profile",
+      scope: "Career",
       runs: row.careerRuns,
       average: row.careerAverage,
       strikeRate: row.careerStrikeRate,
       wickets: row.careerWickets,
       economy: row.careerEconomy,
-      note: ranks.length ? `Squad rank: ${ranks.join(" · ")}.` : row.profile?.statsSource ? "Profile linked; comparable totals are not available." : "No verified career totals in this data set.",
+      note: ranks.length ? ranks.join(" · ") : row.profile?.statsSource ? "Profile linked · no comparable totals" : "No verified figures yet",
     };
   };
-  return <details className="match-player-scouting" open>
-    <summary><span>Player-by-player record</span><b>{stats.squad.length} listed</b><i aria-hidden="true" /></summary>
-    <div className="match-player-scouting-intro"><p>Every listed player is covered below. Season 5 figures appear where recorded; linked career totals fill in where available. Ranks compare each available record within this squad. A dash means the figure is unavailable.</p><span>{stats.statsScope === "Season 5" ? "Season scorecards where recorded · career baseline otherwise" : "Verified career profile totals"}</span></div>
-    <div className="match-player-table-scroll" role="region" aria-label={`${team.name} player-by-player stats`} tabIndex={0}>
-      <table className="match-player-table"><thead><tr><th scope="col">Player &amp; role</th><th scope="col">Batting · runs / avg / SR</th><th scope="col">Bowling · wickets / econ</th><th scope="col">Scouting read</th></tr></thead><tbody>
-        {stats.metrics.map((row) => {
-          const record = recordFor(row);
-          return <tr key={row.player.id}>
-            <th scope="row"><strong>{row.player.name}{row.player.status === "captain" ? <span className="match-player-captain">C</span> : null}</strong><small>{row.player.role || "Role not listed"}</small>{(row.profile?.statsSource || row.profile?.cricheroesUrl) && <a href={row.profile.statsSource ?? row.profile.cricheroesUrl} target="_blank" rel="noopener noreferrer">Player details ↗</a>}</th>
-            <td><strong>{number(record.runs)}</strong><small>Avg {number(record.average, 2)} · SR {number(record.strikeRate, 2)}</small></td>
-            <td><strong>{number(record.wickets)} wickets</strong><small>Economy {number(record.economy, 2)}</small></td>
-            <td><span className="match-player-scope">{record.scope}</span><small>{record.note}</small></td>
-          </tr>;
-        })}
-      </tbody></table>
-    </div>
-    {stats.metrics.some((row) => row.profile?.statsChecked) && <small className="match-player-source-note">Career profile data checked {stats.metrics.find((row) => row.profile?.statsChecked)?.profile?.statsChecked}. Career records describe past performance and do not guarantee match-day selection or form.</small>}
-  </details>;
+  const ordered = [...stats.metrics].sort((a, b) => {
+    const aRecord = recordFor(a), bRecord = recordFor(b);
+    const aHasFigures = aRecord.runs !== null || aRecord.wickets !== null;
+    const bHasFigures = bRecord.runs !== null || bRecord.wickets !== null;
+    return Number(bHasFigures) - Number(aHasFigures) || (bRecord.runs ?? -1) - (aRecord.runs ?? -1);
+  });
+  const tracked = ordered.filter((row) => { const record = recordFor(row); return record.runs !== null || record.wickets !== null; }).length;
+  return <section className="match-player-scouting" aria-label={`${team.name} player dashboard`} style={{ "--team-color": teamColor(team.name) } as CSSProperties}>
+    <header className="scout-board-heading"><div><span>Full squad board</span><h3>{team.name}</h3></div><b>{tracked}/{stats.squad.length} with records</b></header>
+    <p className="scout-board-note">All listed players, ranked by recorded batting contribution where figures are available. A dash means no verified figure is connected yet.</p>
+    <div className="scout-player-grid">{ordered.map((row, index) => {
+      const record = recordFor(row);
+      const profileLink = row.profile?.statsSource ?? row.profile?.cricheroesUrl;
+      return <article className="scout-player-card" key={row.player.id}>
+        <header><span className="scout-player-rank">{String(index + 1).padStart(2, "0")}</span>{row.player.photo ? <img src={asset(row.player.photo)} alt="" loading="lazy"/> : <b className="scout-player-initials">{initials(row.player.name)}</b>}<div><strong>{row.player.name}{row.player.status === "captain" ? <i>C</i> : null}</strong><small>{row.player.role || "Role not listed"}</small></div></header>
+        <div className="scout-player-stats"><div><span>BAT</span><b>{number(record.runs)}</b><small>runs · SR {number(record.strikeRate, 1)}</small></div><div><span>BOWL</span><b>{number(record.wickets)}</b><small>wickets · econ {number(record.economy, 1)}</small></div></div>
+        <footer><span>{record.scope}</span><small>{record.note}</small>{profileLink && <a href={profileLink} target="_blank" rel="noopener noreferrer">Full profile ↗</a>}</footer>
+      </article>;
+    })}</div>
+  </section>;
 }
 
 function MatchTacticalPreview({ home, away, auction, tournament }: { home: AuctionTeam; away: AuctionTeam; auction: AuctionSnapshot; tournament: TournamentSnapshot }) {
@@ -211,7 +221,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     const ownBowler = own.topBowler;
     const ownBatDepth = roleCount(own, "Batter");
     const ownAllRounders = allRounders(own);
-    return <article className={`match-two-team-card${awaySide ? " away" : ""}`} key={team.id}>
+    return <article className={`match-two-team-card${awaySide ? " away" : ""}`} key={team.id} style={{ "--team-color": teamColor(team.name) } as CSSProperties}>
       <header>{logo(team) ? <img src={logo(team)} alt="" /> : <b>{initials(team.name)}</b>}<div><span>Team plan · {own.squad.length} players listed</span><h3>{team.name}</h3></div></header>
       <div className="match-two-plan"><span>Batting approach</span><p>{ownBatDepth ? `Use the ${ownBatDepth} listed batter${ownBatDepth === 1 ? "" : "s"} to set the innings structure, then keep the ${ownAllRounders} all-rounder${ownAllRounders === 1 ? "" : "s"} flexible for the middle and closing overs.` : `Build the innings around the confirmed XI and preserve batting options through the middle overs.`} {ownBatter ? `${ownBatter.player.name} leads the available ${own.statsScope.toLowerCase()} record with ${ownBatter.runs} runs; use that record to inform the order, then let match-day conditions and form guide the role.` : "No verified batting leader is available yet, so the final XI and recent form should drive the order."}</p></div>
       <div className="match-two-plan"><span>Bowling approach</span><p>{ownBowler ? `Consider using ${ownBowler.player.name}, the squad’s leading recorded wicket taker (${ownBowler.wickets} ${own.statsScope.toLowerCase()} wickets), in a spell where a breakthrough matters. Keep the remaining bowling workload spread across the available options.` : "Choose the bowling order after the XI and conditions are known; no comparable wicket record is available for this squad yet."} With {ownAllRounders} all-rounder{ownAllRounders === 1 ? "" : "s"} listed, the captain has potential flexibility if the selected players bowl.</p></div>
@@ -222,7 +232,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
   const listedPlayerCount = homeStats.squad.length + awayStats.squad.length;
 
   return <section className="match-two-brief" aria-labelledby="match-preview-analysis-title">
-    <div className="match-two-brief-heading"><div><span>Matchday scouting · {scope} records</span><h2 id="match-preview-analysis-title">The match<br/><em>preview.</em></h2></div><p>Full-squad scouting, practical plans for both teams, and the moments to watch. Records describe past performance; they are not head-to-head data, confirmed roles, or a prediction.</p></div>
+    <div className="match-two-brief-heading"><div><span>Matchday scouting · {scope} records</span><h2 id="match-preview-analysis-title">Matchup<br/><em>dashboard.</em></h2></div><p>Full-squad scouting, practical plans for both teams, and the moments to watch. Records describe past performance; they are not head-to-head data, confirmed roles, or a prediction.</p></div>
     <div className="match-two-teams">{teamBrief(home, homeStats, awayStats)}{teamBrief(away, awayStats, homeStats, true)}</div>
     <div className="match-two-watchline"><span>Match watch</span><p>Look for the first partnership that settles the innings, the first spell that changes its pace, and how each captain responds. Compare each player’s recorded runs, strike rate, wickets, and economy below where available. The final XI, pitch conditions, and match-day form will shape how these plans apply.</p></div>
     <small className="match-two-caveat">Player records use linked CricHeroes career profiles or Season 5 scorecards, as labeled. They do not show direct batter-versus-bowler history. No pitch report or confirmed playing XI is available.</small>
