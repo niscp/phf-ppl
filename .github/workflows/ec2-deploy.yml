@@ -59,6 +59,7 @@ jobs:
           test -s gh-pages/index.html
           test -s gh-pages/players.html
           test -s gh-pages/teams.html
+          test -s gh-pages/team-appearances.html
           test -s gh-pages/auction.html
           test -s gh-pages/highlights.html
           test -s gh-pages/bid-history.html

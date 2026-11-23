@@ -1,0 +1,705 @@
+{
+  "teams": [
+    {
+      "name": "PHF Blasterz",
+      "color": "#D59A42",
+      "fixtures": [
+        2,
+        4,
+        9,
+        12,
+        14
+      ],
+      "players": [
+        {
+          "name": "Nikhil Miryala (C)",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Aakash Pahwa",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Shobhit K",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Sandeep Mekala",
+          "appearances": {
+            "2": false,
+            "4": false
+          }
+        },
+        {
+          "name": "Akki Thadani",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Shravan Kumar",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Santosh Sriramoju",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Amitabh Soni",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Bhupesh",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Manisai",
+          "appearances": {
+            "2": false,
+            "4": false
+          }
+        },
+        {
+          "name": "Sandeep Ram",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Ashwin Kumar",
+          "appearances": {
+            "2": true,
+            "4": false
+          }
+        },
+        {
+          "name": "Amartya Bhardwaj",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Abhinav Bhardwaj",
+          "appearances": {
+            "2": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Ankit Gupta",
+          "appearances": {
+            "2": false,
+            "4": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prestige Super Giants",
+      "color": "#7B4255",
+      "fixtures": [
+        1,
+        4,
+        8,
+        11,
+        15
+      ],
+      "players": [
+        {
+          "name": "Sohan Lath (C)",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Abhishek Purohit",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Dhritiman Sinha",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "DSY",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Joy",
+          "appearances": {
+            "1": false,
+            "4": false
+          }
+        },
+        {
+          "name": "Krishna Devaraj",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Krishna Prashanth",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Mayank Chauhan",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Pavan Kumar E V",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Rachit",
+          "appearances": {
+            "1": false,
+            "4": false
+          }
+        },
+        {
+          "name": "Rahul Gome",
+          "appearances": {
+            "1": false,
+            "4": true
+          }
+        },
+        {
+          "name": "Sindhu Kumar",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Subash Reddy K",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Talluri Tarun",
+          "appearances": {
+            "1": true,
+            "4": true
+          }
+        },
+        {
+          "name": "Vaibhav Shukla",
+          "appearances": {
+            "1": false,
+            "4": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "PHF Amigos",
+      "color": "#1767B0",
+      "fixtures": [
+        3,
+        6,
+        9,
+        11,
+        13
+      ],
+      "players": [
+        {
+          "name": "Srikanth K",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Agasthya Bellamkonda",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Aqib Afzal",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Hanuma",
+          "appearances": {
+            "3": false,
+            "6": false
+          }
+        },
+        {
+          "name": "Kishore",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Kowshik",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Madhav Jain",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Mithun Bhaskar",
+          "appearances": {
+            "3": true,
+            "6": false
+          }
+        },
+        {
+          "name": "Praveen Mustepally",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Ratna Raju Jetty",
+          "appearances": {
+            "3": true,
+            "6": false
+          }
+        },
+        {
+          "name": "Rohit Panchal",
+          "appearances": {
+            "3": false,
+            "6": true
+          }
+        },
+        {
+          "name": "Swejan R",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Tharun",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Vikram Idiga",
+          "appearances": {
+            "3": false,
+            "6": true
+          }
+        },
+        {
+          "name": "Vinay Kushwaha",
+          "appearances": {
+            "3": true,
+            "6": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "High Flyers",
+      "color": "#555860",
+      "fixtures": [
+        2,
+        6,
+        7,
+        10,
+        15
+      ],
+      "players": [
+        {
+          "name": "Ambikesh",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Ajay.Aj",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Bhavya Bansal",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Chandan",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Harshank Singh",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Nisanth Kuchipudi",
+          "appearances": {
+            "2": false,
+            "6": false
+          }
+        },
+        {
+          "name": "Mayank Dixit",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Nishank Singh",
+          "appearances": {
+            "2": true,
+            "6": false
+          }
+        },
+        {
+          "name": "Revanth",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Sanchay Mohan",
+          "appearances": {
+            "2": false,
+            "6": false
+          }
+        },
+        {
+          "name": "Saptarshi Roy",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Saurabh Mathur",
+          "appearances": {
+            "2": false,
+            "6": true
+          }
+        },
+        {
+          "name": "Vinay Bharadwaj",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        },
+        {
+          "name": "Sumit Das",
+          "appearances": {
+            "2": false,
+            "6": false
+          }
+        },
+        {
+          "name": "Vineet",
+          "appearances": {
+            "2": true,
+            "6": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Super PHF Kings",
+      "color": "#164A9A",
+      "fixtures": [
+        1,
+        5,
+        7,
+        12,
+        13
+      ],
+      "players": [
+        {
+          "name": "Abhishek S",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Abhishek Thakur",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Bhart Arora",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Chetan Barode",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Divyanshu",
+          "appearances": {
+            "1": false,
+            "5": false
+          }
+        },
+        {
+          "name": "Himanshu Giri",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Kishore Bowrothu",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Meet",
+          "appearances": {
+            "1": false,
+            "5": false
+          }
+        },
+        {
+          "name": "Rohith Raj",
+          "appearances": {
+            "1": true,
+            "5": false
+          }
+        },
+        {
+          "name": "Saket Kumar",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Shrey",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Tushar Chatterji",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Varnit Shukla",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Veer Bansal",
+          "appearances": {
+            "1": true,
+            "5": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Avengers",
+      "color": "#E6C627",
+      "fixtures": [
+        3,
+        5,
+        8,
+        10,
+        14
+      ],
+      "players": [
+        {
+          "name": "Saurabh Gupta",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Diptiranjan",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Karthikesh",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Kamal Anupam",
+          "appearances": {
+            "3": false,
+            "5": true
+          }
+        },
+        {
+          "name": "Satish Dhanekula",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Rahul Sharan",
+          "appearances": {
+            "3": true,
+            "5": false
+          }
+        },
+        {
+          "name": "Jeet",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Aakash Mehta",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Raj",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Yogi",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Tariq",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Urooj Kamal",
+          "appearances": {
+            "3": false,
+            "5": false
+          }
+        },
+        {
+          "name": "Mohit T",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        },
+        {
+          "name": "Ayush Nagar",
+          "appearances": {
+            "3": false,
+            "5": false
+          }
+        },
+        {
+          "name": "Praveer",
+          "appearances": {
+            "3": true,
+            "5": true
+          }
+        }
+      ]
+    }
+  ]
+}
