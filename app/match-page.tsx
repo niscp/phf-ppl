@@ -272,6 +272,11 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
 
   const leadingBatter = (form: TeamRecentForm | null) => form?.batting.reduce<RecentBattingLine | null>((best, item) => !best || Number(item.runs) > Number(best.runs) ? item : best, null) ?? null;
   const leadingBowler = (form: TeamRecentForm | null) => form?.bowling.reduce<RecentBowlingLine | null>((best, item) => !best || Number(item.wickets) > Number(best.wickets) || (Number(item.wickets) === Number(best.wickets) && Number(item.overs) > Number(best.overs)) ? item : best, null) ?? null;
+  const resultFor = (team: AuctionTeam, match: TournamentMatch) => {
+    if (match.winner_team_id) return match.winner_team_id === team.id ? "win" : "loss";
+    if (match.winner_team) return normalizedTeam(match.winner_team) === normalizedTeam(team.name) ? "win" : "loss";
+    return null;
+  };
 
   const displayNumber = (value: number | string | null | undefined, digits = 0) => {
     const parsed = numeric(value);
@@ -302,7 +307,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
 
     if (mode === "batting") {
       const phases: TacticPhase[] = [
-        { title: "Powerplay · get set", prompt: "Repeat the proven start where it worked; protect wickets and keep singles moving.", cues: [] },
+        { title: "Powerplay · get set", prompt: recent?.outings[0] && resultFor(team, recent.outings[0].match) === "win" ? "Coming off a win: keep the settled start, take the easy singles, and leave boundary risks for the right ball." : recent?.outings[0] && resultFor(team, recent.outings[0].match) === "loss" ? "After the latest defeat, start with a clearer reset: protect the first wicket and build pressure through singles before forcing boundaries." : "Settle early, keep singles moving, and attack only the bowlers who offer a clear scoring option.", cues: [] },
         { title: "Middle overs · build pressure", prompt: "Use the best recorded middle-order options to keep partnerships alive and target the weaker matchup.", cues: [] },
         { title: "Finish · spend the depth", prompt: "Keep a hitter in reserve for the closing overs; use lower-order depth to support the set batter.", cues: [] },
         { title: "Batting cover · selection options", prompt: "Bring these untested or previously unused options into a defined job if the XI needs a change.", cues: [] },
@@ -315,7 +320,9 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
       for (const item of recentBatters) {
         const slot = item.batting!.battingSlot;
         const phase = phases[phaseForSlot(slot)];
-        const instruction = slot <= 2 ? "hold the opening role and start positively without forcing the early boundary" : slot <= 5 ? "own the rebuild, rotate strike, then attack the favorable matchup" : "keep this as a late-innings option and target the final overs";
+        const latestRuns = numeric(item.battingRecords[0]?.runs) ?? 0;
+        const previousRuns = numeric(item.battingRecords[1]?.runs) ?? 0;
+        const instruction = item.battingRecords.length > 1 && latestRuns >= 20 && previousRuns >= 20 ? "carry two useful starts forward; keep the opening partnership intact and rotate strike" : latestRuns >= 35 ? "build around the latest 35-plus contribution; stay composed and let the next batter play freely" : latestRuns <= 5 && previousRuns >= 20 ? "reset after a quiet latest innings; play straight early, then expand once set" : slot <= 2 ? "use the latest opening role to judge the start; take the first safe scoring options" : slot <= 5 ? latestRuns >= 20 ? "carry the recent contribution into the rebuild; rotate strike before choosing the matchup" : "stabilize the middle overs, then attack the favorable matchup" : "keep this as a late-innings option and target the final overs";
         const runs = item.battingRecords.reduce((sum, line) => sum + (numeric(line.runs) ?? 0), 0);
         const balls = item.battingRecords.reduce((sum, line) => sum + (numeric(line.balls) ?? 0), 0);
         const matchRefs = item.battingRecords.map((line) => `M${line.matchNumber}`).join(" + ");
@@ -342,7 +349,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     }
 
     const phases: TacticPhase[] = [
-      { title: "Breakthrough spells", prompt: "Use the most reliable wicket-taking evidence to split partnerships; hold a strike option back if an early wicket falls.", cues: [] },
+      { title: "Breakthrough spells", prompt: recent?.outings[0] && resultFor(team, recent.outings[0].match) === "win" ? "Coming off a win: keep the wicket-taking plans, but vary pace and length before batters settle." : recent?.outings[0] && resultFor(team, recent.outings[0].match) === "loss" ? "After the latest defeat, change the rhythm early: use the strike bowler in a short spell when a batter is new at the crease." : "Use the wicket-taking options to split partnerships; hold a strike spell for a new batter.", cues: [] },
       { title: "Control the middle", prompt: "Pair economical spells with a catching field and make the batting side earn its boundary options.", cues: [] },
       { title: "Bowling rotation · options", prompt: "Give unused bowling options a short, defined spell only if selected; keep the experienced attack ready to close.", cues: [] },
     ];
@@ -355,7 +362,10 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
         const economy = overs > 0 ? runsConceded / overs : null;
         const matchRefs = item.bowlingRecords.map((line) => `M${line.matchNumber}`).join(" + ");
         const phase = wickets > 0 ? phases[0] : phases[1];
-        const instruction = wickets > 0 ? "attack the stumps and be the first change when a partnership forms" : "use as a control spell; keep the field in and make the batter manufacture pace";
+        const latestWickets = numeric(item.bowlingRecords[0]?.wickets) ?? 0;
+        const latestEconomy = numeric(item.bowlingRecords[0]?.economy);
+        const previousWickets = numeric(item.bowlingRecords[1]?.wickets) ?? 0;
+        const instruction = wickets > 0 && latestWickets > 0 ? "repeat the latest wicket-taking line; bring this spell on when a new batter arrives" : wickets > 0 && previousWickets > 0 ? "use the earlier wicket-taking spell as a variation option; attack after a quiet latest outing" : latestEconomy !== null && latestEconomy <= 5 ? "lean on the latest economical spell; keep the field tight and make them take risks" : wickets > 0 ? "keep the season wicket threat ready; attack the stumps when a partnership forms" : "use a short control spell; vary pace and protect the boundary side";
         phase.cues.push({ key: item.player.id, name: item.player.name, instruction, evidence: `${displayNumber(wickets)} wicket${wickets === 1 ? "" : "s"}, ${displayNumber(overs, 1)} overs, ${displayNumber(economy, 1)} economy across ${matchRefs}` });
       } else if ((item.stat?.wickets ?? 0) > 0) {
         phases[0].cues.push({ key: item.player.id, name: item.player.name, instruction: "keep as a season-proven wicket option for the middle overs", evidence: `${displayNumber(item.wickets)} Season 5 wickets in ${displayNumber(item.stat?.overs, 1)} overs across ${item.stat?.matches ?? 0} match${item.stat?.matches === 1 ? "" : "es"}` });
@@ -382,10 +392,11 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     const opponentBowler = leadingBowler(opponentRecent);
     const phases = planFor(team, squad, recent, planMode);
     const nishankStat = team.name.toLowerCase().includes("high flyers") ? tournament.player_stats.find((stat) => stat.team_id === team.id && normalizedPerson(stat.name) === "nishank singh") : null;
+    const latestOutcome = recent ? resultFor(team, recent.match) : null;
     return <article className={`match-two-team-card match-preview-team${awaySide ? " away" : ""}`} key={team.id} style={{ "--team-color": teamColor(team.name) } as CSSProperties}>
       <header>{logo(team) ? <img src={logo(team)} alt="" /> : <b>{initials(team.name)}</b>}<div><span>{recent ? `Most recent card · Match ${recent.match.match_number}` : "Season 5 scorecard data"}</span><h3>{team.name}</h3></div></header>
       {recent ? <div className="preview-last-outing"><b>Recent results · last {recent.matchesUsed}</b>{recent.outings.map(({ match, opponent }) => { const runs = teamPreviousScore(team, match); const wickets = match.home_team_id === team.id ? match.home_wickets : match.away_wickets; const overs = match.home_team_id === team.id ? match.home_overs : match.away_overs; return <div className="preview-outing-row" key={match.id}><span>Match {match.match_number} · vs {opponent}</span><strong>{displayNumber(runs)}/{displayNumber(wickets)} <small>in {displayNumber(overs, 1)} overs</small></strong><em>{match.result_text ?? "Result recorded"}</em>{match.cricheroes_match_url && <a href={match.cricheroes_match_url} target="_blank" rel="noopener noreferrer">Scorecard ↗</a>}</div>; })}</div> : <p className="preview-no-card">No completed CricHeroes scorecard is linked for this team yet; the builder uses available Season 5 or career records.</p>}
-      <div className="preview-strategy-builder"><div className="preview-strategy-heading"><div><span>{planMode === "batting" ? "Batting strategy" : "Bowling strategy"}</span><small>{recent ? `Last ${recent.matchesUsed} completed match${recent.matchesUsed === 1 ? "" : "es"} · individual figures combined with Season 5 totals` : "Roles suggested from available squad and career records"}</small></div></div>{renderPhases(phases)}{team.name.toLowerCase().includes("high flyers") && nishankStat && nishankStat.wickets > 0 && <p className="preview-strategy-praise"><strong>Spell to build around · Nishank Singh</strong> Match 2 vs PHF Blasterz: {nishankStat.wickets}/{nishankStat.runs_conceded} in {displayNumber(nishankStat.overs, 1)} overs, economy {displayNumber(nishankStat.runs_conceded / nishankStat.overs, 2)}. A disciplined wicket-taking spell worth praising.</p>}</div>
+      <div className="preview-strategy-builder"><div className="preview-strategy-heading"><div><span>{planMode === "batting" ? "Batting strategy" : "Bowling strategy"}</span><small>{recent ? `Last ${recent.matchesUsed} completed match${recent.matchesUsed === 1 ? "" : "es"} · player figures combined across scorecards` : "Roles suggested from available squad and career records"}</small></div></div>{recent && <div className="preview-result-context"><strong>Result-led adjustment</strong><span>{recent.outings.map(({ match }) => `M${match.match_number} ${resultFor(team, match) ?? "result unavailable"}`).join(" · ")}</span><p>{latestOutcome === "win" ? "Latest result: win. Keep the effective patterns and make small matchup-led changes." : latestOutcome === "loss" ? "Latest result: loss. Reset the weak phase first and change the bowling or batting tempo early." : "No winner is recorded on the linked latest scorecard, so the plan follows player figures."}</p></div>}{renderPhases(phases)}{team.name.toLowerCase().includes("high flyers") && nishankStat && nishankStat.wickets > 0 && <p className="preview-strategy-praise"><strong>Spell to build around · Nishank Singh</strong> Match 2 vs PHF Blasterz: {nishankStat.wickets}/{nishankStat.runs_conceded} in {displayNumber(nishankStat.overs, 1)} overs, economy {displayNumber(nishankStat.runs_conceded / nishankStat.overs, 2)}. A disciplined wicket-taking spell worth praising.</p>}</div>
       <div className="preview-crosscheck"><span>Opponent form check</span><p>{opponentBowler && bat ? `${bat.displayName} (${displayNumber(bat.runs)} runs last outing) against ${opponentBowler.displayName} (${displayNumber(opponentBowler.wickets)} wickets in ${displayNumber(opponentBowler.overs, 1)} overs last outing).` : "A recent batter-versus-bowler comparison will appear when both teams have linked scorecards."} These are recent-form comparisons, not verified head-to-head records.</p></div>
     </article>;
   };

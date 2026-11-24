@@ -24,6 +24,10 @@
 .preview-strategy-heading>div{display:grid;gap:4px}
 .preview-strategy-heading span{color:#e4c35c;font:700 9px var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
 .preview-strategy-heading small{color:#8fa1a2;font-size:9px}
+.preview-result-context{display:grid;grid-template-columns:1fr auto;gap:4px 8px;margin:0 0 10px;padding:9px 10px;background:#0d1b22;border-left:2px solid var(--team-color,#d5b048)}
+.preview-result-context strong{color:#e7cc72;font:700 9px var(--font-mono);letter-spacing:.05em;text-transform:uppercase}
+.preview-result-context>span{color:#aebdbd;font-size:9px;text-transform:capitalize}
+.preview-result-context>p{grid-column:1/-1;margin:0;color:#c1ceca;font-size:10px;line-height:1.45}
 .preview-strategy-phases{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .preview-strategy-phase{min-width:0;padding:11px;background:#14242b;border-top:2px solid var(--team-color,#d5b048)}
 .preview-strategy-phase h4{margin:0 0 5px;color:#f0d36f;font:700 10px var(--font-mono);letter-spacing:.035em;text-transform:uppercase}
