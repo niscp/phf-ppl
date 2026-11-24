@@ -121,9 +121,9 @@ function getTeamStatSummary(team: AuctionTeam, auction: AuctionSnapshot, tournam
   return { squad, statsScope, topScorer, topBowler, averageStrikeRate, metrics };
 }
 
-type RecentBattingLine = CricHeroesBattingFigure & { battingSlot: number; displayName: string; rosterPlayer?: AuctionPlayer; profile?: DirectoryPlayer };
-type RecentBowlingLine = CricHeroesBowlingFigure & { displayName: string; rosterPlayer?: AuctionPlayer; profile?: DirectoryPlayer };
-type TeamRecentForm = { match: TournamentMatch; opponent: string; batting: RecentBattingLine[]; bowling: RecentBowlingLine[] };
+type RecentBattingLine = CricHeroesBattingFigure & { battingSlot: number; matchNumber: number; displayName: string; rosterPlayer?: AuctionPlayer; profile?: DirectoryPlayer };
+type RecentBowlingLine = CricHeroesBowlingFigure & { matchNumber: number; displayName: string; rosterPlayer?: AuctionPlayer; profile?: DirectoryPlayer };
+type TeamRecentForm = { match: TournamentMatch; opponent: string; matchesUsed: number; batting: RecentBattingLine[]; bowling: RecentBowlingLine[] };
 
 const playerNameAliases: Record<string, string> = {
   "ajay aj": "ajay", "ajay a j": "ajay", "harshank singh chaggar": "harshank",
@@ -177,6 +177,7 @@ function scorecardInnings(match: TournamentMatch, team: AuctionTeam) {
 
 function getTeamRecentForm(team: AuctionTeam, auction: AuctionSnapshot, tournament: TournamentSnapshot): TeamRecentForm | null {
   const completed = [...tournament.matches].filter((match) => match.status === "completed").sort((a, b) => b.match_number - a.match_number);
+  const forms: TeamRecentForm[] = [];
   for (const match of completed) {
     const innings = scorecardInnings(match, team);
     if (!innings) continue;
@@ -185,15 +186,17 @@ function getTeamRecentForm(team: AuctionTeam, auction: AuctionSnapshot, tourname
     if (!battingRows.length && !bowlingRows.length) continue;
     const batting = battingRows.map((row, index) => {
       const resolved = resolveRosterEntry(row.name, row.player_id, team, auction);
-      return { ...row, battingSlot: index + 1, displayName: resolved.player?.name ?? row.name.replace(/[†‡]/g, "").replace(/\s*\([^)]*\)\s*/g, " ").trim(), rosterPlayer: resolved.player, profile: resolved.profile };
+      return { ...row, battingSlot: index + 1, matchNumber: match.match_number, displayName: resolved.player?.name ?? row.name.replace(/[†‡]/g, "").replace(/\s*\([^)]*\)\s*/g, " ").trim(), rosterPlayer: resolved.player, profile: resolved.profile };
     });
     const bowling = bowlingRows.map((row) => {
       const resolved = resolveRosterEntry(row.name, row.player_id, team, auction);
-      return { ...row, displayName: resolved.player?.name ?? row.name.replace(/[†‡]/g, "").replace(/\s*\([^)]*\)\s*/g, " ").trim(), rosterPlayer: resolved.player, profile: resolved.profile };
+      return { ...row, matchNumber: match.match_number, displayName: resolved.player?.name ?? row.name.replace(/[†‡]/g, "").replace(/\s*\([^)]*\)\s*/g, " ").trim(), rosterPlayer: resolved.player, profile: resolved.profile };
     });
-    return { match, opponent: match.home_team_id === team.id ? match.away_team : match.home_team, batting, bowling };
+    forms.push({ match, opponent: match.home_team_id === team.id ? match.away_team : match.home_team, matchesUsed: 1, batting, bowling });
+    if (forms.length === 2) break;
   }
-  return null;
+  if (!forms.length) return null;
+  return { ...forms[0], matchesUsed: forms.length, batting: forms.flatMap((form) => form.batting), bowling: forms.flatMap((form) => form.bowling) };
 }
 
 function playerHasAppeared(player: AuctionPlayer, team: AuctionTeam, auction: AuctionSnapshot, tournament: TournamentSnapshot) {
@@ -281,8 +284,10 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     const players = squad.map((player) => {
       const stat = tournamentRecordFor(player, team, tournament);
       const profile = directory.find((item) => item.id === player.id);
-      const batting = recent?.batting.find((line) => line.rosterPlayer?.id === player.id || normalizedPerson(line.displayName) === normalizedPerson(player.name));
-      const bowling = recent?.bowling.find((line) => line.rosterPlayer?.id === player.id || normalizedPerson(line.displayName) === normalizedPerson(player.name));
+      const battingRecords = recent?.batting.filter((line) => line.rosterPlayer?.id === player.id || normalizedPerson(line.displayName) === normalizedPerson(player.name)) ?? [];
+      const bowlingRecords = recent?.bowling.filter((line) => line.rosterPlayer?.id === player.id || normalizedPerson(line.displayName) === normalizedPerson(player.name)) ?? [];
+      const batting = battingRecords[0];
+      const bowling = bowlingRecords[0];
       const appeared = playerHasAppeared(player, team, auction, tournament);
       const role = (player.role || stat?.role || "").toLowerCase();
       const careerRuns = !appeared && profile?.statsSource ? numeric(profile.stats?.batting?.runs) ?? 0 : 0;
@@ -292,7 +297,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
       const canBat = role !== "bowler" || runs > 0 || Boolean(batting);
       const canBowl = role !== "batter" || wickets > 0 || Boolean(bowling);
       const evidenceScope = appeared ? "Season 5" : "CricHeroes career";
-      return { player, stat, profile, batting, bowling, appeared, role, runs, wickets, careerRuns, careerWickets, canBat, canBowl, evidenceScope };
+      return { player, stat, profile, batting, battingRecords, bowling, bowlingRecords, appeared, role, runs, wickets, careerRuns, careerWickets, canBat, canBowl, evidenceScope };
     });
 
     if (mode === "batting") {
@@ -311,7 +316,10 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
         const slot = item.batting!.battingSlot;
         const phase = phases[phaseForSlot(slot)];
         const instruction = slot <= 2 ? "hold the opening role and start positively without forcing the early boundary" : slot <= 5 ? "own the rebuild, rotate strike, then attack the favorable matchup" : "keep this as a late-innings option and target the final overs";
-        phase.cues.push({ key: item.player.id, name: item.player.name, instruction, evidence: `${displayNumber(item.batting!.runs)} off ${displayNumber(item.batting!.balls)} at No. ${slot} in Match ${recent?.match.match_number}` });
+        const runs = item.battingRecords.reduce((sum, line) => sum + (numeric(line.runs) ?? 0), 0);
+        const balls = item.battingRecords.reduce((sum, line) => sum + (numeric(line.balls) ?? 0), 0);
+        const matchRefs = item.battingRecords.map((line) => `M${line.matchNumber}`).join(" + ");
+        phase.cues.push({ key: item.player.id, name: item.player.name, instruction, evidence: `${displayNumber(runs)} off ${displayNumber(balls)} across ${matchRefs}; latest role at No. ${slot}` });
       }
       for (const [index, item] of scoredWithoutRecent.entries()) {
         const phase = index < 2 ? phases[1] : phases[2];
@@ -340,12 +348,15 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     ];
     const bowlingOptions = players.filter((item) => item.canBowl);
     for (const item of bowlingOptions) {
-      if (item.bowling) {
-        const wickets = Number(item.bowling.wickets) || 0;
-        const economy = numeric(item.bowling.economy);
+      if (item.bowlingRecords.length) {
+        const wickets = item.bowlingRecords.reduce((sum, line) => sum + (numeric(line.wickets) ?? 0), 0);
+        const overs = item.bowlingRecords.reduce((sum, line) => sum + (numeric(line.overs) ?? 0), 0);
+        const runsConceded = item.bowlingRecords.reduce((sum, line) => sum + (numeric(line.runs) ?? 0), 0);
+        const economy = overs > 0 ? runsConceded / overs : null;
+        const matchRefs = item.bowlingRecords.map((line) => `M${line.matchNumber}`).join(" + ");
         const phase = wickets > 0 ? phases[0] : phases[1];
         const instruction = wickets > 0 ? "attack the stumps and be the first change when a partnership forms" : "use as a control spell; keep the field in and make the batter manufacture pace";
-        phase.cues.push({ key: item.player.id, name: item.player.name, instruction, evidence: `${displayNumber(wickets)} wicket${wickets === 1 ? "" : "s"}, ${displayNumber(item.bowling.overs, 1)} overs, ${displayNumber(economy, 1)} economy in Match ${recent?.match.match_number}` });
+        phase.cues.push({ key: item.player.id, name: item.player.name, instruction, evidence: `${displayNumber(wickets)} wicket${wickets === 1 ? "" : "s"}, ${displayNumber(overs, 1)} overs, ${displayNumber(economy, 1)} economy across ${matchRefs}` });
       } else if ((item.stat?.wickets ?? 0) > 0) {
         phases[0].cues.push({ key: item.player.id, name: item.player.name, instruction: "keep as a season-proven wicket option for the middle overs", evidence: `${displayNumber(item.wickets)} Season 5 wickets in ${displayNumber(item.stat?.overs, 1)} overs across ${item.stat?.matches ?? 0} match${item.stat?.matches === 1 ? "" : "es"}` });
       } else if (!item.appeared && item.careerWickets > 0) {
@@ -375,7 +386,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     return <article className={`match-two-team-card match-preview-team${awaySide ? " away" : ""}`} key={team.id} style={{ "--team-color": teamColor(team.name) } as CSSProperties}>
       <header>{logo(team) ? <img src={logo(team)} alt="" /> : <b>{initials(team.name)}</b>}<div><span>{recent ? `Most recent card · Match ${recent.match.match_number}` : "Season 5 scorecard data"}</span><h3>{team.name}</h3></div></header>
       {recent ? <div className="preview-last-outing"><b>Last outing</b><span>vs {recent.opponent}</span><strong>{displayNumber(ownRuns)}/{displayNumber(ownWickets)} <small>in {displayNumber(ownOvers, 1)} overs</small></strong><em>{recent.match.result_text ?? "Result recorded"}</em>{sourceUrl && <a href={sourceUrl} target="_blank" rel="noopener noreferrer">CricHeroes scorecard ↗</a>}</div> : <p className="preview-no-card">No completed CricHeroes scorecard is linked for this team yet; the builder uses available Season 5 or career records.</p>}
-      <div className="preview-strategy-builder"><div className="preview-strategy-heading"><div><span>{planMode === "batting" ? "Batting strategy" : "Bowling strategy"}</span><small>{recent ? `Roles suggested from Match ${recent.match.match_number} plus tournament totals` : "Roles suggested from available squad and career records"}</small></div></div>{renderPhases(phases)}{team.name.toLowerCase().includes("high flyers") && nishankStat && nishankStat.wickets > 0 && <p className="preview-strategy-praise"><strong>Spell to build around · Nishank Singh</strong> Match 2 vs PHF Blasterz: {nishankStat.wickets}/{nishankStat.runs_conceded} in {displayNumber(nishankStat.overs, 1)} overs, economy {displayNumber(nishankStat.runs_conceded / nishankStat.overs, 2)}. A disciplined wicket-taking spell worth praising.</p>}</div>
+      <div className="preview-strategy-builder"><div className="preview-strategy-heading"><div><span>{planMode === "batting" ? "Batting strategy" : "Bowling strategy"}</span><small>{recent ? `Last ${recent.matchesUsed} completed match${recent.matchesUsed === 1 ? "" : "es"} · individual figures combined with Season 5 totals` : "Roles suggested from available squad and career records"}</small></div></div>{renderPhases(phases)}{team.name.toLowerCase().includes("high flyers") && nishankStat && nishankStat.wickets > 0 && <p className="preview-strategy-praise"><strong>Spell to build around · Nishank Singh</strong> Match 2 vs PHF Blasterz: {nishankStat.wickets}/{nishankStat.runs_conceded} in {displayNumber(nishankStat.overs, 1)} overs, economy {displayNumber(nishankStat.runs_conceded / nishankStat.overs, 2)}. A disciplined wicket-taking spell worth praising.</p>}</div>
       <div className="preview-crosscheck"><span>Opponent form check</span><p>{opponentBowler && bat ? `${bat.displayName} (${displayNumber(bat.runs)} runs last outing) against ${opponentBowler.displayName} (${displayNumber(opponentBowler.wickets)} wickets in ${displayNumber(opponentBowler.overs, 1)} overs last outing).` : "A recent batter-versus-bowler comparison will appear when both teams have linked scorecards."} These are recent-form comparisons, not verified head-to-head records.</p></div>
     </article>;
   };
