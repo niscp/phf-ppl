@@ -123,7 +123,7 @@ function getTeamStatSummary(team: AuctionTeam, auction: AuctionSnapshot, tournam
 
 type RecentBattingLine = CricHeroesBattingFigure & { battingSlot: number; matchNumber: number; displayName: string; rosterPlayer?: AuctionPlayer; profile?: DirectoryPlayer };
 type RecentBowlingLine = CricHeroesBowlingFigure & { matchNumber: number; displayName: string; rosterPlayer?: AuctionPlayer; profile?: DirectoryPlayer };
-type TeamRecentForm = { match: TournamentMatch; opponent: string; matchesUsed: number; batting: RecentBattingLine[]; bowling: RecentBowlingLine[] };
+type TeamRecentForm = { match: TournamentMatch; opponent: string; outings: { match: TournamentMatch; opponent: string }[]; matchesUsed: number; batting: RecentBattingLine[]; bowling: RecentBowlingLine[] };
 
 const playerNameAliases: Record<string, string> = {
   "ajay aj": "ajay", "ajay a j": "ajay", "harshank singh chaggar": "harshank",
@@ -196,7 +196,7 @@ function getTeamRecentForm(team: AuctionTeam, auction: AuctionSnapshot, tourname
     if (forms.length === 2) break;
   }
   if (!forms.length) return null;
-  return { ...forms[0], matchesUsed: forms.length, batting: forms.flatMap((form) => form.batting), bowling: forms.flatMap((form) => form.bowling) };
+  return { ...forms[0], outings: forms.map(({ match, opponent }) => ({ match, opponent })), matchesUsed: forms.length, batting: forms.flatMap((form) => form.batting), bowling: forms.flatMap((form) => form.bowling) };
 }
 
 function playerHasAppeared(player: AuctionPlayer, team: AuctionTeam, auction: AuctionSnapshot, tournament: TournamentSnapshot) {
@@ -376,16 +376,11 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
   const card = (team: AuctionTeam, squad: AuctionPlayer[], recent: TeamRecentForm | null, opponentRecent: TeamRecentForm | null, awaySide = false) => {
     const bat = leadingBatter(recent);
     const opponentBowler = leadingBowler(opponentRecent);
-    const opponentBatter = leadingBatter(opponentRecent);
     const phases = planFor(team, squad, recent, planMode);
     const nishankStat = team.name.toLowerCase().includes("high flyers") ? tournament.player_stats.find((stat) => stat.team_id === team.id && normalizedPerson(stat.name) === "nishank singh") : null;
-    const ownRuns = recent ? teamPreviousScore(team, recent.match) : null;
-    const ownWickets = recent ? (recent.match.home_team_id === team.id ? recent.match.home_wickets : recent.match.away_wickets) : null;
-    const ownOvers = recent ? (recent.match.home_team_id === team.id ? recent.match.home_overs : recent.match.away_overs) : null;
-    const sourceUrl = recent?.match.cricheroes_match_url;
     return <article className={`match-two-team-card match-preview-team${awaySide ? " away" : ""}`} key={team.id} style={{ "--team-color": teamColor(team.name) } as CSSProperties}>
       <header>{logo(team) ? <img src={logo(team)} alt="" /> : <b>{initials(team.name)}</b>}<div><span>{recent ? `Most recent card · Match ${recent.match.match_number}` : "Season 5 scorecard data"}</span><h3>{team.name}</h3></div></header>
-      {recent ? <div className="preview-last-outing"><b>Last outing</b><span>vs {recent.opponent}</span><strong>{displayNumber(ownRuns)}/{displayNumber(ownWickets)} <small>in {displayNumber(ownOvers, 1)} overs</small></strong><em>{recent.match.result_text ?? "Result recorded"}</em>{sourceUrl && <a href={sourceUrl} target="_blank" rel="noopener noreferrer">CricHeroes scorecard ↗</a>}</div> : <p className="preview-no-card">No completed CricHeroes scorecard is linked for this team yet; the builder uses available Season 5 or career records.</p>}
+      {recent ? <div className="preview-last-outing"><b>Recent results · last {recent.matchesUsed}</b>{recent.outings.map(({ match, opponent }) => { const runs = teamPreviousScore(team, match); const wickets = match.home_team_id === team.id ? match.home_wickets : match.away_wickets; const overs = match.home_team_id === team.id ? match.home_overs : match.away_overs; return <div className="preview-outing-row" key={match.id}><span>Match {match.match_number} · vs {opponent}</span><strong>{displayNumber(runs)}/{displayNumber(wickets)} <small>in {displayNumber(overs, 1)} overs</small></strong><em>{match.result_text ?? "Result recorded"}</em>{match.cricheroes_match_url && <a href={match.cricheroes_match_url} target="_blank" rel="noopener noreferrer">Scorecard ↗</a>}</div>; })}</div> : <p className="preview-no-card">No completed CricHeroes scorecard is linked for this team yet; the builder uses available Season 5 or career records.</p>}
       <div className="preview-strategy-builder"><div className="preview-strategy-heading"><div><span>{planMode === "batting" ? "Batting strategy" : "Bowling strategy"}</span><small>{recent ? `Last ${recent.matchesUsed} completed match${recent.matchesUsed === 1 ? "" : "es"} · individual figures combined with Season 5 totals` : "Roles suggested from available squad and career records"}</small></div></div>{renderPhases(phases)}{team.name.toLowerCase().includes("high flyers") && nishankStat && nishankStat.wickets > 0 && <p className="preview-strategy-praise"><strong>Spell to build around · Nishank Singh</strong> Match 2 vs PHF Blasterz: {nishankStat.wickets}/{nishankStat.runs_conceded} in {displayNumber(nishankStat.overs, 1)} overs, economy {displayNumber(nishankStat.runs_conceded / nishankStat.overs, 2)}. A disciplined wicket-taking spell worth praising.</p>}</div>
       <div className="preview-crosscheck"><span>Opponent form check</span><p>{opponentBowler && bat ? `${bat.displayName} (${displayNumber(bat.runs)} runs last outing) against ${opponentBowler.displayName} (${displayNumber(opponentBowler.wickets)} wickets in ${displayNumber(opponentBowler.overs, 1)} overs last outing).` : "A recent batter-versus-bowler comparison will appear when both teams have linked scorecards."} These are recent-form comparisons, not verified head-to-head records.</p></div>
     </article>;
