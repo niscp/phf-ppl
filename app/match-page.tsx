@@ -371,7 +371,11 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     return phases.filter((phase) => phase.cues.length);
   };
 
-  const renderPhases = (phases: TacticPhase[]) => <div className="preview-strategy-phases">{phases.map((phase) => <article className="preview-strategy-phase" key={phase.title}><h4>{phase.title}</h4><p>{phase.prompt}</p><div>{phase.cues.map((cue, index) => <span className="preview-tactic-cue" key={cue.key}><strong>{cue.name}</strong> {cue.instruction} <small>({cue.evidence})</small>{index < phase.cues.length - 1 ? "; " : "."}</span>)}</div></article>)}</div>;
+  const renderPhases = (phases: TacticPhase[]) => <div className="preview-strategy-phases">{phases.map((phase) => {
+    const tactics = new Map<string, TacticCue[]>();
+    for (const cue of phase.cues) tactics.set(cue.instruction, [...(tactics.get(cue.instruction) ?? []), cue]);
+    return <article className="preview-strategy-phase" key={phase.title}><h4>{phase.title}</h4><p>{phase.prompt}</p><div>{[...tactics.entries()].map(([instruction, cues]) => <div className="preview-tactic-group" key={instruction}><p>{instruction}</p><div>{cues.map((cue, index) => <span className="preview-tactic-cue" key={cue.key}><strong>{cue.name}</strong> <small>{cue.evidence}</small>{index < cues.length - 1 ? "; " : "."}</span>)}</div></div>)}</div></article>;
+  })}</div>;
 
   const card = (team: AuctionTeam, squad: AuctionPlayer[], recent: TeamRecentForm | null, opponentRecent: TeamRecentForm | null, awaySide = false) => {
     const bat = leadingBatter(recent);
