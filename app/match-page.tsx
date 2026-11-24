@@ -213,6 +213,10 @@ function playerHasAppeared(player: AuctionPlayer, team: AuctionTeam, auction: Au
   return tournament.player_stats.some((stat) => stat.team_id === team.id && normalizedPerson(stat.name) === canonicalName && stat.matches > 0);
 }
 
+function tournamentRecordFor(player: AuctionPlayer, team: AuctionTeam, tournament: TournamentSnapshot) {
+  return tournament.player_stats.find((stat) => stat.team_id === team.id && normalizedPerson(stat.name) === normalizedPerson(player.name));
+}
+
 function teamPreviousScore(team: AuctionTeam, match: TournamentMatch) {
   const isHome = match.home_team_id === team.id;
   return isHome ? match.home_runs : match.away_runs;
@@ -364,6 +368,38 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     return parsed === null ? "—" : parsed.toLocaleString("en-IN", { maximumFractionDigits: digits, minimumFractionDigits: digits });
   };
 
+  const squadRole = (player: AuctionPlayer, stat: ReturnType<typeof tournamentRecordFor>, profile?: DirectoryPlayer) => {
+    const listed = player.role || stat?.role || "Role not listed";
+    if (listed.toLowerCase() !== "all-rounder") return listed;
+    const runs = stat?.runs ?? (profile?.statsSource ? numeric(profile.stats?.batting?.runs) ?? 0 : 0);
+    const wickets = stat?.wickets ?? (profile?.statsSource ? numeric(profile.stats?.bowling?.wickets) ?? 0 : 0);
+    if (runs > 0 && wickets > 0) return runs >= wickets * 30 ? "Batting-led all-rounder" : "Bowling-led all-rounder";
+    if (runs > 0) return "Batting option";
+    if (wickets > 0) return "Bowling option";
+    return "Flexible all-rounder";
+  };
+
+  const squadUsage = (player: AuctionPlayer, stat: ReturnType<typeof tournamentRecordFor>, batting?: RecentBattingLine, bowling?: RecentBowlingLine) => {
+    if (batting || bowling) {
+      const parts = [
+        batting ? `${batting.battingSlot <= 2 ? "Top order" : batting.battingSlot <= 5 ? "Middle order" : "Lower order"} · ${displayNumber(batting.runs)} off ${displayNumber(batting.balls)}` : null,
+        bowling ? `Bowling · ${displayNumber(bowling.overs, 1)} ov, ${displayNumber(bowling.wickets)} wickets, ${displayNumber(bowling.economy, 1)} econ` : null,
+      ].filter(Boolean);
+      return { role: batting && bowling ? "Batting and bowling option" : batting ? "Batting position" : "Bowling option", detail: parts.join(" · "), appeared: true };
+    }
+    if ((stat?.matches ?? 0) > 0) {
+      const role = squadRole(player, stat, directory.find((item) => item.id === player.id));
+      const detail = `${stat?.matches ?? 0} Season 5 match${stat?.matches === 1 ? "" : "es"} · ${displayNumber(stat?.runs)} runs · ${displayNumber(stat?.wickets)} wickets`;
+      return { role, detail, appeared: true };
+    }
+    const profile = directory.find((item) => item.id === player.id);
+    const career = profile?.statsSource ? [
+      numeric(profile.stats?.batting?.runs) !== null ? `${displayNumber(profile.stats?.batting?.runs)} career runs` : null,
+      numeric(profile.stats?.bowling?.wickets) !== null ? `${displayNumber(profile.stats?.bowling?.wickets)} career wickets` : null,
+    ].filter(Boolean).join(" · ") : "No linked career figures";
+    return { role: `${squadRole(player, stat, profile)} · possible first appearance`, detail: `${career}. Role comes from the squad listing; selection is unconfirmed.`, appeared: false };
+  };
+
   const featuredLines = (form: TeamRecentForm | null) => {
     if (!form) return [] as Array<{ key: string; name: string; role: string; figures: string; player?: AuctionPlayer; photo?: string | null }>;
     const selected = new Map<string, { batting?: RecentBattingLine; bowling?: RecentBowlingLine }>();
@@ -395,6 +431,15 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
     const opponentBatter = leadingBatter(opponentRecent);
     const featured = featuredLines(recent);
     const rotation = optionFor(team, squad, recent);
+    const squadPlayers = squad.map((player) => {
+      const stat = tournamentRecordFor(player, team, tournament);
+      const battingLine = recent?.batting.find((line) => line.rosterPlayer?.id === player.id || normalizedPerson(line.displayName) === normalizedPerson(player.name));
+      const bowlingLine = recent?.bowling.find((line) => line.rosterPlayer?.id === player.id || normalizedPerson(line.displayName) === normalizedPerson(player.name));
+      const usage = squadUsage(player, stat, battingLine, bowlingLine);
+      return { player, usage };
+    });
+    const nishank = team.name.toLowerCase().includes("high flyers") ? squadPlayers.find(({ player }) => normalizedPerson(player.name) === "nishank singh") : null;
+    const nishankStat = nishank ? tournamentRecordFor(nishank.player, team, tournament) : null;
     const ownRuns = recent ? teamPreviousScore(team, recent.match) : null;
     const ownWickets = recent ? (recent.match.home_team_id === team.id ? recent.match.home_wickets : recent.match.away_wickets) : null;
     const ownOvers = recent ? (recent.match.home_team_id === team.id ? recent.match.home_overs : recent.match.away_overs) : null;
@@ -413,6 +458,7 @@ function MatchTacticalPreview({ home, away, auction, tournament }: { home: Aucti
           <div className="match-two-plan"><span>Bowling plan</span><p>{bowler ? `Build the attack around ${bowler.displayName}, who took ${displayNumber(bowler.wickets)} wicket${Number(bowler.wickets) === 1 ? "" : "s"} in ${displayNumber(bowler.overs, 1)} overs. ${opponentBatter ? `The opposing side’s latest top score was ${opponentBatter.displayName} (${displayNumber(opponentBatter.runs)} off ${displayNumber(opponentBatter.balls)}), so track that matchup.` : "Use the latest scorecard to set the bowling roles."}` : "Bowling figures are missing from the latest linked card; set roles from the confirmed XI and conditions."}</p></div>
         </div>
         <div className="preview-contributors"><div className="preview-subhead"><span>Recent contributors</span><small>Role reflects the last scorecard</small></div><div className="preview-contributor-grid">{featured.map((line) => <div className="preview-contributor" key={line.key}>{line.photo ? <img src={asset(line.photo)} alt="" loading="lazy" /> : <b>{initials(line.name)}</b>}<div><strong>{line.name}</strong><small>{line.role}</small><em>{line.figures}</em></div></div>)}</div></div>
+        <div className="preview-full-squad"><div className="preview-subhead"><span>Full squad game plan</span><small>{squadPlayers.length} listed players · individual roles</small></div><div className="preview-squad-grid">{squadPlayers.map(({ player, usage }) => <article className={`preview-squad-player${usage.appeared ? " appeared" : " rotation"}`} key={player.id}><div><strong>{player.name}</strong><span>{usage.role}</span></div><small>{usage.detail}</small></article>)}</div>{nishank && nishankStat && nishankStat.wickets > 0 && <p className="preview-squad-praise"><strong>Bowling shout-out · Nishank Singh</strong><span>In Match 2 vs PHF Blasterz: {nishankStat.wickets}/{nishankStat.runs_conceded} from {displayNumber(nishankStat.overs, 1)} overs (economy {displayNumber(nishankStat.runs_conceded / nishankStat.overs, 2)}). A tidy, wicket-taking spell that deserves recognition.</span></p>}</div>
       </> : <p className="preview-no-card">No completed CricHeroes scorecard is linked for this team yet. The squad board below uses only available verified records.</p>}
       {rotation && <div className="preview-rotation"><span>Selection watch · possible first appearance</span><strong>{rotation.player.name}</strong><small>{rotation.role} · {selectionDescription}</small><p>{career}{rotation.profile?.statsChecked ? ` · profile checked ${new Date(`${rotation.profile.statsChecked}T12:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}</p>{rotation.profile?.statsSource && <a href={rotation.profile.statsSource} target="_blank" rel="noopener noreferrer">View CricHeroes career profile ↗</a>}</div>}
       {!rotation && <div className="preview-rotation preview-rotation-empty"><span>Squad rotation</span><p>Every listed player appears on a previous batting or bowling card. No first-appearance option was found in the available data.</p></div>}
